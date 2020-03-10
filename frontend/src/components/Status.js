@@ -17,6 +17,10 @@ const Status = ({ loading, name, balance, TXs }) => {
         <Button as={Link} to="/receive">Receive</Button>
         <Button as={Link} to="/send">Send</Button>
       </div>
+      <div style={{marginTop: "2em"}}>
+        <Button as={Link} to="/events">View Events</Button>
+        <Button as={Link} to="/createEvent">Craete Event</Button>
+      </div>
     </div>
   )
 }

@@ -4,15 +4,15 @@ const Schema = mongoose.Schema
 const TXSchema = new Schema({
 	from: {
 		type: String,
-		required: [true, 'Name field is required.']
+		required: true
 	},
 	to: {
 		type: String,
-		required: [true, 'Password hash field is required.']
+		required: true
   },
   amount: {
 	  type: String,
-	  required: [true, 'Email field is required.']
+	  required: true
   },
   timestamp: {
     type: Number,

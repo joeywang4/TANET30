@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { NavBar, Welcome } from '../components';
-import { UserStatus, Login, Register, Receive, Send } from '../containers';
+import { UserStatus, Login, Register, Receive, Send, Events, CreateEvent, Event } from '../containers';
 
 const mapStateToProps = (state) => ({
   hasLoggedIn: state.user.token !== undefined
@@ -31,6 +31,18 @@ function App({hasLoggedIn}) {
           </Route>
           <Route exact path="/send">
             {mustLogin(hasLoggedIn, Send)}
+          </Route>
+          <Route exact path="/events">
+            {mustLogin(hasLoggedIn, Events)}
+          </Route>
+          <Route exact path="/createEvent">
+            {mustLogin(hasLoggedIn, CreateEvent)}
+          </Route>
+          <Route exact path="/event">
+            {({ location }) => {
+              const eventId = location.search.substring(4);
+              return <Event eventId={eventId} />;
+            }}
           </Route>
           <Route exact path="/login"><Login /></Route>
           <Route exact path="/register"><Register /></Route>

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const Event = require("../models/event");
 const TX = require("../models/transaction");
 const User = require("../models/user");
 
@@ -70,6 +71,182 @@ router.post('/TX', async (req, res) => {
   }
   else res.status(400).send("Create transaction failed");
   return;
+})
+
+router.post('/event', async (req, res) => {
+  let d = new Date();
+  if(!req.isLogin) {
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create event failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  const { name, begin, end, password } = req.body;
+  const admin = req.user.id;
+  if(!name || !begin || !end || !admin) {
+    res.status(400).send("Missing field");
+    return;
+  }
+
+  const exists = await Event.findOne({name}, (err, event) => {
+    if(event) return true;
+    else if(err) {
+      errHandler(err, res);
+      return true;
+    }
+    return false;
+  })
+  if(exists) {
+    res.status(400).send("Event name already exists");
+    return;
+  }
+
+  const newEvent = Event({admin, name, begin, end, participant: [], password});
+  const done = newEvent.save()
+  .then(_ => true)
+  .catch(err => errHandler(err, res));
+
+  if(done) {
+    let d = new Date();
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create Event success: ${name} by ${req.user.name}`);
+    res.status(200).send("Create event success");
+  }
+  else res.status(400).send("Create event failed");
+  return;
+})
+
+router.get('/event', (req, res) => {
+  const projection = "_id admin name begin end participant";
+  if(req.query.id) {
+    Event.findById(req.query.id)
+    .populate({
+      path: 'participant',
+      populate: { path: 'participant' }
+    })
+    .exec((err, event) => {
+      if(err) errHandler(err, res);
+      else if(!event) res.status(404).send("Not found");
+      else {
+        if(req.user && req.user.id === String(event.admin)) {
+          res.status(200).send(event.toObject());
+        }
+        else {
+          res.status(200).send({...event.toObject(), password: ""});
+        }
+      }
+    })
+  }
+  else if(req.query.name) {
+    Event.findOne({name: req.query.name}, projection)
+    .populate({
+      path: 'participant',
+      populate: { path: 'participant' }
+    })
+    .exec((err, event) => {
+      if(err) errHandler(err, res);
+      else if(!event) res.status(404).send("Not found");
+      else res.status(200).send(event.toObject());
+    })
+  }
+  else if(req.query.admin) {
+    Event.find({admin: req.query.admin}, projection)
+    .populate({
+      path: 'participant',
+      populate: { path: 'participant' }
+    })
+    .exec((err, events) => {
+      if(err) errHandler(err, res);
+      else res.status(200).send(events);
+    })
+  }
+  else {
+    Event.find({}, projection)
+    .populate({
+      path: 'participant',
+      populate: { path: 'participant' }
+    })
+    .exec((err, events) => {
+      if(err) errHandler(err, res);
+      else res.status(200).send(events);
+    })
+  }
+})
+
+const participate = async (res, event, userId) => {
+  const joined = event.participant.find(_user => String(_user) === String(userId));
+  if(joined) {
+    res.status(400).send("Already joined event");
+    return;
+  }
+
+  await Event.updateOne({_id: event._id}, {$push: {participant: userId}});
+  res.status(200).send("Success");
+}
+
+router.post('/join', async (req, res) => {
+  let d = new Date();
+  if(!req.isLogin) {
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Join event failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+
+  const { eventId, password } = req.body;
+  const event = await Event.findById(eventId)
+  .then(event => event)
+  .catch(_ => false);
+  if(!event) {
+    res.status(400).send("Event does not exist")
+    return;
+  }
+  if(password !== event.password) {
+    res.status(401).send("Not allowed to join");
+    return;
+  }
+
+  participate(res, event, req.user.id);
+})
+
+router.post('/addParticipant', async (req, res) => {
+  let d = new Date();
+  if(!req.isLogin) {
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Add participant failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+
+  const { eventId, userId } = req.body;
+  if(!eventId || !userId) {
+    res.status(400).send("Missing field!");
+    return;
+  }
+  const event = await Event.findById(eventId, (err, event) => {
+    if(event) return event;
+    else if(err) {
+      errHandler(err, res);
+      return false;
+    }
+    else return false;
+  })
+  if(!event) {
+    res.status(400).send("Event does not exist")
+    return;
+  }
+  const hasUser = await User.findById(userId)
+  .then(user => {
+    if(user) return true;
+    else return false;
+  })
+  .catch(_ => false);
+  if(!hasUser) {
+    res.status(400).send("Invalid user id");
+    return;
+  }
+  if(req.user.id !== String(event.admin)) {
+    res.status(401).send("You are not admin");
+    return;
+  }
+
+  participate(res, event, userId);
 })
 
 router.get('/user', (req, res) => {

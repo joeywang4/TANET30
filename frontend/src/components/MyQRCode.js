@@ -1,13 +1,8 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import { Loader } from 'semantic-ui-react';
 import QRCode from 'qrcode';
 
-const mapStateToProps = (state) => ({
-  id: state.user.id
-})
-
-class Receive extends Component {
+class MyQRCode extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -18,7 +13,7 @@ class Receive extends Component {
   }
 
   async getURL() {
-    const URL = await QRCode.toDataURL(this.props.id)
+    const URL = await QRCode.toDataURL(this.props.data)
     .then(URL => URL)
     .catch(err => console.error(err));
     this.qrcodeURL = URL;
@@ -32,4 +27,4 @@ class Receive extends Component {
 }
 
 
-export default connect(mapStateToProps)(Receive);
+export default MyQRCode;

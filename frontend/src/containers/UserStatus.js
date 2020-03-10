@@ -22,7 +22,6 @@ class UserStatus extends Component {
     const TXs = await fetch(BACKEND+`/TX?id=${this.props.id}`)
     .then(res => res.json())
     .then(data => data);
-    console.log("TXs:", TXs);
     this.TXs = TXs;
     this.setState({loading: false});
   }
