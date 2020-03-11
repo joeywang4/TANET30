@@ -3,7 +3,7 @@ import { Menu, CardGroup, Card, Loader, Header, Icon, Message } from 'semantic-u
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import QrReader from 'react-qr-reader';
-import { MyQRCode } from '../../components';
+import QRCode from 'qrcode.react';
 import { BACKEND } from '../../config';
 
 const [ERROR, SUCCESS, LOADING] = [0, 1, 2];
@@ -209,7 +209,7 @@ class Event extends Component {
       switch(this.state.activeItem) {
         case 'Show checkin QRCode':
           if(this.event.password !== "") {
-            display = <MyQRCode data={this.event.password} />
+            display = <QRCode value={this.event.password} size={512} level={'H'} style={{margin: "auto", display: "block", width: "80%", maxWidth: "500px", height: "auto"}}  />
           }
           else display = <span>Checkin QRCode is not available</span>
           break;
@@ -219,12 +219,12 @@ class Event extends Component {
               delay={300}
               onError={this.handleError}
               onScan={this.checkinUser}
-              style={{maxWidth: "500px", width: "100%"}}
+              style={{maxWidth: "500px", width: "100%", margin: "auto"}}
             />
           )
           break;
         case 'Show user QRCode':
-          display = <MyQRCode data={this.props.id} />
+          display = <QRCode value={this.props.id} size={512} level={'H'} style={{margin: "auto", display: "block", width: "80%", maxWidth: "500px", height: "auto"}}  />
           break;
         case 'Scan checkin QRCode':
           display = (
@@ -232,7 +232,7 @@ class Event extends Component {
               delay={300}
               onError={this.handleError}
               onScan={this.checkinEvent}
-              style={{maxWidth: "500px", width: "100%"}}
+              style={{maxWidth: "500px", width: "100%", margin: "auto"}}
             />
           )
           break;
@@ -243,7 +243,12 @@ class Event extends Component {
       }
     }
     return (
-      <div>
+      <div
+        style={{
+          width: "90%",
+          maxWidth: "900px"
+        }}
+      >
         <Header textAlign='center' as="h1">{this.event.name}</Header>
         <Header textAlign='center' as="h5">{epochToTime(this.event.begin, this.event.end)}</Header>
         <Menu stackable>
