@@ -133,7 +133,7 @@ class Event extends Component {
       if(res.status === 200) {
         res.json().then(user => {
           this.scannedUsers.push(userId);
-          this.event.participant.push(userId);
+          this.event.participant.push({...user, _id: user.id});
           this.setState(state => {
             state.scanBusy = false;
             state.msg = (

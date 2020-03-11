@@ -38,6 +38,7 @@ class CreateEvent extends React.Component {
         this.setState({nameStatus: IDLE, nameUsed: false});
         return;
       }
+      else this.setState({nameStatus: IDLE});
       fetch(BACKEND+`/event?name=${this.name}`)
       .then(res => {
         if(res.status === 404) {
@@ -50,7 +51,6 @@ class CreateEvent extends React.Component {
         else{
           res.json()
           .then(data => {
-            console.log("Checkname", data);
             if(data) this.setState({nameStatus: DONE, nameUsed: true});
             else this.setState({nameStatus: DONE, nameUsed: false});
           })
