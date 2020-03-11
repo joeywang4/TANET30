@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Input, Menu, CardGroup, Loader, Header, Icon } from 'semantic-ui-react';
+import { Menu, CardGroup, Loader, Header, Icon } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { EventLink } from '../../components';
 import { BACKEND } from '../../config';
@@ -32,7 +32,7 @@ class Events extends Component {
       case 'Your':
         return events.filter(event => event.admin === id);
       case 'Participated':
-        return events.filter(event => inArray(event.participant, id));
+        return events.filter(event => inArray(event.participant.map(user => user._id), id));
       default:
         return events;
     }
@@ -93,8 +93,13 @@ class Events extends Component {
     }
 
     return (
-      <div>
-        <Menu pointing secondary>
+      <div
+        style={{
+          width: "90%",
+          maxWidth: "900px"
+        }}
+      >
+        <Menu stackable>
           <Menu.Item
             name='All'
             active={activeItem === 'All'}
@@ -110,11 +115,6 @@ class Events extends Component {
             active={activeItem === 'Participated'}
             onClick={this.handleItemClick}
           />
-          <Menu.Menu position='right'>
-            <Menu.Item>
-              <Input icon='search' placeholder='Search...' />
-            </Menu.Item>
-          </Menu.Menu>
         </Menu>
 
         <div>

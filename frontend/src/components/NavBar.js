@@ -51,7 +51,7 @@ const NavBar = ({ hasLoggedin, name, logout }) => (
           Hello,&nbsp; 
           <Link style={welcomeLinkStyle} to={`/user`}>{name}</Link>
           &nbsp;!&nbsp;
-          <Link style={{...linkStyle, fontSize: "1em"}} to="#" onClick={_ => logout()} >Logout</Link>
+          <Link style={{...linkStyle, fontSize: "1em"}} to="/" onClick={_ => logout()} >Logout</Link>
         </div>
       :
         <React.Fragment>

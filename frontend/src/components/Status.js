@@ -6,7 +6,7 @@ const Status = ({ loading, name, balance, TXs }) => {
   return (
     <div style={{
       backgroundColor: "rgb(250, 250, 250)", 
-      width: "50%",
+      width: "90%",
       maxWidth: "800px",
       display: "flex",
       flexDirection: "column",

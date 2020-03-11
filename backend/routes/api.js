@@ -116,11 +116,15 @@ router.post('/event', async (req, res) => {
 
 router.get('/event', (req, res) => {
   const projection = "_id admin name begin end participant";
+  const userProjection = "_id name email";
   if(req.query.id) {
     Event.findById(req.query.id)
     .populate({
       path: 'participant',
-      populate: { path: 'participant' }
+      select: userProjection,
+      populate: { 
+        path: 'participant'
+      }
     })
     .exec((err, event) => {
       if(err) errHandler(err, res);
@@ -139,7 +143,10 @@ router.get('/event', (req, res) => {
     Event.findOne({name: req.query.name}, projection)
     .populate({
       path: 'participant',
-      populate: { path: 'participant' }
+      select: userProjection,
+      populate: { 
+        path: 'participant'
+      }
     })
     .exec((err, event) => {
       if(err) errHandler(err, res);
@@ -151,7 +158,10 @@ router.get('/event', (req, res) => {
     Event.find({admin: req.query.admin}, projection)
     .populate({
       path: 'participant',
-      populate: { path: 'participant' }
+      select: userProjection,
+      populate: { 
+        path: 'participant'
+      }
     })
     .exec((err, events) => {
       if(err) errHandler(err, res);
@@ -162,7 +172,10 @@ router.get('/event', (req, res) => {
     Event.find({}, projection)
     .populate({
       path: 'participant',
-      populate: { path: 'participant' }
+      select: userProjection,
+      populate: { 
+        path: 'participant'
+      }
     })
     .exec((err, events) => {
       if(err) errHandler(err, res);
@@ -172,6 +185,16 @@ router.get('/event', (req, res) => {
 })
 
 const participate = async (res, event, userId) => {
+  const user = await User.findById(userId)
+  .then(user => {
+    if(user) return user;
+    else return false;
+  })
+  .catch(_ => false);
+  if(user === false) {
+    res.status(400).send("User does not exist");
+    return;
+  }
   const joined = event.participant.find(_user => String(_user) === String(userId));
   if(joined) {
     res.status(400).send("Already joined event");
@@ -179,7 +202,7 @@ const participate = async (res, event, userId) => {
   }
 
   await Event.updateOne({_id: event._id}, {$push: {participant: userId}});
-  res.status(200).send("Success");
+  res.status(200).send({id: user._id, name: user.name});
 }
 
 router.post('/join', async (req, res) => {
@@ -229,16 +252,6 @@ router.post('/addParticipant', async (req, res) => {
   })
   if(!event) {
     res.status(400).send("Event does not exist")
-    return;
-  }
-  const hasUser = await User.findById(userId)
-  .then(user => {
-    if(user) return true;
-    else return false;
-  })
-  .catch(_ => false);
-  if(!hasUser) {
-    res.status(400).send("Invalid user id");
     return;
   }
   if(req.user.id !== String(event.admin)) {

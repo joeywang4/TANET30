@@ -11,13 +11,15 @@ const epochToTime = (_begin, _end) => {
   const begin = new Date(_begin);
   const end = new Date(_end);
   const year = begin.getFullYear();
-  const month = begin.getMonth()+1;
-  const date = begin.getDate();
+  const beginMonth = begin.getMonth()+1;
+  const endMonth = end.getMonth()+1;
+  const beginDate = begin.getDate();
+  const endDate = end.getDate();
   const beginHour = prefixZero(begin.getHours());
   const beginMinute = prefixZero(begin.getMinutes());
   const endHour = prefixZero(end.getHours());
   const endMinute = prefixZero(end.getMinutes());
-  return `${year} ${month}/${date} ${beginHour}:${beginMinute} ~ ${endHour}:${endMinute}`;
+  return `${year} ${beginMonth}/${beginDate} ${beginHour}:${beginMinute} ~ ${endMonth}/${endDate} ${endHour}:${endMinute}`;
 }
 
 const EventLink = ({name, id, begin, end}) => (

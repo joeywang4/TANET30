@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { Input, Menu, CardGroup, Card, Loader, Header, Icon, Message } from 'semantic-ui-react';
+import { Menu, CardGroup, Card, Loader, Header, Icon, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import QrReader from 'react-qr-reader';
 import { MyQRCode } from '../../components';
 import { BACKEND } from '../../config';
 
-const [ERROR, SUCCESS, LOADING, IDLE] = [0, 1, 2, 3];
+const [ERROR, SUCCESS, LOADING] = [0, 1, 2];
 
 const mapStateToProps = (state) => ({
   token: state.user.token,
@@ -22,13 +22,15 @@ const epochToTime = (_begin, _end) => {
   const begin = new Date(_begin);
   const end = new Date(_end);
   const year = begin.getFullYear();
-  const month = begin.getMonth()+1;
-  const date = begin.getDate();
+  const beginMonth = begin.getMonth()+1;
+  const endMonth = end.getMonth()+1;
+  const beginDate = begin.getDate();
+  const endDate = end.getDate();
   const beginHour = prefixZero(begin.getHours());
   const beginMinute = prefixZero(begin.getMinutes());
   const endHour = prefixZero(end.getHours());
   const endMinute = prefixZero(end.getMinutes());
-  return `${year} ${month}/${date} ${beginHour}:${beginMinute} ~ ${endHour}:${endMinute}`;
+  return `${year} ${beginMonth}/${beginDate} ${beginHour}:${beginMinute} ~ ${endMonth}/${endDate} ${endHour}:${endMinute}`;
 }
 
 class Event extends Component {
@@ -37,15 +39,16 @@ class Event extends Component {
     this.state = {
       activeItem: 'Participant',
       status: LOADING,
-      scanStatus: IDLE,
+      scanBusy: false,
       msg: "",
       err: ""
     }
     this.event = null;
+    this.scannedUsers = [];
     this.getEvent(this.props.eventId);
   }
 
-  handleItemClick = (_, { name }) => this.setState({ activeItem: name });
+  handleItemClick = (_, { name }) => this.setState({ activeItem: name, msg: "", err: "", scanBusy: false });
 
   getEvent = async (id) => {
     await fetch(BACKEND+`/event?id=${id}`, {
@@ -72,7 +75,6 @@ class Event extends Component {
 
   setError = (msg) => {
     this.setState(state => {
-      state.scanStatus = ERROR;
       state.err = (
         <React.Fragment>
           <Message.Content>
@@ -87,8 +89,8 @@ class Event extends Component {
   }
 
   checkinEvent = (password) => {
-    if(password === null || this.state.scanStatus !== IDLE) return;
-    this.setState({scanStatus: LOADING});
+    if(password === null || this.state.scanBusy) return;
+    this.setState({scanBusy: true});
     fetch(BACKEND+"/join", {
       method: "POST",
       body: JSON.stringify({eventId: this.props.eventId, password}),
@@ -97,7 +99,7 @@ class Event extends Component {
     .then(res => {
       if(res.status === 200) {
         this.setState(state => {
-          state.scanStatus = SUCCESS;
+          state.scanBusy = false;
           state.msg = (
             <React.Fragment>
               <Message.Content>
@@ -119,9 +121,9 @@ class Event extends Component {
   }
 
   checkinUser = (userId) => {
-    if(userId === null || this.state.scanStatus !== IDLE) return;
+    if(userId === null || inArray(this.scannedUsers, userId) || this.state.scanBusy) return;
     console.log("checkinUser:", userId);
-    this.setState({scanStatus: LOADING});
+    this.setState({scanBusy: true});
     fetch(BACKEND+"/addParticipant", {
       method: "POST",
       body: JSON.stringify({eventId: this.props.eventId, userId}),
@@ -129,16 +131,23 @@ class Event extends Component {
     })
     .then(res => {
       if(res.status === 200) {
-        this.setState(state => {
-          state.scanStatus = SUCCESS;
-          state.msg = (
-            <React.Fragment>
-              <Message.Content>
-                <Message.Header>Add user Success!</Message.Header>
-              </Message.Content>
-            </React.Fragment>
-          );
-          return state;
+        res.json().then(user => {
+          this.scannedUsers.push(userId);
+          this.event.participant.push(userId);
+          this.setState(state => {
+            state.scanBusy = false;
+            state.msg = (
+              <React.Fragment>
+                <Message.Content>
+                  <Message.Header>
+                    <Link to={`/user?id=${user.id}`}>{user.name}</Link>
+                    &nbsp;checkin success!
+                  </Message.Header>
+                </Message.Content>
+              </React.Fragment>
+            );
+            return state;
+          })
         })
       }
       else {
@@ -199,7 +208,10 @@ class Event extends Component {
 
       switch(this.state.activeItem) {
         case 'Show checkin QRCode':
-          display = <MyQRCode data={this.event.password} />
+          if(this.event.password !== "") {
+            display = <MyQRCode data={this.event.password} />
+          }
+          else display = <span>Checkin QRCode is not available</span>
           break;
         case 'Checkin user':
           display = (
@@ -234,7 +246,7 @@ class Event extends Component {
       <div>
         <Header textAlign='center' as="h1">{this.event.name}</Header>
         <Header textAlign='center' as="h5">{epochToTime(this.event.begin, this.event.end)}</Header>
-        <Menu pointing secondary>
+        <Menu stackable>
           {functions.map(_func => (
             <Menu.Item
               name={_func}
@@ -243,11 +255,6 @@ class Event extends Component {
               key={_func}
             />
           ))}
-          <Menu.Menu position='right'>
-            <Menu.Item>
-              <Input icon='search' placeholder='Search...' />
-            </Menu.Item>
-          </Menu.Menu>
         </Menu>
 
         <div>
