@@ -5,7 +5,8 @@ import { NavBar, Welcome } from '../components';
 import { UserStatus, Login, Register, Receive, Send, Events, CreateEvent, Event } from '../containers';
 
 const mapStateToProps = (state) => ({
-  hasLoggedIn: state.user.token !== undefined
+  hasLoggedIn: state.user.token !== undefined,
+  userGroup: state.user.group
 })
 
 const mustLogin = (hasLoggedIn, Tag) => {
@@ -13,7 +14,22 @@ const mustLogin = (hasLoggedIn, Tag) => {
   else return <Redirect to="/" />;
 }
 
-function App({hasLoggedIn}) {
+function App({hasLoggedIn, userGroup}) {
+  let homeComponent = <UserStatus />;
+  switch(userGroup) {
+    case 'root':
+      break;
+    case 'foodStaff':
+      break;
+    case 'seminarStaff':
+      break;
+    case 'company':
+      break;
+    case 'user':
+    default:
+      break;
+  }
+
   return (
     <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
       <BrowserRouter>
@@ -21,7 +37,7 @@ function App({hasLoggedIn}) {
         <Switch>
           <Route exact path="/">
             {hasLoggedIn?
-              <UserStatus />
+              homeComponent
               :
               <Welcome />
             }

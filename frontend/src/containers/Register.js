@@ -14,6 +14,7 @@ class RegisterForm extends React.Component {
     this.name = "";
     this.email = "";
     this.pwd = "";
+    this.group = "";
   }
 
   render() {
@@ -31,7 +32,7 @@ class RegisterForm extends React.Component {
               e.preventDefault();
               fetch(BACKEND+"/auth/register", {
                 method: "POST",
-                body: JSON.stringify({name: this.name, email: this.email, pwd: this.pwd}),
+                body: JSON.stringify({name: this.name, email: this.email, pwd: this.pwd, group: this.group}),
                 headers: {'content-type': "application/json"}
               })
               .then(res => {
@@ -65,6 +66,9 @@ class RegisterForm extends React.Component {
           >
             <Form.Field>
               <Form.Input icon='user' iconPosition='left' placeholder="Name" type="text" required={true} id="userName" onChange={e => { this.name = e.target.value }} />
+            </Form.Field>
+            <Form.Field>
+              <Form.Input icon='group' iconPosition='left' placeholder="Group (user/root/company/foodStaff/seminarStaff)" type="text" required={true} id="userGroup" onChange={e => { this.group = e.target.value }} />
             </Form.Field>
             <Form.Field>
               <Form.Input icon='mail' iconPosition='left' placeholder="Email" type="email" required={true} id="userEmail" onChange={e => { this.email = e.target.value }} />

@@ -86,6 +86,10 @@ router.post('/event', async (req, res) => {
     res.status(400).send("Missing field");
     return;
   }
+  if(req.user.group === 'user') {
+    res.status(403).send("Operation not allowed");
+    return;
+  }
 
   const exists = await Event.findOne({name}, (err, event) => {
     if(event) return true;
@@ -110,7 +114,7 @@ router.post('/event', async (req, res) => {
     console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create Event success: ${name} by ${req.user.name}`);
     res.status(200).send("Create event success");
   }
-  else res.status(400).send("Create event failed");
+  else res.status(500).send("Create event failed");
   return;
 })
 
@@ -184,7 +188,16 @@ router.get('/event', (req, res) => {
   }
 })
 
-const participate = async (res, event, userId) => {
+const participate = async (res, now, event, userId) => {
+  const beginDate = new Date(event.begin);
+  if(
+    beginDate.getFullYear() !== now.getFullYear() || 
+    beginDate.getMonth() !== now.getMonth() || 
+    beginDate.getDate() !== now.getDate()
+  ) {
+    res.status(400).send("Event is ended or is not started yet");
+    return;
+  }
   const user = await User.findById(userId)
   .then(user => {
     if(user) return user;
@@ -226,7 +239,7 @@ router.post('/join', async (req, res) => {
     return;
   }
 
-  participate(res, event, req.user.id);
+  participate(res, d, event, req.user.id);
 })
 
 router.post('/addParticipant', async (req, res) => {
@@ -259,7 +272,7 @@ router.post('/addParticipant', async (req, res) => {
     return;
   }
 
-  participate(res, event, userId);
+  participate(res, d, event, userId);
 })
 
 router.get('/user', (req, res) => {

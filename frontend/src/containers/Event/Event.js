@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import QrReader from 'react-qr-reader';
 import QRCode from 'qrcode.react';
+import ok from './ok.mp3';
 import { BACKEND } from '../../config';
 
 const [ERROR, SUCCESS, LOADING] = [0, 1, 2];
@@ -45,6 +46,7 @@ class Event extends Component {
     }
     this.event = null;
     this.scannedUsers = [];
+    this.soundEffect = new Audio(ok);
     this.getEvent(this.props.eventId);
   }
 
@@ -98,6 +100,8 @@ class Event extends Component {
     })
     .then(res => {
       if(res.status === 200) {
+        this.soundEffect.load();
+        this.soundEffect.play();
         this.setState(state => {
           state.scanBusy = false;
           state.msg = (
@@ -136,6 +140,8 @@ class Event extends Component {
           this.event.participant.push({...user, _id: user.id});
           this.setState(state => {
             state.scanBusy = false;
+            this.soundEffect.load();
+            this.soundEffect.play();
             state.msg = (
               <React.Fragment>
                 <Message.Content>
@@ -185,8 +191,10 @@ class Event extends Component {
       );
     }
     else {
-      const now = Date.now();
-      const running = this.event.begin <= now && this.event.end >= now;
+      const now = new Date();
+      //const running = this.event.begin <= now && this.event.end >= now;
+      const begin = new Date(this.event.begin);
+      const running = now.getFullYear() === begin.getFullYear() && now.getMonth() === begin.getMonth() && now.getDate() === begin.getDate();
       if(this.event.admin === id && running) {
         functions = functions.concat(["Show checkin QRCode", "Checkin user"]);
       }

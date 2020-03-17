@@ -49,7 +49,7 @@ class LoginForm extends React.Component {
                 }
               })
               .then(data => {
-                this.props.login(data.token, data.name, data.email, data.id);
+                this.props.login(data.token, data.name, data.email, data.id, data.group);
                 window.setTimeout((() => {
                   this.setState(state => {
                     state.redirect = true;

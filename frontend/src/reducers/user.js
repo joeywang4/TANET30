@@ -5,7 +5,8 @@ const user = (state = {}, action) => {
         token: action.token,
         name: action.name,
         email: action.email,
-        id: action.id
+        id: action.id,
+        group: action.group
       };
     case 'LOGOUT':
       return {};
