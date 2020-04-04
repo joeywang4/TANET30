@@ -7,6 +7,8 @@ require('dotenv').config();
 const { authRoute, verifyToken } = require('./routes/auth');
 
 const apiRoute = require('./routes/api');
+const eventRoute = require('./routes/event');
+const ticketRoute = require('./routes/ticket');
 
 // Create server to serve index.html
 const app = express();
@@ -30,6 +32,8 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(verifyToken);
 app.use('/auth', authRoute);
+app.use('/event', eventRoute);
+app.use('/ticket', ticketRoute);
 app.use('/', apiRoute);
 
 // Start server listening process.

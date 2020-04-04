@@ -1,6 +1,9 @@
 import Welcome from './Welcome';
 import NavBar from './NavBar';
-import Status from './Status';
 import EventLink from './Event/EventLink';
+import Login from './Auth/Login';
+import RegisterForm from './Auth/RegisterForm';
+import FileUpload from './FileUpload';
+import CreateEventForm from './Event/CreateEventForm';
 
-export { Welcome, NavBar, Status, EventLink };
+export { Welcome, NavBar, EventLink, Login, RegisterForm, FileUpload, CreateEventForm };

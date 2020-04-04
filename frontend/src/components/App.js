@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { NavBar, Welcome } from '../components';
-import { UserStatus, Login, Register, Receive, Send, Events, CreateEvent, Event } from '../containers';
+import { NavBar, Welcome, Login } from '../components';
+import { UserStatus, Receive, Send, Events, CreateEvent, Event, Admin, FoodStaff, SeminarStaff, Company, Register } from '../containers';
 
 const mapStateToProps = (state) => ({
   hasLoggedIn: state.user.token !== undefined,
@@ -18,12 +18,16 @@ function App({hasLoggedIn, userGroup}) {
   let homeComponent = <UserStatus />;
   switch(userGroup) {
     case 'root':
+      homeComponent = <Admin />;
       break;
     case 'foodStaff':
+      homeComponent = <FoodStaff />;
       break;
     case 'seminarStaff':
+      homeComponent = <SeminarStaff />;
       break;
     case 'company':
+      homeComponent = <Company />;
       break;
     case 'user':
     default:

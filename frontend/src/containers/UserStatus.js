@@ -1,40 +1,55 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { Status } from '../components';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { Header, Button, Icon, Divider } from 'semantic-ui-react';
+import { Link } from 'react-router-dom';
 import { BACKEND } from '../config';
+import { useAPI } from '../hooks';
 
-const mapStateToProps = (state) => ({
-  name: state.user.name,
-  id: state.user.id
-})
+const UserStatus = () => {
+  const {id} = useSelector(state => state.user);
+  const [connection, connect] = useAPI(BACKEND+`/TX?id=${id}`, "json");
 
-class UserStatus extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      loading: true
-    }
-    this.TXs = [];
-    this.getTX();
-  }
-
-  async getTX() {
-    const TXs = await fetch(BACKEND+`/TX?id=${this.props.id}`)
-    .then(res => res.json())
-    .then(data => data);
-    this.TXs = TXs;
-    this.setState({loading: false});
-  }
-
-  render() {
-    let balance = 0;
-    for(let TX of this.TXs) {
+  if(connection.isInit()) connect();
+  let balance = 0;
+  if(connection.response) {
+    for(let TX of connection.response) {
       if(TX.from === this.props.id) balance -= parseInt(TX.amount);
       else balance += parseInt(TX.amount);
     }
-    return <Status loading={this.state.loading} balance={balance} name={this.props.name} TXs={this.TXs} />
   }
+
+  return (
+    <div style={{marginTop: "2em", width: "80%"}}>
+      <Header as='h2' icon textAlign='center'>
+        <Icon name='user circle' circular />
+        <Header.Content>Your Profile</Header.Content>
+      </Header>
+      <Divider horizontal>
+        <Header as='h4'>
+          <Icon name='dollar' />
+          Money
+        </Header>
+      </Divider>
+      <div style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center"
+      }}>
+        <Header as='h2'>{`Your Balance: ${balance}`}</Header>
+        <div>
+          <Button as={Link} to="/receive">Receive</Button>
+          <Button as={Link} to="/send">Send</Button>
+        </div>
+      </div>
+      <Divider horizontal>
+        <Header as='h4'>
+          <Icon name='calendar' />
+          Participated Events
+        </Header>
+      </Divider>
+    </div>
+  )
 }
 
-
-export default connect(mapStateToProps)(UserStatus);
+export default UserStatus;

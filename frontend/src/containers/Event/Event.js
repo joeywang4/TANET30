@@ -1,293 +1,122 @@
-import React, { Component } from 'react';
+import React, { useRef, useState } from 'react';
 import { Menu, CardGroup, Card, Loader, Header, Icon, Message } from 'semantic-ui-react';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import QrReader from 'react-qr-reader';
-import QRCode from 'qrcode.react';
 import ok from './ok.mp3';
 import { BACKEND } from '../../config';
+import { epochToTime, inArray } from '../../util';
+import { useAPI } from '../../hooks';
 
-const [ERROR, SUCCESS, LOADING] = [0, 1, 2];
-
-const mapStateToProps = (state) => ({
-  token: state.user.token,
-  id: state.user.id
-})
-
-const inArray = (array, data) => array.find(element => element === data) !== undefined;
-const prefixZero = (num, len = 2) => {
-  const raw = String(num);
-  return raw.length < len ? "0".repeat(len-raw.length)+raw : raw;
-}
-const epochToTime = (_begin, _end) => {
-  const begin = new Date(_begin);
-  const end = new Date(_end);
-  const year = begin.getFullYear();
-  const beginMonth = begin.getMonth()+1;
-  const endMonth = end.getMonth()+1;
-  const beginDate = begin.getDate();
-  const endDate = end.getDate();
-  const beginHour = prefixZero(begin.getHours());
-  const beginMinute = prefixZero(begin.getMinutes());
-  const endHour = prefixZero(end.getHours());
-  const endMinute = prefixZero(end.getMinutes());
-  return `${year} ${beginMonth}/${beginDate} ${beginHour}:${beginMinute} ~ ${endMonth}/${endDate} ${endHour}:${endMinute}`;
-}
-
-class Event extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      activeItem: 'Participant',
-      status: LOADING,
-      scanBusy: false,
-      msg: "",
-      err: ""
-    }
-    this.event = null;
-    this.scannedUsers = [];
-    this.soundEffect = new Audio(ok);
-    this.getEvent(this.props.eventId);
+const Event = ({ eventId, style }) => {
+  const soundEffect = useRef();
+  const [activeItem, setActiveItem] = useState("Checkin user");
+  const { token } = useSelector(state => state.user);
+  const [getEventState, getEvent] = useAPI(BACKEND + `/event?id=${eventId}`, 'json');
+  const onCheckinSuccess = () => {
+    soundEffect.current.load();
+    soundEffect.current.play();
   }
+  const [checkinUserState, checkinUser] = useAPI(BACKEND + "/addParticipant", "json", onCheckinSuccess);
 
-  handleItemClick = (_, { name }) => this.setState({ activeItem: name, msg: "", err: "", scanBusy: false });
+  let functions = ["Checkin user", "Participant"];
+  let display = null;
 
-  getEvent = async (id) => {
-    await fetch(BACKEND+`/event?id=${id}`, {
-      method: "GET",
-      headers: {'authorization': this.props.token}
-    })
-    .then(res => {
-      if(res.status !== 200) {
-        this.setState({status: ERROR});
-      }
-      else{
-        return res.json();
-      }
-    })
-    .then(data => {
-      this.event = data;
-      this.setState({status: SUCCESS});
-    })
-    .catch(err => {
-      this.setState({status: ERROR});
-      console.error(err);
-    });
-  }
-
-  setError = (msg) => {
-    this.setState(state => {
-      state.err = (
-        <React.Fragment>
-          <Message.Content>
-            <Message.Header>Scanning Failed!</Message.Header>
-            {msg}
-          </Message.Content>
-        </React.Fragment>
-      )
-      return state;
-    })
-    return;
-  }
-
-  checkinEvent = (password) => {
-    if(password === null || this.state.scanBusy) return;
-    this.setState({scanBusy: true});
-    fetch(BACKEND+"/join", {
-      method: "POST",
-      body: JSON.stringify({eventId: this.props.eventId, password}),
-      headers: {'authorization': this.props.token, 'content-type': "application/json"}
-    })
-    .then(res => {
-      if(res.status === 200) {
-        this.soundEffect.load();
-        this.soundEffect.play();
-        this.setState(state => {
-          state.scanBusy = false;
-          state.msg = (
-            <React.Fragment>
-              <Message.Content>
-                <Message.Header>Checkin Success!</Message.Header>
-              </Message.Content>
-            </React.Fragment>
-          );
-          return state;
-        })
-      }
-      else {
-        res.text().then(data => this.setError(data));
-      }
-    })
-    .catch(error => {
-      console.error(error);
-      this.setError(error);
-    })
-  }
-
-  checkinUser = (userId) => {
-    if(userId === null || inArray(this.scannedUsers, userId) || this.state.scanBusy) return;
-    console.log("checkinUser:", userId);
-    this.setState({scanBusy: true});
-    fetch(BACKEND+"/addParticipant", {
-      method: "POST",
-      body: JSON.stringify({eventId: this.props.eventId, userId}),
-      headers: {'authorization': this.props.token, 'content-type': "application/json"}
-    })
-    .then(res => {
-      if(res.status === 200) {
-        res.json().then(user => {
-          this.scannedUsers.push(userId);
-          this.event.participant.push({...user, _id: user.id});
-          this.setState(state => {
-            state.scanBusy = false;
-            this.soundEffect.load();
-            this.soundEffect.play();
-            state.msg = (
-              <React.Fragment>
-                <Message.Content>
-                  <Message.Header>
-                    <Link to={`/user?id=${user.id}`}>{user.name}</Link>
-                    &nbsp;checkin success!
-                  </Message.Header>
-                </Message.Content>
-              </React.Fragment>
-            );
-            return state;
-          })
-        })
-      }
-      else {
-        res.text().then(data => this.setError(data));
-      }
-    })
-    .catch(error => {
-      console.error(error);
-      this.setError(error);
-    })
-  }
-
-  handleError = () => {
-    this.setState({err: "Scan QRCode Error"});
-  }
-
-  render() {
-    const { activeItem } = this.state;
-    const { id } = this.props;
-    let functions = ["Participant"];
-    let display = null;
-
-    if(this.state.status === LOADING) {
-      return (
-        <Loader active>Loading</Loader>
-      );
-    }
-    else if(this.state.status === ERROR) {
-      return (
-        <Header icon>
-          <Icon name="bug" />
-          <div style={{marginTop: "2vh"}} />
-          看來出了點差錯，請您再試一次。
-        </Header>
-      );
-    }
-    else {
-      const now = new Date();
-      //const running = this.event.begin <= now && this.event.end >= now;
-      const begin = new Date(this.event.begin);
-      const running = now.getFullYear() === begin.getFullYear() && now.getMonth() === begin.getMonth() && now.getDate() === begin.getDate();
-      if(this.event.admin === id && running) {
-        functions = functions.concat(["Show checkin QRCode", "Checkin user"]);
-      }
-      else if(!inArray(this.event.participant, id) && running) {
-        functions = functions.concat(["Show user QRCode", "Scan checkin QRCode"]);
-      }
-
-      const participants = (
-        <CardGroup>
-          {this.event.participant.map(participant => (
-            <Card as={Link} to={`/user?id=${participant._id}`} key={participant._id} link>
-              <Card.Content>
-                <Card.Header>{participant.name}</Card.Header>
-              </Card.Content>
-            </Card>
-          ))}
-        </CardGroup>
-      )
-
-      switch(this.state.activeItem) {
-        case 'Show checkin QRCode':
-          if(this.event.password !== "") {
-            display = <QRCode value={this.event.password} size={512} level={'H'} style={{margin: "auto", display: "block", width: "80%", maxWidth: "500px", height: "auto"}}  />
-          }
-          else display = <span>Checkin QRCode is not available</span>
-          break;
-        case 'Checkin user':
-          display = (
-            <QrReader
-              delay={300}
-              onError={this.handleError}
-              onScan={this.checkinUser}
-              style={{maxWidth: "500px", width: "100%", margin: "auto"}}
-            />
-          )
-          break;
-        case 'Show user QRCode':
-          display = <QRCode value={this.props.id} size={512} level={'H'} style={{margin: "auto", display: "block", width: "80%", maxWidth: "500px", height: "auto"}}  />
-          break;
-        case 'Scan checkin QRCode':
-          display = (
-            <QrReader
-              delay={300}
-              onError={this.handleError}
-              onScan={this.checkinEvent}
-              style={{maxWidth: "500px", width: "100%", margin: "auto"}}
-            />
-          )
-          break;
-        case 'Participant':
-        default:
-          display = participants;
-          break;
-      }
-    }
+  if(getEventState.isInit()) getEvent();
+  if (getEventState.isInit() || getEventState.loading) return <Loader active>Loading</Loader>;
+  if (getEventState.error) {
     return (
-      <div
-        style={{
-          width: "90%",
-          maxWidth: "900px"
-        }}
-      >
-        <Header textAlign='center' as="h1">{this.event.name}</Header>
-        <Header textAlign='center' as="h5">{epochToTime(this.event.begin, this.event.end)}</Header>
-        <Menu stackable>
-          {functions.map(_func => (
-            <Menu.Item
-              name={_func}
-              active={activeItem === _func}
-              onClick={this.handleItemClick}
-              key={_func}
-            />
-          ))}
-        </Menu>
-
-        <div>
-          {display}
-        </div>
-        {this.state.err
-          ?
-          <Message negative>{this.state.err}</Message>
-          :
-          null
-        }
-        {this.state.msg
-          ?
-          <Message positive>{this.state.msg}</Message>
-          :
-          null
-        }
-      </div>
-    )
+      <Header icon>
+        <Icon name="bug" />
+        <div style={{ marginTop: "2vh" }} />
+          看來出了點差錯，請您再試一次。
+      </Header>
+    );
   }
+  const event = getEventState.response;
+  const participants = (
+    <CardGroup>
+      {event.participant.map(participant => (
+        <Card as={Link} to={`/user?id=${participant._id}`} key={participant._id} link>
+          <Card.Content>
+            <Card.Header>{participant.name}</Card.Header>
+          </Card.Content>
+        </Card>
+      ))}
+    </CardGroup>
+  )
+
+  const onScan = (userId) => {
+    if (userId === null || inArray(this.scannedUsers, userId) || checkinUserState.loading) return;
+    console.log("checkinUser:", userId);
+    checkinUser("POST", JSON.stringify({ eventId, userId }), { 'authorization': token, 'content-type': "application/json" });
+  }
+  const onError = () => {
+    console.error("Scan QR-Code Error");
+  }
+
+  switch (activeItem) {
+    case 'Checkin user':
+      display = (
+        <QrReader
+          delay={300}
+          onError={onError}
+          onScan={onScan}
+          style={{ maxWidth: "500px", width: "100%", margin: "auto" }}
+        />
+      )
+      break;
+    case 'Participant':
+    default:
+      display = participants;
+      break;
+  }
+  return (
+    <div
+      style={style}
+    >
+      <audio ref={soundEffect} src={ok} type="audio" />
+      <Header textAlign='center' as="h1">{event.name}</Header>
+      <Header textAlign='center' as="h5">{epochToTime(event.begin, event.end)}</Header>
+      <Menu stackable>
+        {functions.map(_func => (
+          <Menu.Item
+            name={_func}
+            active={activeItem === _func}
+            onClick={(_, { name }) => setActiveItem(name)}
+            key={_func}
+          />
+        ))}
+      </Menu>
+      <div>
+        {display}
+      </div>
+      {checkinUserState.error
+        ?
+        <Message negative>Checkin Error!</Message>
+        :
+        null
+      }
+      {checkinUserState.success
+        ?
+        <Message positive>
+          <React.Fragment>
+            <Message.Content>
+              <Message.Header>
+                <Link to={`/user?id=${checkinUserState.id}`}>
+                  {checkinUserState.name}
+                </Link>
+                &nbsp;checkin success!
+              </Message.Header>
+            </Message.Content>
+          </React.Fragment>
+        </Message>
+        :
+        null
+      }
+    </div>
+  )
 }
 
-export default connect(mapStateToProps)(Event);
+
+export default Event;

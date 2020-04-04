@@ -13,13 +13,13 @@ router.post('/login', async (req, res) => {
     res.status(400).send("Missing field");
     return;
   }
-  
+
   // Check user existence
   const user = await User.findOne({email: _email})
   .then(userResponse => {
     if(!userResponse) {
-      console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Login failed: ${user.email} user not found`);
-      res.status(400).send("Login failed");
+      console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Login failed: ${_email} user not found`);
+      res.status(401).send("Login failed");
       return;
     }
     else return userResponse
@@ -112,6 +112,7 @@ module.exports = {authRoute: router, verifyToken};
  *********/
 
 const errHandler = (err, res = null, msg = null) => {
+    if(err) console.error(err);
     if(msg) console.error(msg);
     if(res) res.status(500).send("Server Error.");
     return;

@@ -7,7 +7,6 @@ import { loadState, saveState } from './localState';
 import throttle from 'lodash/throttle';
 import App from './components/App';
 import 'semantic-ui-css/semantic.min.css';
-import * as serviceWorker from './serviceWorker';
 
 const persistedState = loadState();
 const store = createStore(rootReducer, persistedState);
@@ -18,13 +17,10 @@ store.subscribe(throttle(() => {
 }, 1000));
 
 ReactDOM.render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
+  <React.StrictMode>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </React.StrictMode>,
   document.getElementById('root')
 );
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
