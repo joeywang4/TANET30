@@ -6,12 +6,12 @@ import { BACKEND, userGroupEnum } from '../config';
 
 const useChooseUser = (group=null) => {
   const url = BACKEND+"/user"+(group?`?group=${group}`:"");
-  const [connection, connect] = useAPI(url, "json");
+  const [connection, connect] = useAPI("json");
   const [_group, setGroup] = useState(null);
   const [user, setUser] = useState({});
   const [userValue, setUserValue] = useState(null);
   const {token} = useSelector(state => state.user);
-  if(connection.isInit()) connect("GET", null, {'authorization': token, 'content-type': "application/json"});
+  if(connection.isInit()) connect(url, "GET", null, {'authorization': token, 'content-type': "application/json"});
   let users = connection.response || [];
   if(!group) users = users.filter(user => user.group === _group);
   

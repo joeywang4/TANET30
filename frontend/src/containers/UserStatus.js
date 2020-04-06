@@ -7,9 +7,9 @@ import { useAPI } from '../hooks';
 
 const UserStatus = () => {
   const {id} = useSelector(state => state.user);
-  const [connection, connect] = useAPI(BACKEND+`/TX?id=${id}`, "json");
+  const [connection, connect] = useAPI("json");
 
-  if(connection.isInit()) connect();
+  if(connection.isInit()) connect(BACKEND+`/TX?id=${id}`);
   let balance = 0;
   if(connection.response) {
     for(let TX of connection.response) {

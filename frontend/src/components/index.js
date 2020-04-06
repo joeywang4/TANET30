@@ -5,5 +5,6 @@ import Login from './Auth/Login';
 import RegisterForm from './Auth/RegisterForm';
 import FileUpload from './FileUpload';
 import CreateEventForm from './Event/CreateEventForm';
+import CreateTicketForm from './CreateTicketForm';
 
-export { Welcome, NavBar, EventLink, Login, RegisterForm, FileUpload, CreateEventForm };
+export { Welcome, NavBar, EventLink, Login, RegisterForm, FileUpload, CreateEventForm, CreateTicketForm };

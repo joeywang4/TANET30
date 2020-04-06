@@ -1,11 +1,11 @@
-const inArray = (array, data) => array.find(element => element === data) !== undefined;
+export const inArray = (array, data) => array.find(element => element === data) !== undefined;
 
 const prefixZero = (num, len = 2) => {
   const raw = String(num);
   return raw.length < len ? "0".repeat(len-raw.length)+raw : raw;
 }
 
-const epochToTime = (_begin, _end) => {
+export const epochToTime = (_begin, _end) => {
   const begin = new Date(_begin);
   const end = new Date(_end);
   const year = begin.getFullYear();
@@ -20,4 +20,9 @@ const epochToTime = (_begin, _end) => {
   return `${year} ${beginMonth}/${beginDate} ${beginHour}:${beginMinute} ~ ${endMonth}/${endDate} ${endHour}:${endMinute}`;
 }
 
-export {epochToTime, inArray};
+export const today = () => {
+  const d = new Date();
+  const dtf = new Intl.DateTimeFormat('en', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  const [{ value: mm },,{ value: dd },,{ value: yy }] = dtf.formatToParts(d);
+  return `${yy}/${mm}/${dd}`;
+}

@@ -6,8 +6,8 @@ import { BACKEND } from '../../config';
 
 const Events = ({admin, group, timeRange, style}) => {
   let url = BACKEND+`/event?${admin?`admin=${admin}`:""}${timeRange?`&begin=${timeRange[0]}&end=${timeRange[1]}`:""}`;
-  const [connection, connect] = useAPI(url, 'json');
-  if(connection.isInit()) connect();
+  const [connection, connect] = useAPI('json');
+  if(connection.isInit()) connect(url);
 
   let events = connection.response||[];
   if(connection.success && group) {

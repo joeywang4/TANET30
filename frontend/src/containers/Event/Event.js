@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Menu, CardGroup, Card, Loader, Header, Icon, Message } from 'semantic-ui-react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -6,23 +6,20 @@ import QrReader from 'react-qr-reader';
 import ok from './ok.mp3';
 import { BACKEND } from '../../config';
 import { epochToTime, inArray } from '../../util';
-import { useAPI } from '../../hooks';
+import { useAPI, useAudio } from '../../hooks';
 
 const Event = ({ eventId, style }) => {
-  const soundEffect = useRef();
   const [activeItem, setActiveItem] = useState("Checkin user");
   const { token } = useSelector(state => state.user);
-  const [getEventState, getEvent] = useAPI(BACKEND + `/event?id=${eventId}`, 'json');
-  const onCheckinSuccess = () => {
-    soundEffect.current.load();
-    soundEffect.current.play();
-  }
-  const [checkinUserState, checkinUser] = useAPI(BACKEND + "/addParticipant", "json", onCheckinSuccess);
+  const [getEventState, getEvent] = useAPI('json');
+  const [audioTag, play] = useAudio(ok);
+  const onSuccess = () => {play(); alert("Success!");}
+  const [checkinUserState, checkinUser] = useAPI(BACKEND + "/addParticipant", "json", onSuccess);
 
   let functions = ["Checkin user", "Participant"];
   let display = null;
 
-  if(getEventState.isInit()) getEvent();
+  if(getEventState.isInit()) getEvent(BACKEND + `/event?id=${eventId}`);
   if (getEventState.isInit() || getEventState.loading) return <Loader active>Loading</Loader>;
   if (getEventState.error) {
     return (
@@ -75,7 +72,7 @@ const Event = ({ eventId, style }) => {
     <div
       style={style}
     >
-      <audio ref={soundEffect} src={ok} type="audio" />
+      {audioTag}
       <Header textAlign='center' as="h1">{event.name}</Header>
       <Header textAlign='center' as="h5">{epochToTime(event.begin, event.end)}</Header>
       <Menu stackable>

@@ -5,7 +5,7 @@ import { useAPI, useChooseUser } from '../../hooks';
 import { BACKEND } from '../../config';
 
 const CraeteEventForm = () => {
-  const [createState, create] = useAPI(BACKEND+"/event", "text");
+  const [createState, create] = useAPI("text");
   const [admin, userChooser] = useChooseUser();
   const [name, setName] = useState("");
   const [error, setError] = useState(false);
@@ -30,6 +30,7 @@ const CraeteEventForm = () => {
     const body = {name, begin, end};
     if(admin._id) body['admin'] = admin._id;
     create(
+      BACKEND+"/event",
       "POST", 
       JSON.stringify(body), 
       {'authorization': token, 'content-type': "application/json"}

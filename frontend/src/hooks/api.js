@@ -36,15 +36,18 @@ const reducer = (state, action) => {
         success: false,
         error: true
       });
+    case 'INIT':
+      return initialState;
     default:
       throw new Error("Invalid Action Type");
   }
 }
 
-export default (url, responseType, onSuccess) => {
+export default (responseType, onSuccess) => {
   const [conn, dispatch] = useReducer(reducer, initialState);
+  const init = () => dispatch({type: 'INIT'});
 
-  const connect = async (method, body, headers) => {
+  const connect = async (url, method, body, headers) => {
     dispatch({type: "CONNECT"});
     fetch(url, { method, body, headers })
     .then(res => {
@@ -68,6 +71,7 @@ export default (url, responseType, onSuccess) => {
             thenable = res.text()
             break;
           default:
+            if(onSuccess) onSuccess();
             return dispatch({type: "SUCCESS"});
         }
         if(thenable === null) return;
@@ -96,5 +100,5 @@ export default (url, responseType, onSuccess) => {
     })
   }
 
-  return [conn, connect];
+  return [conn, connect, init];
 }
