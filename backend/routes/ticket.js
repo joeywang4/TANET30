@@ -5,7 +5,7 @@ const Ticket = require("../models/ticket");
 const re = /(\d{4})\/([0-1]\d{1})\/([0-3]\d{1})/;
 const today = () => {
   const d = new Date();
-  const dtf = dt = new Intl.DateTimeFormat('en', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  const dtf = new Intl.DateTimeFormat('en', { year: 'numeric', month: '2-digit', day: '2-digit' });
   const [{ value: mm },,{ value: dd },,{ value: yy }] = dtf.formatToParts(d);
   return `${yy}/${mm}/${dd}`;
 }
@@ -39,9 +39,11 @@ router.post("/use", async (req, res) => {
   const {owner, type} = req.body;
   if(!owner || !type) {
     res.status(400).send("Missing field");
+    return;
   }
   const date = today();
   let tickets = await Ticket.find({owner, type, date})
+  .populate('owner', '_id name email group')
   .then(ticket => ticket)
   .catch(err => errHandler(err));
   if(!tickets) {
@@ -51,10 +53,33 @@ router.post("/use", async (req, res) => {
   let ticket = tickets.find(ticket => ticket.usedTime === 0);
   if(!ticket) {
     res.status(401).send("Ticket is used");
+    return;
   }
   ticket.usedTime = Date.now();
   await ticket.save();
-  res.status(200).send("Success");
+  res.status(200).send(ticket.owner);
+  return;
+})
+
+router.get("/", async (req, res) => {
+  if(!(req.isLogin)) {
+    res.status(401).send("Not authorized");
+  }
+  let query = {...req.query};
+  let populate = req.query.populate;
+  delete query['populate'];
+  if(!(["root", "foodStaff"].includes(req.user.group))) {
+    query = {owner: req.user.id};
+    populate = false
+  }
+  console.log(query, populate);
+  let thenable = Ticket.find(query);
+  if(populate) thenable = thenable.populate('owner', '_id name email group');
+  const tickets = await thenable
+  .then(tickets => tickets)
+  .catch(err => errHandler(err));
+  if(tickets) res.status(200).send(tickets);
+  else res.status(400).send("No Ticket Found");
   return;
 })
 
