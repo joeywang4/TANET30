@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
     return;
   }
   if(req.user.group === 'user') {
-    res.status(403).send("Operation not allowed");
+    res.status(401).send("Operation not allowed");
     return;
   }
   if(req.user.group === 'root' && req.body.admin) {
@@ -52,39 +52,21 @@ router.post('/', async (req, res) => {
 })
 
 router.get('/', (req, res) => {
-  const projection = "_id admin name begin end participant";
-  const userProjection = "_id name email";
+  const userProjection = "_id name email group";
   let timeRange = null;
+  if(!req.isLogin || req.user.group === 'user') {
+    res.status(401).send("Operation not allowed");
+    return;
+  }
   if(req.query.begin && req.query.end) {
     timeRange = {begin: {$gte: req.query.begin}, end: {$lte: req.query.end}};
   }
-  if(req.query.id) {
-    Event.findById(req.query.id)
-    .populate('admin', userProjection)
-    .populate({
-      path: 'participant',
-      select: userProjection,
-      populate: { 
-        path: 'participant'
-      }
-    })
-    .exec((err, event) => {
-      if(err) errHandler(err, res);
-      else if(!event) res.status(404).send("Not found");
-      else {
-        if(req.user && req.user.id === String(event.admin)) {
-          res.status(200).send(event.toObject());
-        }
-        else {
-          res.status(200).send({...event.toObject(), password: ""});
-        }
-      }
-    })
-  }
-  else if(req.query.name) {
-    let query = {name: req.query.name};
-    if(timeRange) query = {...query, ...timeRange};
-    Event.findOne(query, projection)
+
+  if(req.query.id || req.query.name) {
+    let query = null;
+    if(req.query.id) query = Event.findById(req.query.id);
+    else query = Event.findOne({name: req.query.name});
+    query
     .populate('admin', userProjection)
     .populate({
       path: 'participant',
@@ -98,24 +80,43 @@ router.get('/', (req, res) => {
       else if(!event) res.status(404).send("Not found");
       else res.status(200).send(event.toObject());
     })
-  }
-  else if(req.query.admin) {
-    let query = {admin: req.query.admin};
-    if(timeRange) query = {...query, ...timeRange};
-    Event.find(query, projection)
-    .populate('admin', userProjection)
-    .exec((err, events) => {
-      if(err) errHandler(err, res);
-      else res.status(200).send(events);
-    })
+    return;
   }
   else {
-    Event.find({}, projection)
+    let queryObj = {};
+    if(timeRange) queryObj = {...queryObj, ...timeRange};
+    let query = null;
+    if(req.query.admin) {
+      if(req.query.admin !== req.user.id && req.user.group !== 'root') {
+        res.status(401).send("Operation not allowed");
+        return;
+      }
+      else {
+        queryObj = {...queryObj, admin: req.query.admin};
+      }
+    }
+    else if(req.query.group && req.query.group !== req.user.group && req.user.group !== 'root') {
+      res.status(401).send("Operation not allowd");
+      return;
+    }
+    Event.find(queryObj)
     .populate('admin', userProjection)
+    .populate(req.query.populate?{
+      path: 'participant',
+      select: userProjection,
+      populate: { 
+        path: 'participant'
+      }
+    }:'')
     .exec((err, events) => {
       if(err) errHandler(err, res);
+      else if(req.query.group) {
+        console.log(events);
+        res.status(200).send(events.filter(event => event.admin.group === req.query.group));
+      }
       else res.status(200).send(events);
     })
+    return;
   }
 })
 

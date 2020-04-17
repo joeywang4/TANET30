@@ -4,6 +4,7 @@ import QrReader from 'react-qr-reader';
 import { useSelector } from 'react-redux';
 import { ticketTypeEnum, BACKEND } from '../config';
 import ok from './Event/ok.mp3';
+import warning from './Event/warning.mp3';
 import { useAPI, useAudio } from '../hooks';
 import { today } from '../util';
 
@@ -15,12 +16,25 @@ export default () => {
   const [type, setType] = useState(null);
   const [activeItem, setActiveItem] = useState(functions[0]);
   const [getTicketState, getTicket] = useAPI("json");
-  const [audioTag, play] = useAudio(ok);
-  const onSuccess = () => {play();alert("Success!");}
-  const [spendTicketState, spendTicket, initSpendTicket] = useAPI("json", onSuccess);
+  const [okAudioTag, playOK] = useAudio(ok);
+  const [warningAudioTag, playWarning] = useAudio(warning);
+  const onSuccess = () => {
+    playOK();
+    setTimeout(() => {
+      setFreeze(0);
+    }, 5000);
+  }
+  const onAPIError = (errMsg) => {
+    playWarning();
+    setTimeout(() => {
+      setFreeze(0);
+    }, 5000);
+    alert(errMsg); 
+  }
+  const [spendTicketState, spendTicket, initSpendTicket] = useAPI("json", onSuccess, onAPIError);
   const [error, setError] = useState(false);
   const [errMsg, setErrMsg] = useState("");
-  const [scanned, setScanned] = useState([]);
+  const [freeze, setFreeze] = useState(0);
   const { token } = useSelector(state => state.user)
 
   const tickets = getTicketState.response || [];
@@ -29,7 +43,6 @@ export default () => {
   const usedTickets = tickets.filter(ticket => ticket.usedTime !== 0);
 
   const init = () => {
-    setScanned([]);
     setError(false);
     setErrMsg("");
     initSpendTicket();
@@ -47,22 +60,18 @@ export default () => {
   }
 
   const onScan = (data) => {
-    if (data === null) return;
+    if (data === null || data === freeze) return;
     if (error === true) {
       setError(false);
       setErrMsg("");
     }
-    if(scanned.includes(data)) {
-      console.log(data, "scanned");
-      return;
-    }
+    setFreeze(data);
     spendTicket(
       BACKEND + "/ticket/use",
       "POST",
       JSON.stringify({ owner: data, type }),
       { 'authorization': token, 'content-type': "application/json" }
     )
-    setScanned([...scanned, data]);
   }
 
   const onError = () => {
@@ -159,7 +168,8 @@ export default () => {
         ))}
       </Menu>
       {display}
-      {audioTag}
+      {okAudioTag}
+      {warningAudioTag}
     </div>
   )
 }

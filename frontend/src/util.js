@@ -26,3 +26,9 @@ export const today = () => {
   const [{ value: mm },,{ value: dd },,{ value: yy }] = dtf.formatToParts(d);
   return `${yy}/${mm}/${dd}`;
 }
+
+export const todayRange = () => {
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  return [d.getTime(), d.getTime()+60*60*24*1000];
+}

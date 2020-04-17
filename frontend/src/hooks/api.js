@@ -43,7 +43,7 @@ const reducer = (state, action) => {
   }
 }
 
-export default (responseType, onSuccess) => {
+export default (responseType, onSuccess, onError) => {
   const [conn, dispatch] = useReducer(reducer, initialState);
   const init = () => dispatch({type: 'INIT'});
 
@@ -59,6 +59,7 @@ export default (responseType, onSuccess) => {
             status: res.status,
             errMsg
           })
+          if(onError) onError(errMsg, conn);
         })
       }
       else {
@@ -88,6 +89,7 @@ export default (responseType, onSuccess) => {
             type: "ERROR",
             errMsg: "Response type Error"
           })
+          if(onError) onError("Response type Error", conn);
         })
       }
     })
@@ -97,6 +99,7 @@ export default (responseType, onSuccess) => {
         type: "ERROR",
         errMsg: "Connection Error"
       })
+      if(onError) onError("Connection Error", conn);
     })
   }
 

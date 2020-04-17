@@ -46,13 +46,13 @@ router.post("/use", async (req, res) => {
   .populate('owner', '_id name email group')
   .then(ticket => ticket)
   .catch(err => errHandler(err));
-  if(!tickets) {
-    res.status(401).send("No Ticket Found");
+  if(!tickets || tickets.length === 0) {
+    res.status(401).send("No Ticket!");
     return;
   }
   let ticket = tickets.find(ticket => ticket.usedTime === 0);
   if(!ticket) {
-    res.status(401).send("Ticket is used");
+    res.status(401).send("Ticket is used!");
     return;
   }
   ticket.usedTime = Date.now();
@@ -72,7 +72,6 @@ router.get("/", async (req, res) => {
     query = {owner: req.user.id};
     populate = false
   }
-  console.log(query, populate);
   let thenable = Ticket.find(query);
   if(populate) thenable = thenable.populate('owner', '_id name email group');
   const tickets = await thenable
