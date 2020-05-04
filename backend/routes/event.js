@@ -22,6 +22,24 @@ router.post('/', async (req, res) => {
   }
   if(req.user.group === 'root' && req.body.admin) {
     admin = req.body.admin;
+    let handler = (err, user) => {
+      if(user) return user._id;
+      else if(err) {
+        errHandler(err, res);
+        return null;
+      }
+      return null;
+    }
+    if(admin.indexOf("@") !== -1) {
+      admin = await User.findOne({email: admin}, handler);
+    }
+    else {
+      admin = await User.findById(admin, handler);
+    }
+    if(admin === null) {
+      res.status(400).send("Admin does not exist");
+      return;
+    }
   }
 
   const exists = await Event.findOne({name}, (err, event) => {
@@ -47,8 +65,7 @@ router.post('/', async (req, res) => {
     console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create Event success: ${name} by ${req.user.name}`);
     res.status(200).send("Create event success");
   }
-  else res.status(500).send("Create event failed");
-  return;
+  else return;
 })
 
 router.get('/', (req, res) => {
@@ -111,7 +128,6 @@ router.get('/', (req, res) => {
     .exec((err, events) => {
       if(err) errHandler(err, res);
       else if(req.query.group) {
-        console.log(events);
         res.status(200).send(events.filter(event => event.admin.group === req.query.group));
       }
       else res.status(200).send(events);
@@ -187,21 +203,35 @@ router.post('/addParticipant', async (req, res) => {
     res.status(400).send("Missing field!");
     return;
   }
-  const event = await Event.findById(eventId, (err, event) => {
-    if(event) return event;
-    else if(err) {
-      errHandler(err, res);
-      return false;
-    }
-    else return false;
-  })
+  const userProjection = "_id name email group";
+  const event = await Event.findById(eventId).populate('admin', userProjection)
+  .then(event => event?event:false)
+  .catch(err => {
+    errHandler(err);
+    return false;
+  });
+
   if(!event) {
     res.status(400).send("Event does not exist")
     return;
   }
-  if(req.user.id !== String(event.admin)) {
-    res.status(401).send("You are not admin");
-    return;
+  if(req.user.id !== String(event.admin._id) && req.user.group !== 'root') {
+    if(event.admin.group === "seminarStaff") {
+      if(req.user.group !== "seminarStaff") {
+        res.status(401).send("You are not a seminar staff");
+        return;
+      }
+    }
+    else if(event.admin.group === "foodStaff") {
+      if(req.user.group !== "foodStaff") {
+        res.status(401).send("You are not a food staff");
+        return;
+      }
+    }
+    else {
+      res.status(401).send("You are not admin");
+      return;
+    }
   }
 
   participate(res, d, event, userId);

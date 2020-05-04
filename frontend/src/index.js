@@ -17,10 +17,17 @@ store.subscribe(throttle(() => {
 }, 1000));
 
 ReactDOM.render(
-  <React.StrictMode>
     <Provider store={store}>
       <App />
-    </Provider>
-  </React.StrictMode>,
+    </Provider>,
   document.getElementById('root')
 );
+
+//ReactDOM.render(
+//  <React.StrictMode>
+//    <Provider store={store}>
+//      <App />
+//    </Provider>
+//  </React.StrictMode>,
+//  document.getElementById('root')
+//);

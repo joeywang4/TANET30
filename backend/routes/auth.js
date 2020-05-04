@@ -54,6 +54,10 @@ router.post('/register', async (req, res) => {
   const _pwd  = req.body.pwd;
   const _name = req.body.name;
   const _group = req.body.group;
+  if(!(req.user) || req.user.group !== 'root') {
+    res.status(401).send("Operation not allowed");
+    return;
+  }
   if(!_name || !_email || !_pwd || !_group){
     res.status(400).send("Missing field");
     return;

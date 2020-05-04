@@ -30,7 +30,16 @@ const LoginForm = ({hasLoggedIn, login}) => {
 
   const onLoad = (data) => {
     if(data === null) return;
-    console.log(data);
+    const [emailIdx, pwIdx] = [data.indexOf("email"), data.indexOf("password")];
+    if(emailIdx === -1 || pwIdx === -1) {
+      setQRError(true);
+      return;
+    }
+    const [email, pw] = [
+      data.substring(emailIdx+6, data.indexOf("&")), 
+      data.substring(pwIdx+9, data.indexOf("#"))
+    ]
+    loginAPI(email, pw);
     setQRError(false);
   }
 

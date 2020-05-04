@@ -3,6 +3,7 @@ import { Loader, Input, Button, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import QrReader from 'react-qr-reader'
 import { BACKEND } from '../config';
+import { parseQRCode } from '../util';
 
 const mapStateToProps = (state) => ({
   token: state.user.token
@@ -28,9 +29,9 @@ class Send extends Component {
       this.setState({scanLoading: false});
       return;
     }
-
     this.setState({scanLoading: true});
-    const toUser = await fetch(BACKEND+`/user?id=${data}`)
+    const id = parseQRCode(data);
+    const toUser = await fetch(BACKEND+`/user?id=${id}`)
     .then(res => {
       if(res.status !== 200) return failed();
       else return res.json();

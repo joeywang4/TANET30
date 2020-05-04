@@ -6,7 +6,7 @@ import { ticketTypeEnum, BACKEND } from '../config';
 import ok from './Event/ok.mp3';
 import warning from './Event/warning.mp3';
 import { useAPI, useAudio } from '../hooks';
-import { today } from '../util';
+import { today, parseQRCode } from '../util';
 
 const foodTypes = ticketTypeEnum.map(type => ({ key: type, value: type, text: type }));
 const functions = ["Scan QR-Code", "Available Tickets", "Used Tickets"];
@@ -66,10 +66,11 @@ export default () => {
       setErrMsg("");
     }
     setFreeze(data);
+    const id = parseQRCode(data);
     spendTicket(
       BACKEND + "/ticket/use",
       "POST",
-      JSON.stringify({ owner: data, type }),
+      JSON.stringify({ owner: id, type }),
       { 'authorization': token, 'content-type': "application/json" }
     )
   }

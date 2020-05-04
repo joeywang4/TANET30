@@ -5,11 +5,12 @@ import { Link } from 'react-router-dom';
 import QrReader from 'react-qr-reader';
 import ok from './ok.mp3';
 import { BACKEND } from '../../config';
-import { epochToTime, inArray } from '../../util';
+import { epochToTime, parseQRCode } from '../../util';
 import { useAPI, useAudio } from '../../hooks';
 
 const Event = ({ eventId, style }) => {
   const [activeItem, setActiveItem] = useState("Checkin user");
+  const [freeze, setFreeze] = useState(0);
   const { token } = useSelector(state => state.user);
   const [getEventState, getEvent] = useAPI('json');
   const [audioTag, play] = useAudio(ok);
@@ -43,8 +44,10 @@ const Event = ({ eventId, style }) => {
     </CardGroup>
   )
 
-  const onScan = (userId) => {
-    if (userId === null || inArray(this.scannedUsers, userId) || checkinUserState.loading) return;
+  const onScan = (data) => {
+    if (data === null || freeze === data || checkinUserState.loading) return;
+    const userId = parseQRCode(data);
+    setFreeze(data);
     console.log("checkinUser:", userId);
     checkinUser("POST", JSON.stringify({ eventId, userId }), { 'authorization': token, 'content-type': "application/json" });
   }

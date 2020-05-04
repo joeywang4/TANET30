@@ -15,7 +15,7 @@ const CreateTicketForm = () => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    const body = { owner: user._id, type: ticketType, date: date.replace(/-/g, "/") };
+    const body = { owner: user._id, type: ticketType, date: date };
     console.log(body);
     if(!(body.owner)) {
       setErrMsg("Owner is required!");
@@ -27,7 +27,7 @@ const CreateTicketForm = () => {
       setError(true);
       return;
     }
-    if(!(body.date) || body.date.length !== 10 || !(/\d{4}\/[0-1]\d{1}\/[0-3]\d{1}/.test(body.date))) {
+    if(!(body.date) || body.date.length !== 10 || !(/\d{4}-[0-1]\d{1}-[0-3]\d{1}/.test(body.date))) {
       setErrMsg("Invalid Date!");
       setError(true);
       return;

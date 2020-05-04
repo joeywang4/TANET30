@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { NavBar, Welcome, Login } from '../components';
+import { NavBar, Welcome, Login, AutoLogin } from '../components';
 import { UserStatus, Receive, Send, Events, CreateEvent, Event, Admin, FoodStaff, SeminarStaff, Company, Register } from '../containers';
 
 const mapStateToProps = (state) => ({
@@ -64,7 +64,15 @@ function App({hasLoggedIn, userGroup}) {
               return <Event eventId={eventId} />;
             }}
           </Route>
-          <Route exact path="/login"><Login /></Route>
+          <Route exact path="/login">
+            {({ location }) => {
+              const query = new URLSearchParams(location.search);
+              const [email, password] = [query.get("email"), query.get("password")];
+              console.log(location, email, password);
+              if(email && password) return <AutoLogin email={email} password={password} />;
+              else return <Login />;
+            }}
+          </Route>
           <Route exact path="/register"><Register /></Route>
           <Route path="/:unknown">
             {({ match }) => {

@@ -1,23 +1,42 @@
 const express = require("express");
 const router = express.Router();
 const Ticket = require("../models/ticket");
+const User = require("../models/user");
 
-const re = /(\d{4})\/([0-1]\d{1})\/([0-3]\d{1})/;
+const re = /(\d{4})-([0-1]\d{1})-([0-3]\d{1})/;
 const today = () => {
   const d = new Date();
   const dtf = new Intl.DateTimeFormat('en', { year: 'numeric', month: '2-digit', day: '2-digit' });
   const [{ value: mm },,{ value: dd },,{ value: yy }] = dtf.formatToParts(d);
-  return `${yy}/${mm}/${dd}`;
+  return `${yy}-${mm}-${dd}`;
 }
 
-router.post("/give", (req, res) => {
+router.post("/give", async (req, res) => {
   if(!req.isLogin || req.user.group !== "root") {
     res.status(401).send("Not authorized");
     return;
   }
-  const {owner, type, date } = req.body;
+  let {owner, type, date } = req.body;
   if(!owner || !type || !date) {
     res.status(400).send("Missing field");
+    return;
+  }
+  let handler = (err, user) => {
+    if(user) return user._id;
+    else if(err) {
+      errHandler(err, res);
+      return null;
+    }
+    return null;
+  }
+  if(owner.indexOf("@") !== -1) {
+    owner = await User.findOne({email: owner}, handler);
+  }
+  else {
+    owner = await User.findById(owner, handler);
+  }
+  if(owner === null) {
+    res.status(400).send("Owner does not exist");
     return;
   }
   if(date.length !== 10 || !re.test(date)) {
@@ -25,10 +44,16 @@ router.post("/give", (req, res) => {
     return;
   }
   const newTicket = new Ticket({owner, type, date, usedTime: 0});
-  newTicket.save((err) => {
-    if(err) return errHandler(err, res);
-    else res.status(200).send("Success");
-  })
+  const done = await newTicket.save()
+  .then(_ => true)
+  .catch(err => errHandler(err, res))
+
+  if(done) {
+    let d = new Date();
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create Ticket success by ${req.user.name}`);
+    res.status(200).send("Create ticket success");
+  }
+  else return;
 })
 
 router.post("/use", async (req, res) => {

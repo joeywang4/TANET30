@@ -6,7 +6,7 @@ import { BACKEND } from '../config';
 import ok from './Event/ok.mp3';
 import warning from './Event/warning.mp3';
 import { useAPI, useAudio } from '../hooks';
-import { todayRange } from '../util';
+import { todayRange, parseQRCode } from '../util';
 
 const functions = ["Scan QR-Code", "Participant"];
 
@@ -70,10 +70,11 @@ export default () => {
       setErrMsg("");
     }
     setFreeze(data);
+    const id = parseQRCode(data);
     signin(
       BACKEND + "/event/addParticipant",
       "POST",
-      JSON.stringify({ eventId: seminar._id, userId: data }),
+      JSON.stringify({ eventId: seminar._id, userId: id }),
       { 'authorization': token, 'content-type': "application/json" }
     )
   }
