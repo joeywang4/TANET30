@@ -27,13 +27,13 @@ export default () => {
     setTimeout(() => {
       setFreeze(0);
     }, 5000);
-    alert(errMsg); 
+    // alert(errMsg); 
   }
   const [signinState, signin, initSignin] = useAPI("json", onSuccess, onAPIError);
   const [error, setError] = useState(false);
   const [errMsg, setErrMsg] = useState("");
   const [freeze, setFreeze] = useState(0);
-  const { token, id } = useSelector(state => state.user)
+  const { token, id, name } = useSelector(state => state.user)
   const event = (getEventState.success&&getEventState.response.length > 0)?getEventState.response[0]:{};
   const participants = event.participant || [];
 
@@ -76,12 +76,6 @@ export default () => {
     case functions[0]: // Scan QR-Code
       display = (
         <React.Fragment>
-          <QrReader
-            delay={300}
-            onError={onError}
-            onScan={onScan}
-            style={{ maxWidth: "500px", width: "100%", margin: "auto" }}
-          />
           {signinState.error || error
             ?
             <Message negative>{error ? errMsg : signinState.errMsg}</Message>
@@ -101,6 +95,12 @@ export default () => {
             :
             null
           }
+          <QrReader
+            delay={300}
+            onError={onError}
+            onScan={onScan}
+            style={{ maxWidth: "500px", width: "100%", margin: "auto" }}
+          />
         </React.Fragment>
       )
       break;
@@ -123,7 +123,7 @@ export default () => {
     <div style={{marginTop: "2em", width: "80%"}}>
       <Header as='h2' icon textAlign='center'>
         <Icon name='add user' circular />
-        <Header.Content>Stall Checkin</Header.Content>
+        <Header.Content>{name?name:"Stall Checkin"}</Header.Content>
       </Header>
       <Divider />
       <Menu stackable widths={2}>

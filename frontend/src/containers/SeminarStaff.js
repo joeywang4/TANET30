@@ -99,14 +99,6 @@ export default () => {
             value={dropdownValue}
             style={{ margin: "1em 0" }}
           />
-          {!(getSeminarState.success) || seminar === null ? null :
-            <QrReader
-              delay={300}
-              onError={onError}
-              onScan={onScan}
-              style={{ maxWidth: "500px", width: "100%", margin: "auto" }}
-            />
-          }
           {signinState.error || error
             ?
             <Message negative>{error ? errMsg : signinState.errMsg}</Message>
@@ -125,6 +117,14 @@ export default () => {
             </Message>
             :
             null
+          }
+          {!(getSeminarState.success) || seminar === null ? null :
+            <QrReader
+              delay={300}
+              onError={onError}
+              onScan={onScan}
+              style={{ maxWidth: "500px", width: "100%", margin: "auto" }}
+            />
           }
         </React.Fragment>
       )

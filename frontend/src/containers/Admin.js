@@ -69,8 +69,8 @@ const Admin = () => {
               header="Upload a .csv file"
               help={
                 <React.Fragment>
-                  A CSV File with four columns: Name, Admin Email, Time Begin, Time End<br/>
-                  e.g. <i>My First Event,foo@test.com,2020-04-01T12:00:00,2020-04-02T12:00:00</i><br />
+                  A CSV File with four columns: Name, Admin Email, Date<br/>
+                  e.g. <i>My First Event,foo@test.com,2020-04-01</i><br />
                   Note that the time string should be ISO 8601 formated.
                 </React.Fragment>
               }
