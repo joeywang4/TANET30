@@ -51,7 +51,6 @@ const Event = ({ eventId, style }) => {
     if (data === null || freeze === data || checkinUserState.loading) return;
     const userId = parseQRCode(data);
     setFreeze(data);
-    console.log("checkinUser:", userId);
     checkinUser("POST", JSON.stringify({ eventId, userId }), { 'authorization': token, 'content-type': "application/json" });
   }
   const onError = () => {

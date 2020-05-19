@@ -16,7 +16,6 @@ const CreateTicketForm = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     const body = { owner: user._id, type: ticketType, date: date };
-    console.log(body);
     if(!(body.owner)) {
       setErrMsg("Owner is required!");
       setError(true);

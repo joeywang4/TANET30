@@ -10,5 +10,24 @@ import FoodStaff from './FoodStaff';
 import SeminarStaff from './SeminarStaff';
 import Company from './Company';
 import Register from './Register';
+import ParticipatedEvent from './Event/ParticipatedEvent';
+import Tickets from './Tickets';
+import Lottery from './Lottery';
 
-export { Upload, UserStatus, Receive, Send, Events, CreateEvent, Event, Admin, FoodStaff, SeminarStaff, Company, Register };
+export {
+  Upload, 
+  UserStatus, 
+  Receive, 
+  Send, 
+  Events, 
+  CreateEvent, 
+  Event, 
+  Admin, 
+  FoodStaff, 
+  SeminarStaff, 
+  Company, 
+  Register, 
+  ParticipatedEvent,
+  Tickets,
+  Lottery
+};

@@ -41,7 +41,6 @@ export default () => {
   const { token } = useSelector(state => state.user)
 
   const tickets = getTicketState.response || [];
-  console.log(tickets);
   const availTickets = tickets.filter(ticket => ticket.usedTime === 0);
   const usedTickets = tickets.filter(ticket => ticket.usedTime !== 0);
 

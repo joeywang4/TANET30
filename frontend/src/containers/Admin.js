@@ -10,10 +10,9 @@ import {
   NewEventHandler,
   NewTicketHandler
 } from '../components';
+import { Lottery } from './';
 
 const Admin = () => {
-  console.log("[*] Viewing Admin Page");
-
   return (
     <div style={{ marginTop: "2em", width: "80%" }}>
       <Header as='h2' icon textAlign='center'>
@@ -117,6 +116,7 @@ const Admin = () => {
           Lottery
         </Header>
       </Divider>
+      <Lottery />
     </div>
   )
 }

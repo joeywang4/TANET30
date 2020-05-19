@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Header, Button, Icon, Divider } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+import { ParticipatedEvent, Tickets } from './index';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
 
@@ -48,6 +49,14 @@ const UserStatus = () => {
           Participated Events
         </Header>
       </Divider>
+      <ParticipatedEvent />
+      <Divider horizontal>
+        <Header as='h4'>
+          <Icon name='food' />
+          Food Tickets
+        </Header>
+      </Divider>
+      <Tickets />
     </div>
   )
 }

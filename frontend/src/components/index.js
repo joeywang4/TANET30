@@ -11,6 +11,7 @@ import NewUserHandler from './FileHandler/NewUserHandler';
 import ExportUserHandler from './FileHandler/ExportUserHandler';
 import NewEventHandler from './FileHandler/NewEventHandler';
 import NewTicketHandler from './FileHandler/NewTicketHandler';
+import ErrMsg from './ErrMsg';
 
 export { 
   Welcome,
@@ -25,5 +26,6 @@ export {
   NewUserHandler,
   ExportUserHandler,
   NewEventHandler,
-  NewTicketHandler
+  NewTicketHandler,
+  ErrMsg
 };

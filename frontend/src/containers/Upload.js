@@ -33,7 +33,6 @@ class Upload extends Component {
     const { name, size } = file;
     const reader = new FileReader();
     reader.onload = () => {
-      console.log(reader.result);
       this.uploadFile(reader.result);
     }
     reader.onerror = () => {
@@ -56,7 +55,6 @@ class Upload extends Component {
   }
 
   uploadFile(data) {
-    console.log(data);
     fetch(BACKEND+"/file", {
       method: "POST",
       body: data,

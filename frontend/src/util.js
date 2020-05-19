@@ -20,6 +20,14 @@ export const epochToTime = (_begin, _end) => {
   return `${year} ${beginMonth}/${beginDate} ${beginHour}:${beginMinute} ~ ${endMonth}/${endDate} ${endHour}:${endMinute}`;
 }
 
+export const epochToDate = (_time) => {
+  const time = new Date(_time);
+  const year = time.getFullYear();
+  const beginMonth = time.getMonth()+1;
+  const beginDate = time.getDate();
+  return `${year} ${beginMonth}/${beginDate}`;
+}
+
 export const today = () => {
   const d = new Date();
   const dtf = new Intl.DateTimeFormat('en', { year: 'numeric', month: '2-digit', day: '2-digit' });

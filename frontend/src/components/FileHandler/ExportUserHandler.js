@@ -62,7 +62,6 @@ const ExportUserHandler = ({ content }) => {
     // Parse the csv string using Papa Parser
     Papa.parse(content, {
       complete: (results) => {
-        console.log("Parse result:", results);
         if (results.errors.length > 0) {
           console.error(results.errors);
           setStatus(ERROR);

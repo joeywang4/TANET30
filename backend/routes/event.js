@@ -71,7 +71,7 @@ router.post('/', async (req, res) => {
 router.get('/', (req, res) => {
   const userProjection = "_id name email group";
   let timeRange = null;
-  if(!req.isLogin || req.user.group === 'user') {
+  if(!req.isLogin) {
     res.status(401).send("Operation not allowed");
     return;
   }
@@ -79,6 +79,13 @@ router.get('/', (req, res) => {
     timeRange = {begin: {$gte: req.query.begin}, end: {$lte: req.query.end}};
   }
 
+  if(req.user.group === 'user') {
+    Event.find({participant: req.user.id}, (err, events) => {
+      if(err) errHandler(err, res);
+      else res.status(200).send(events);
+    })
+    return;
+  }
   if(req.query.id || req.query.name) {
     let query = null;
     if(req.query.id) query = Event.findById(req.query.id);
@@ -102,7 +109,6 @@ router.get('/', (req, res) => {
   else {
     let queryObj = {};
     if(timeRange) queryObj = {...queryObj, ...timeRange};
-    let query = null;
     if(req.query.admin) {
       if(req.query.admin !== req.user.id && req.user.group !== 'root') {
         res.status(401).send("Operation not allowed");

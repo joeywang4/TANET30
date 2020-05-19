@@ -33,7 +33,7 @@ const Events = ({admin, group, timeRange, style}) => {
       <CardGroup>
         {events.map(event => {
           return (
-            <EventLink name={event.name} id={event._id} begin={event.begin} end={event.end} key={event._id} />
+            <EventLink name={event.name} id={event._id} time={event.begin} end={event.end} key={event._id} />
           )
         })}
       </CardGroup>

@@ -134,7 +134,6 @@ export default () => {
         display = null;
         break;
       }
-      console.log(seminar.participant);
       display = (
         <CardGroup stackable>
           {seminar.participant.map((participant) => (

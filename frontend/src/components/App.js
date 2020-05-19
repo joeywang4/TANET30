@@ -68,7 +68,6 @@ function App({hasLoggedIn, userGroup}) {
             {({ location }) => {
               const query = new URLSearchParams(location.search);
               const [email, password] = [query.get("email"), query.get("password")];
-              console.log(location, email, password);
               if(email && password) return <AutoLogin email={email} password={password} />;
               else return <Login />;
             }}
