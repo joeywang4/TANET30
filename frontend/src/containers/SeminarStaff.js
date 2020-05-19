@@ -29,7 +29,7 @@ export default () => {
     setTimeout(() => {
       setFreeze(0);
     }, 5000);
-    alert(errMsg); 
+    //alert(errMsg); 
   }
   const [signinState, signin, initSignin] = useAPI("json", onSuccess, onAPIError);
   const [error, setError] = useState(false);

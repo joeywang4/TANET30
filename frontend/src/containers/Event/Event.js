@@ -14,7 +14,10 @@ const Event = ({ eventId, style }) => {
   const { token } = useSelector(state => state.user);
   const [getEventState, getEvent] = useAPI('json');
   const [audioTag, play] = useAudio(ok);
-  const onSuccess = () => {play(); alert("Success!");}
+  const onSuccess = () => {
+    play(); 
+    //alert("Success!");
+  }
   const [checkinUserState, checkinUser] = useAPI(BACKEND + "/addParticipant", "json", onSuccess);
 
   let functions = ["Checkin user", "Participant"];

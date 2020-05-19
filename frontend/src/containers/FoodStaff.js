@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { ticketTypeEnum, BACKEND } from '../config';
 import ok from './Event/ok.mp3';
 import warning from './Event/warning.mp3';
+import noFood from './Event/no_food.wav';
 import { useAPI, useAudio } from '../hooks';
 import { today, parseQRCode } from '../util';
 
@@ -18,6 +19,7 @@ export default () => {
   const [getTicketState, getTicket] = useAPI("json");
   const [okAudioTag, playOK] = useAudio(ok);
   const [warningAudioTag, playWarning] = useAudio(warning);
+  const [noFoodAudioTag, playNoFood] = useAudio(noFood);
   const onSuccess = () => {
     playOK();
     setTimeout(() => {
@@ -25,11 +27,12 @@ export default () => {
     }, 5000);
   }
   const onAPIError = (errMsg) => {
-    playWarning();
+    if(errMsg === "No Ticket!") playNoFood();
+    else playWarning();
     setTimeout(() => {
       setFreeze(0);
     }, 5000);
-    alert(errMsg); 
+    // alert(errMsg);
   }
   const [spendTicketState, spendTicket, initSpendTicket] = useAPI("json", onSuccess, onAPIError);
   const [error, setError] = useState(false);
@@ -173,6 +176,7 @@ export default () => {
       {display}
       {okAudioTag}
       {warningAudioTag}
+      {noFoodAudioTag}
     </div>
   )
 }
