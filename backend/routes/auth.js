@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 const User = require('../models/user.js');
+const TX = require("../models/transaction");
 const { userGroupEnum } = require('../const');
 
 router.post('/login', async (req, res) => {
@@ -50,6 +51,7 @@ router.post('/login', async (req, res) => {
 })
 
 router.post('/register', async (req, res) => {
+  const d = new Date();
   const _email = req.body.email;
   const _pwd  = req.body.pwd;
   const _name = req.body.name;
@@ -85,9 +87,14 @@ router.post('/register', async (req, res) => {
   const done = await newUser.save()
   .then(_ => true)
   .catch(err => errHandler(err));
+  
+  // Give 1000 to the new user
+  const newTx = TX({ from: "Faucet", to: newUser._id, amount: "1000", timestamp: d.getTime() })
+  await newTx.save()
+  .then(_ => true)
+  .catch(err => errHandler(err));
 
   if(done) {
-    let d = new Date();
     console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Register success: ${_name} ${_email}`);
     res.status(200).send("Register success");
   }

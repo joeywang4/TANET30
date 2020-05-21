@@ -14,7 +14,7 @@ const UserStatus = () => {
   let balance = 0;
   if(connection.response) {
     for(let TX of connection.response) {
-      if(TX.from === this.props.id) balance -= parseInt(TX.amount);
+      if(TX.from === id) balance -= parseInt(TX.amount);
       else balance += parseInt(TX.amount);
     }
   }

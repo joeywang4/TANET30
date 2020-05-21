@@ -47,14 +47,14 @@ router.post('/TX', async (req, res) => {
     res.status(400).send("Missing receiver or amount");
     return;
   }
-  const from = req.user.id;
+  const from = req.user.group==="root"?"Faucet":req.user.id;
   const timestamp = d.getTime();
   const TXs = await TX.find({$or: [{'from': from}, {'to': from}]}, (err, TXs) => {
     if(err) return errHandler(err, res);
     else return TXs;
   });
-  console.log(getBalance(from, TXs), amount);
-  if(getBalance(from, TXs) < amount) {
+  
+  if(req.user.group!=="root" && getBalance(from, TXs) < amount) {
     res.status(400).send("Not enough balance");
     return;
   }
