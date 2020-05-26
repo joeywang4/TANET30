@@ -98,8 +98,8 @@ const Admin = () => {
               help={
                 <React.Fragment>
                   A CSV File with three columns: Owner Email, Ticket Type, Date<br />
-                  e.g. <i>foo@test.com,launch,2020-04-20</i><br />
-                  Ticket Type can be launch or dinner<br />
+                  e.g. <i>foo@test.com,lunch,2020-04-20</i><br />
+                  Ticket Type can be lunch or dinner<br />
                   Note that the time string should be ISO 8601 formated.
                 </React.Fragment>
               }

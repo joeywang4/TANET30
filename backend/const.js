@@ -1,4 +1,4 @@
 const userGroupEnum = ['root', 'foodStaff', 'seminarStaff', 'company', 'user'];
-const ticketTypeEnum = ['launch', 'dinner'];
+const ticketTypeEnum = ['lunch', 'dinner'];
 
 module.exports = { userGroupEnum, ticketTypeEnum };
