@@ -14,6 +14,7 @@ const CraeteEventForm = () => {
   const [beginTime, setBeginTime] = useState("");
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [reward, setReward] = useState(0);
   const {token} = useSelector(state => state.user)
 
   const onSubmit = (e) => {
@@ -27,7 +28,7 @@ const CraeteEventForm = () => {
       return;
     }
 
-    const body = {name, begin, end};
+    const body = {name, begin, end, reward};
     if(admin._id) body['admin'] = admin._id;
     create(
       BACKEND+"/event",
@@ -60,6 +61,10 @@ const CraeteEventForm = () => {
           <Form.Input type="date" required={true} id="dateEnd" onChange={e => { setEndDate(e.target.value) }} />
           <Form.Input type="time" required={true} id="timeEnd" onChange={e => { setEndTime(e.target.value) }} />
         </Form.Group>
+      </Form.Field>
+      <Form.Field required>
+        <label>Reward</label>
+        <Form.Input type="number" required={true} placeholder="e.g. 100" id="reward" onChange={e => { setReward(e.target.value); }} />        
       </Form.Field>
       {createState.error || error
         ?

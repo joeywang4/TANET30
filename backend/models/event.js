@@ -27,6 +27,10 @@ const EventSchema = new Schema({
 	  type: [{type:  Schema.Types.ObjectId, ref: 'User'}],
 	  required: true
   },
+  reward: {
+    type: Number,
+    required: true
+  },
   password: {
     type: String,
     required: false

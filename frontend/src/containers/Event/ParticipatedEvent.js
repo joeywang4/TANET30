@@ -27,8 +27,8 @@ const ParticipatedEvent = () => {
     }
     return (
       <CardGroup stackable style={{marginTop: "1em"}}>
-        {connection.response.map(({name, _id, begin}) => (
-          <EventLink key={_id} name={name} id={_id} time={begin} />
+        {connection.response.map(({name, _id, begin, reward}) => (
+          <EventLink key={_id} name={name} id={_id} time={begin} reward={reward} />
         ))}
       </CardGroup>
     );

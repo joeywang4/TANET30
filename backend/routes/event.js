@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Event = require("../models/event");
 const User = require("../models/user");
+const TX = require("../models/transaction");
 
 router.post('/', async (req, res) => {
   let d = new Date();
@@ -10,9 +11,9 @@ router.post('/', async (req, res) => {
     res.status(401).send("Not logged in");
     return;
   }
-  const { name, begin, end, password } = req.body;
+  const { name, begin, end, password, reward } = req.body;
   let admin = req.user.id;
-  if(!name || !begin || !end || !admin) {
+  if(!name || !begin || !end || !admin || !reward) {
     res.status(400).send("Missing field");
     return;
   }
@@ -55,7 +56,7 @@ router.post('/', async (req, res) => {
     return;
   }
 
-  const newEvent = Event({admin, name, begin, end, participant: [], password});
+  const newEvent = Event({admin, name, begin, end, participant: [], reward, password});
   const done = newEvent.save()
   .then(_ => true)
   .catch(err => errHandler(err, res));
@@ -169,6 +170,12 @@ const participate = async (res, now, event, userId) => {
   }
 
   await Event.updateOne({_id: event._id}, {$push: {participant: userId}});
+  // Give reward to this user
+  let d = new Date();
+  const newTx = TX({ from: "Faucet", to: userId, amount: event.reward, timestamp: d.getTime() })
+  await newTx.save()
+  .then(_ => true)
+  .catch(err => errHandler(err));
   res.status(200).send({id: user._id, name: user.name});
 }
 
@@ -179,6 +186,8 @@ router.post('/join', async (req, res) => {
     res.status(401).send("Not logged in");
     return;
   }
+  res.status(401).send("Join event with password is currently not allowed");
+  return;
 
   const { eventId, password } = req.body;
   const event = await Event.findById(eventId)
