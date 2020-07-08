@@ -9,6 +9,7 @@ const { authRoute, verifyToken } = require('./routes/auth');
 const apiRoute = require('./routes/api');
 const eventRoute = require('./routes/event');
 const ticketRoute = require('./routes/ticket');
+const pushRoute = require('./routes/push');
 
 // Create server to serve index.html
 const app = express();
@@ -33,6 +34,7 @@ app.use(bodyParser.json());
 app.use(verifyToken);
 app.use('/auth', authRoute);
 app.use('/event', eventRoute);
+app.use('/push', pushRoute);
 app.use('/ticket', ticketRoute);
 app.use('/', apiRoute);
 
