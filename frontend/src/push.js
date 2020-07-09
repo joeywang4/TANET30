@@ -17,7 +17,7 @@ function urlBase64ToUint8Array(base64String) {
 
 export const register = () => {
   // Register a Service Worker.
-  navigator.serviceWorker.register('/service-worker.js');
+  navigator.serviceWorker.register('/push-worker.js');
   navigator.serviceWorker.ready
     .then((registration) => {
       // Use the PushManager to get the user's subscription to the push service.
