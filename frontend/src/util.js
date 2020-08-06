@@ -45,3 +45,10 @@ export const parseQRCode = (data) => {
   let idx = data.indexOf('#') + 1;
   return data.substring(idx);
 }
+
+export const usedDate = (usedTime) => {
+  const d = new Date(usedTime);
+  const dtf = new Intl.DateTimeFormat('en', { year: 'numeric', month: '2-digit', day: '2-digit', hour:'2-digit', minute:'2-digit', hour12: false, });
+  const [{ value: mm },,{ value: dd },,{ value: yy },,{ value: hh },,{ value: ii }] = dtf.formatToParts(d);
+  return `${yy}-${mm}-${dd}-${hh}:${ii}`;
+}

@@ -4,14 +4,14 @@ import { Loader, Menu, CardGroup, Card } from 'semantic-ui-react';
 import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
-
+import { usedDate } from '../util';
 const [AVAIL, USED] = [0, 1];
 
 const Tickets = () => {
   const { token } = useSelector(state => state.user);
   const [connection, connect] = useAPI("json");
   const [activeItem, setActiveItem] = useState(AVAIL);
-
+  
   if (connection.isInit()) {
     connect(
       BACKEND + `/ticket`,
@@ -32,7 +32,7 @@ const Tickets = () => {
         <CardGroup stackable style={{marginTop: "1em"}} >
           {tickets
             .filter(({ usedTime }) => (activeItem === AVAIL ? usedTime === 0 : usedTime !== 0))
-            .map(({ _id, type, date }) => (
+            .map(({ _id, type, date ,usedTime}) => (
               <Card key={_id}>
                 <Card.Content>
                   <Card.Header>
@@ -40,7 +40,7 @@ const Tickets = () => {
                   </Card.Header>
                   <Card.Meta>
                     <span className='date'>
-                      {date}
+                      {usedTime===0?date:usedDate(usedTime)}
                     </span>
                   </Card.Meta>
                 </Card.Content>

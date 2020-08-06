@@ -21,7 +21,7 @@ const RegisterForm = () => {
         <Form.Input icon='user' iconPosition='left' placeholder="Name" type="text" required={true} id="userName" onChange={e => { setName(e.target.value); }} />
       </Form.Field>
       <Form.Field>
-        <Form.Input icon='group' iconPosition='left' placeholder="Group (user/root/company/foodStaff/seminarStaff)" type="text" required={true} id="userGroup" onChange={e => { setGroup(e.target.value); }} />
+        <Form.Input icon='group' iconPosition='left' placeholder="Group (user/root/company/foodStaff/seminarStaff/poster)" type="text" required={true} id="userGroup" onChange={e => { setGroup(e.target.value); }} />
       </Form.Field>
       <Form.Field>
         <Form.Input icon='mail' iconPosition='left' placeholder="Email" type="email" required={true} id="userEmail" onChange={e => { setEmail(e.target.value); }} />
