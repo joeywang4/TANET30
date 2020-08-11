@@ -32,7 +32,7 @@ const Tickets = () => {
         <CardGroup stackable style={{marginTop: "1em"}} >
           {tickets
             .filter(({ usedTime }) => (activeItem === AVAIL ? usedTime === 0 : usedTime !== 0))
-            .map(({ _id, type, date ,usedTime}) => (
+            .map(({ _id, type, date, usedTime}) => (
               <Card key={_id}>
                 <Card.Content>
                   <Card.Header>

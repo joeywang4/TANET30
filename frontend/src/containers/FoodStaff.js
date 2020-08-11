@@ -144,12 +144,13 @@ export default () => {
     case functions[2]: // Used Tickets
       display = getTicketState.loading?<Loader active={true} />:(
         <CardGroup stackable>
-          {usedTickets.map((usedTickets) => (
-            <Card key={usedTickets.owner._id} link>
-              <Card.Header as='h3'>{usedTickets.owner.name}</Card.Header>
+          {usedTickets.map(({owner, usedTime}) => (
+            <Card key={owner._id} link>
+              <Card.Header as='h3'>{owner.name}</Card.Header>
               <Card.Meta>
-                {usedDate(usedTickets.usedTime)}<br></br>
-                {usedTickets.owner.email}
+                {usedDate(usedTime)}
+                <br />
+                {owner.email}
               </Card.Meta>
             </Card>
           ))}
