@@ -3,6 +3,7 @@ const router = express.Router();
 const Event = require("../models/event");
 const User = require("../models/user");
 const TX = require("../models/transaction");
+const Like = require("../models/like");
 
 router.post('/', async (req, res) => {
   let d = new Date();
@@ -69,7 +70,17 @@ router.post('/', async (req, res) => {
   else return;
 })
 
+
 router.get('/', (req, res) => {
+  if(req.query.page) {
+    const id = req.query.page;
+    Like.find({'event': id}, (err, Likes) => {
+      if(err) return errHandler(err, res);
+      else res.status(200).send(Likes);
+    })
+    return;
+  }
+
   const userProjection = "_id name email group";
   let timeRange = null;
   if(!req.isLogin) {
@@ -84,6 +95,14 @@ router.get('/', (req, res) => {
     Event.find({participant: req.user.id}, (err, events) => {
       if(err) errHandler(err, res);
       else res.status(200).send(events);
+    })
+    return;
+  }
+  if(req.user.group === 'root') {
+    // db.users.find().map( function(u) { return u.name; } );
+    Event.find({}, (err, events) => {
+      if(err) errHandler(err, res);
+      else res.status(200).send(events.map(event => {event._id, event.name}));
     })
     return;
   }
@@ -179,6 +198,23 @@ const participate = async (res, now, event, userId) => {
   res.status(200).send({id: user._id, name: user.name});
 }
 
+const likeOrDislike = async (res, userId, eventId, likeState) => {
+  const filter = {
+    user: userId,
+    event: eventId,
+  };
+  let d = new Date();
+  await Like.updateOne(filter, {state: likeState, timestamp: d.getTime()}, {
+  new: true, upsert: true }).then(_ => true)
+  .catch(err => errHandler(err));
+  res.status(200).send({id: userId, event: eventId, likeState});
+  // const newLikes = Like({ user: userId, event: eventId, state: likeState, timestamp: d.getTime() })
+  // await newLikes.save()
+  // .then(_ => true)
+  // .catch(err => errHandler(err));
+  // res.status(200).send({id: user._id, name: user.name});
+}
+
 router.post('/join', async (req, res) => {
   let d = new Date();
   if(!req.isLogin) {
@@ -251,6 +287,25 @@ router.post('/addParticipant', async (req, res) => {
 
   participate(res, d, event, userId);
 })
+
+router.post('/like', async (req, res) => {
+  let d = new Date();
+  if(!req.isLogin) {
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Like or dislike failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+
+  const { eventId, likeState } = req.body;
+  const userId = req.user.id;
+  if(!eventId || !userId) {
+    res.status(400).send("Missing field!");
+    return;
+  }
+
+  likeOrDislike(res, userId, eventId, likeState);
+})
+
 
 const errHandler = (err, res) => {
   console.error(err);

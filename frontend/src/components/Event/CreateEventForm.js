@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { useAPI, useChooseUser } from '../../hooks';
 import { BACKEND } from '../../config';
 
-const CraeteEventForm = () => {
+const CreateEventForm = () => {
   const [createState, create] = useAPI("text");
   const [admin, userChooser] = useChooseUser();
   const [name, setName] = useState("");
@@ -85,4 +85,4 @@ const CraeteEventForm = () => {
   );
 }
 
-export default CraeteEventForm;
+export default CreateEventForm;

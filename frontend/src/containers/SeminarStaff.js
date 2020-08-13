@@ -51,7 +51,7 @@ export default () => {
     initSignin();
     if(seminarName || dropdownValue !== null) {
       initGetSeminar();
-      getSeminar(BACKEND+`/event?name=${seminarName || dropdownValue}`, "GET", null, { 'authorization': token });
+      getSeminar(BACKEND+`/event?name=${encodeURIComponent(seminarName || dropdownValue)}`, "GET", null, { 'authorization': token });
     }
   }
 
