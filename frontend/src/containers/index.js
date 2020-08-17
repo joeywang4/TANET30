@@ -14,6 +14,8 @@ import ParticipatedEvent from './Event/ParticipatedEvent';
 import Tickets from './Tickets';
 import Lottery from './Lottery';
 import Poster from './Poster';
+import UserAddTicket from './UserAddTicket'
+
 
 export {
   Upload, 
@@ -31,5 +33,6 @@ export {
   ParticipatedEvent,
   Tickets,
   Lottery,
-  Poster
+  Poster,
+  UserAddTicket
 };
