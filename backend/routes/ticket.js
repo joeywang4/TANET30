@@ -12,7 +12,7 @@ const today = () => {
 }
 
 router.post("/give", async (req, res) => {
-  if(!req.isLogin || req.user.group !== "root") {
+  if(!req.isLogin) {
     res.status(401).send("Not authorized");
     return;
   }
@@ -41,6 +41,31 @@ router.post("/give", async (req, res) => {
   }
   if(date.length !== 10 || !re.test(date)) {
     res.status(400).send("Invalid Date");
+    return;
+  }
+{/* One day before. */}
+  let day = parseInt(date.split('-').pop());
+  let d = new Date();
+  let nowday = d.getDate();
+  let nowhour = d.getHours();
+  if(day < nowday){
+    res.status(400).send("Expired date!");
+    return;
+  }
+  else if( (day==nowday && type=='lunch') || (day==nowday+1 && type=='lunch' && nowhour>23) ){
+    res.status(400).send("Unable to add meal (behind time)");
+    return;
+  }
+  else if(day==nowday && type=='dinner' && nowhour>12){
+    res.status(400).send("Unable to add meal (behind time)");
+    return;
+  }
+{/* Check if ticket already exists. */}
+  let tickets = await Ticket.find({owner, type, date})
+  .then(ticket => ticket)
+  .catch(err => errHandler(err));
+  if(tickets.length!==0){
+    res.status(400).send("Ticket already exists!");
     return;
   }
   const newTicket = new Ticket({owner, type, date, usedTime: 0});
@@ -86,6 +111,35 @@ router.post("/use", async (req, res) => {
   return;
 })
 
+router.post("/delete", async (req, res) => {
+  if(!req.isLogin) {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  let {owner, type, date } = req.body;
+  if(!owner || !type || !date) {
+    res.status(400).send("Missing field");
+    return;
+  }
+  // const date = today();
+  let tickets = await Ticket.find({owner, type, date})
+  .populate('owner', '_id name email group')
+  .then(ticket => ticket)
+  .catch(err => errHandler(err));
+  if(!tickets || tickets.length === 0) {
+    res.status(401).send("No Ticket!");
+    return;
+  }
+  let ticket = tickets.find(ticket => ticket.usedTime === 0);
+  if(!ticket) {
+    res.status(401).send("Ticket is used!");
+    return;
+  }
+  ticket.deleteOne();
+  // res.status(200).send(ticket.owner);
+  return;
+})
+
 router.get("/", async (req, res) => {
   if(!(req.isLogin)) {
     res.status(401).send("Not authorized");
@@ -99,6 +153,17 @@ router.get("/", async (req, res) => {
   }
   let thenable = Ticket.find(query);
   if(populate) thenable = thenable.populate('owner', '_id name email group');
+{/* Check if available tickets are overdued */}
+  for(var i = 0; i < thenable.length(); ++i){
+    const nowday = Date.getDate();
+    console.log(nowday);
+    console.log(thenable[i].date.split('-').pop());
+    if(thenable[i].date.split('-').pop() <= nowday && thenable[i].usedTime==0){
+      thenable[i].usedTime = 1;
+    }
+  }
+  await thenable.save();
+{/* Check if available tickets are overdued */}
   const tickets = await thenable
   .then(tickets => tickets)
   .catch(err => errHandler(err));
