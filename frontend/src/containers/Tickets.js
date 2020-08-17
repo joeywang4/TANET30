@@ -1,17 +1,35 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Loader, Menu, CardGroup, Card } from 'semantic-ui-react';
+import { Loader, Menu, CardGroup, Card, Button, Icon } from 'semantic-ui-react';
 import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
-import { usedDate } from '../util';
+import { Link } from 'react-router-dom';
+import AddTicketForm from '../components/AddTicketForm';
+
 const [AVAIL, USED] = [0, 1];
 
 const Tickets = () => {
   const { token } = useSelector(state => state.user);
+  const { id } = useSelector(state => state.user);
   const [connection, connect] = useAPI("json");
+  const [editState, edit] = useAPI("text");
   const [activeItem, setActiveItem] = useState(AVAIL);
-  
+
+  function delTicket(ticketType, ticketDate){
+    const body = { owner: id, type: ticketType, date: ticketDate };
+    if(editState.isInit()){
+      edit(
+        BACKEND + "/ticket/delete",
+        "POST",
+        JSON.stringify(body),
+        {'authorization': token, 'content-type': "application/json"}
+      )
+    }
+    window.location.reload(false);
+  }
+
+
   if (connection.isInit()) {
     connect(
       BACKEND + `/ticket`,
@@ -20,6 +38,8 @@ const Tickets = () => {
       { 'authorization': token, 'content-type': "application/json" }
     );
   }
+
+  
 
   if (connection.error) {
     return <ErrMsg />;
@@ -32,7 +52,7 @@ const Tickets = () => {
         <CardGroup stackable style={{marginTop: "1em"}} >
           {tickets
             .filter(({ usedTime }) => (activeItem === AVAIL ? usedTime === 0 : usedTime !== 0))
-            .map(({ _id, type, date, usedTime}) => (
+            .map(({ _id, type, date }) => (
               <Card key={_id}>
                 <Card.Content>
                   <Card.Header>
@@ -40,10 +60,18 @@ const Tickets = () => {
                   </Card.Header>
                   <Card.Meta>
                     <span className='date'>
-                      {usedTime===0?date:usedDate(usedTime)}
+                      {date}
                     </span>
                   </Card.Meta>
                 </Card.Content>
+                {activeItem === AVAIL &&
+                  <Button animated='vertical' onClick={()=> delTicket(type,date)}>
+                    <Button.Content visible>Delete</Button.Content>
+                    <Button.Content hidden>
+                    <Icon name='trash alternate' /> 
+                    </Button.Content>
+                  </Button>
+                }
               </Card>
             ))}
         </CardGroup>
@@ -64,6 +92,11 @@ const Tickets = () => {
           />
         </Menu>
         {display}
+        <div style = {{ marginTop:"2em", marginBottom:"2em", width:"100%", display: "flex", flexDirection: "column", alignItems:"center"}}>
+          <div>
+            {activeItem===AVAIL && <Button as={Link} to="/userAddTicket">Add Meal</Button>}
+          </div>
+        </div>
       </div>
     );
   }
