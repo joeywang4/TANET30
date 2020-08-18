@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Button, Message } from 'semantic-ui-react';
 import { useSelector } from 'react-redux'
 import { useAPI, useChooseUser, useChooseEvent } from '../../hooks';
@@ -8,51 +8,46 @@ const AddAuthorForm = () => {
   const [addAuthorState, addAuthor] = useAPI("text");
   const [author, userChooser] = useChooseUser();
   const [event, eventChooser] = useChooseEvent();
-  // const [eventName, setEventName] = useState("");
-  const [error, setError] = useState(false);
-  const [errMsg, setErrMsg] = useState("");
-  // const [authorName, setAuthorName] = useState(0);
   const {token} = useSelector(state => state.user)
 
   const onSubmit = (e) => {
     e.preventDefault();
 
     const body = {};
-    if(author._id) body['author'] = author._id;
-    if(event._id) body['event'] = event._id;
-    // addAuthor(
-    //   BACKEND+"/event",
-    //   "POST", 
-    //   JSON.stringify(body), 
-    //   {'authorization': token, 'content-type': "application/json"}
-    // )
+    if(author._id) body['authorId'] = author._id;
+    if(event._id) body['eventId'] = event._id;
+    // console.log(body);
+    addAuthor(
+      BACKEND+"/event/addAuthor",
+      "POST", 
+      JSON.stringify(body), 
+      {'authorization': token, 'content-type': "application/json"}
+    )
   }
 
   return (
     <Form onSubmit={e => onSubmit(e)} loading={addAuthorState.loading}>
-      <Form.Field>
+      <Form.Field required>
         <label>Event name</label>
-        <Form.Group widths="equal">
           {eventChooser}
-        </Form.Group>
       </Form.Field>
 
-      <Form.Field>
-        <label>Event name</label>
+      <Form.Field required>
+        <label>Author name</label>
         <Form.Group widths="equal">
           {userChooser}
         </Form.Group>
       </Form.Field>
       
-      {addAuthorState.error || error
+      {addAuthorState.error
         ?
-        <Message negative>{error?errMsg:addAuthorState.errMsg}</Message>
+        <Message negative>{addAuthorState.errMsg}</Message>
         :
         null
       }
       {addAuthorState.success
         ?
-        <Message positive>Add Author Success!</Message>
+        <Message positive>Add Author Success</Message>
         :
         null
       }
@@ -63,4 +58,4 @@ const AddAuthorForm = () => {
   );
 }
 
-export default AddAuthorForm;
+export default AddAuthorForm ;

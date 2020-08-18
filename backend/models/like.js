@@ -3,11 +3,18 @@ const Schema = mongoose.Schema
 
 const LikeSchema = new Schema({
 	user: {
-		type: String,
+		type: Schema.Types.ObjectId,
+    ref: 'User',
 		required: true
 	},
 	event: {
-		type: String,
+		type: Schema.Types.ObjectId,
+    ref: 'Event',
+		required: true
+	},
+	author: {
+		type: Schema.Types.ObjectId,
+    ref: 'User',
 		required: true
   },
   state: {

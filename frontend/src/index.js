@@ -6,7 +6,6 @@ import rootReducer from './reducers'
 import { loadState, saveState } from './localState';
 import throttle from 'lodash/throttle';
 import App from './components/App';
-import { register } from './push';
 import 'semantic-ui-css/semantic.min.css';
 
 const persistedState = loadState();

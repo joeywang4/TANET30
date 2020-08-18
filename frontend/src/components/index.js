@@ -6,6 +6,7 @@ import AutoLogin from './Auth/AutoLogin';
 import RegisterForm from './Auth/RegisterForm';
 import FileUpload from './FileHandler/FileUpload';
 import CreateEventForm from './Event/CreateEventForm';
+import AddAuthorForm from './Event/AddAuthorForm';
 import CreateTicketForm from './CreateTicketForm';
 import NewUserHandler from './FileHandler/NewUserHandler';
 import ExportUserHandler from './FileHandler/ExportUserHandler';
@@ -22,6 +23,7 @@ export {
   RegisterForm,
   FileUpload,
   CreateEventForm,
+  AddAuthorForm,
   CreateTicketForm,
   NewUserHandler,
   ExportUserHandler,
