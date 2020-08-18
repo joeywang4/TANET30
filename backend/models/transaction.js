@@ -3,11 +3,12 @@ const Schema = mongoose.Schema
 
 const TXSchema = new Schema({
 	from: {
-		type: String,
-		required: true
+		type: Schema.Types.ObjectId,
+    ref: 'User',
 	},
 	to: {
-		type: String,
+		type: Schema.Types.ObjectId,
+    ref: 'User',
 		required: true
   },
   amount: {
