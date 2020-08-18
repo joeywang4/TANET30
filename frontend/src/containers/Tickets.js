@@ -5,32 +5,15 @@ import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
 import { Link } from 'react-router-dom';
-import AddTicketForm from '../components/AddTicketForm';
 
 const [AVAIL, USED] = [0, 1];
 
 const Tickets = () => {
   const { token } = useSelector(state => state.user);
   const { id } = useSelector(state => state.user);
-  const [connection, connect] = useAPI("json");
-  const [editState, edit] = useAPI("text");
-  const [activeItem, setActiveItem] = useState(AVAIL);
-
-  function delTicket(ticketType, ticketDate){
-    const body = { owner: id, type: ticketType, date: ticketDate };
-    if(editState.isInit()){
-      edit(
-        BACKEND + "/ticket/delete",
-        "POST",
-        JSON.stringify(body),
-        {'authorization': token, 'content-type': "application/json"}
-      )
-    }
-    window.location.reload(false);
-  }
-
-
-  if (connection.isInit()) {
+  const [connection, connect, initConnection] = useAPI("json");
+  const loadTicket = () => {
+    initConnection();
     connect(
       BACKEND + `/ticket`,
       "GET",
@@ -38,8 +21,27 @@ const Tickets = () => {
       { 'authorization': token, 'content-type': "application/json" }
     );
   }
+  const [editState, edit] = useAPI("text", loadTicket, () => {alert("Delete ticket failed!")});
+  const [activeItem, setActiveItem] = useState(AVAIL);
 
-  
+  const delTicket = (ticketType, ticketDate) => {
+    if(!window.confirm("Are you sure to delete this food ticket?")) {
+      return;
+    }
+    const body = { owner: id, type: ticketType, date: ticketDate };
+    if (editState.isInit()) {
+      edit(
+        BACKEND + "/ticket/delete",
+        "POST",
+        JSON.stringify(body),
+        { 'authorization': token, 'content-type': "application/json" }
+      )
+    }
+  }
+
+  if (connection.isInit()) {
+    loadTicket();
+  }
 
   if (connection.error) {
     return <ErrMsg />;
@@ -49,7 +51,7 @@ const Tickets = () => {
     let display = <span>You have no ticket.</span>;
     if (tickets.length > 0) {
       display = (
-        <CardGroup stackable style={{marginTop: "1em"}} >
+        <CardGroup stackable style={{ marginTop: "1em" }} >
           {tickets
             .filter(({ usedTime }) => (activeItem === AVAIL ? usedTime === 0 : usedTime !== 0))
             .map(({ _id, type, date }) => (
@@ -64,13 +66,14 @@ const Tickets = () => {
                     </span>
                   </Card.Meta>
                 </Card.Content>
-                {activeItem === AVAIL &&
-                  <Button animated='vertical' onClick={()=> delTicket(type,date)}>
+                {activeItem === AVAIL ?
+                  <Button animated='vertical' loading={editState.loading} onClick={() => delTicket(type, date)}>
                     <Button.Content visible>Delete</Button.Content>
                     <Button.Content hidden>
-                    <Icon name='trash alternate' /> 
+                      <Icon name='trash alternate' />
                     </Button.Content>
                   </Button>
+                  : null
                 }
               </Card>
             ))}
@@ -92,9 +95,9 @@ const Tickets = () => {
           />
         </Menu>
         {display}
-        <div style = {{ marginTop:"2em", marginBottom:"2em", width:"100%", display: "flex", flexDirection: "column", alignItems:"center"}}>
+        <div style={{ marginTop: "2em", marginBottom: "2em", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div>
-            {activeItem===AVAIL && <Button as={Link} to="/userAddTicket">Add Meal</Button>}
+            {activeItem === AVAIL ? <Button as={Link} to="/userAddTicket">Add Meal</Button> : null}
           </div>
         </div>
       </div>
