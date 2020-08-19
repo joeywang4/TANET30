@@ -2,17 +2,18 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const TXSchema = new Schema({
-	from: {
-		type: String,
-		required: true
-	},
-	to: {
-		type: String,
-		required: true
+  from: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  to: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   amount: {
-	  type: Number,
-	  required: true
+    type: Number,
+    required: true
   },
   timestamp: {
     type: Number,

@@ -6,8 +6,8 @@ const User = require("../models/user");
 const getBalance = (id, TXs) => {
   let balance = 0;
   for(let TX of TXs) {
-    if(TX.from === id) balance -= parseInt(TX.amount);
-    else balance += parseInt(TX.amount);
+    if(String(TX.to._id) === id) balance += parseInt(TX.amount);
+    else balance -= parseInt(TX.amount);
   }
   return balance;
 }
@@ -15,7 +15,9 @@ const getBalance = (id, TXs) => {
 router.get('/TX', (req, res) => {
   if(req.query.id) {
     const id = req.query.id;
-    TX.find({$or: [{'from': id}, {'to': id}]}, (err, TXs) => {
+    TX.find({$or: [{'from': id}, {'to': id}]})
+    .populate('from to', "_id name email group")
+    .exec((err, TXs) => {
       if(err) return errHandler(err, res);
       else res.status(200).send(TXs);
     })

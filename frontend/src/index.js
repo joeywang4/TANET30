@@ -7,6 +7,7 @@ import { loadState, saveState } from './localState';
 import throttle from 'lodash/throttle';
 import App from './components/App';
 import 'semantic-ui-css/semantic.min.css';
+// import { register } from './push';
 
 const persistedState = loadState();
 const store = createStore(rootReducer, persistedState);

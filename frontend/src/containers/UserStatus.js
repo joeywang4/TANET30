@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Header, Button, Icon, Divider } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import { ParticipatedEvent, Tickets } from './index';
+import { ParticipatedEvent, Tickets, History } from './index';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
 
@@ -14,8 +14,8 @@ const UserStatus = () => {
   let balance = 0;
   if(connection.response) {
     for(let TX of connection.response) {
-      if(TX.from === id) balance -= parseInt(TX.amount);
-      else balance += parseInt(TX.amount);
+      if(TX.to._id === id) balance += parseInt(TX.amount);
+      else balance -= parseInt(TX.amount);
     }
   }
 
@@ -41,6 +41,9 @@ const UserStatus = () => {
         <div>
           <Button as={Link} to="/receive">Receive</Button>
           <Button as={Link} to="/send">Send</Button>
+        </div>
+        <div>
+          <History/>
         </div>
       </div>
       <Divider horizontal>
