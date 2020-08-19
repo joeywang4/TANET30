@@ -15,6 +15,7 @@ import Tickets from './Tickets';
 import Lottery from './Lottery';
 import Poster from './Poster';
 import UserAddTicket from './UserAddTicket'
+import History from './History';
 
 
 export {
@@ -34,5 +35,6 @@ export {
   Tickets,
   Lottery,
   Poster,
-  UserAddTicket
+  UserAddTicket,
+  History
 };
