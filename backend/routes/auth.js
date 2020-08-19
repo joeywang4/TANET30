@@ -89,7 +89,7 @@ router.post('/register', async (req, res) => {
   .catch(err => errHandler(err));
   
   // Give 1000 to the new user
-  const newTx = TX({ from: "Faucet", to: newUser._id, amount: 1000, timestamp: d.getTime() })
+  const newTx = TX({ to: newUser._id, amount: 1000, timestamp: d.getTime() })
   await newTx.save()
   .then(_ => true)
   .catch(err => errHandler(err));

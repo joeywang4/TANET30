@@ -6,7 +6,7 @@ const User = require("../models/user");
 const getBalance = (id, TXs) => {
   let balance = 0;
   for(let TX of TXs) {
-    if(TX.to._id == id) balance += parseInt(TX.amount);
+    if(String(TX.to._id) === id) balance += parseInt(TX.amount);
     else balance -= parseInt(TX.amount);
   }
   return balance;
