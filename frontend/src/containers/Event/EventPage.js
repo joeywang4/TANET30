@@ -26,7 +26,7 @@ const EventPage = ({ eventId }) => {
   }
   else if (connection.success) {
     return ( authors.length === 0 ? 
-      <span>You have not added any author in this event yet.</span> : 
+      <span>This event has no author.</span> : 
       <Card.Group style={{marginTop: "2em", width: "80%"}}>
         {authors.map(
           (author, idx) => (

@@ -25,7 +25,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mustLogin = (hasLoggedIn, Tag) => {
-  if(hasLoggedIn) return <Tag />
+  if(hasLoggedIn) return Tag;
   else return <Redirect to="/" />;
 }
 
@@ -65,33 +65,30 @@ function App({hasLoggedIn, userGroup}) {
             }
           </Route>
           <Route exact path="/receive">
-            {mustLogin(hasLoggedIn, Receive)}
+            {mustLogin(hasLoggedIn, <Receive />)}
           </Route>
           <Route exact path="/send">
-            {mustLogin(hasLoggedIn, Send)}
+            {mustLogin(hasLoggedIn, <Send />)}
           </Route>
           <Route exact path="/events">
-            {mustLogin(hasLoggedIn, Events)}
+            {mustLogin(hasLoggedIn, <Events />)}
           </Route>
           <Route exact path="/createEvent">
-            {mustLogin(hasLoggedIn, CreateEvent)}
+            {mustLogin(hasLoggedIn, <CreateEvent />)}
           </Route>
           <Route exact path="/userAddTicket">
-            {mustLogin(hasLoggedIn, UserAddTicket)}
+            {mustLogin(hasLoggedIn, <UserAddTicket />)}
           </Route>
           <Route exact path="/event">
             {({ location }) => {
-              console.log(location);
               const eventId = location.search.substring(4);
               return <Event eventId={eventId} />;
             }}
           </Route>
           <Route exact path='/event/page'>
             {({ location }) => {
-              if(!hasLoggedIn) return <Welcome />;
-              console.log(location);
               const eventId = location.search.substring(4);
-              return <EventPage eventId={eventId} />;
+              return mustLogin(hasLoggedIn, <EventPage eventId={eventId} />);
             }}
           </Route>
           <Route exact path="/login">

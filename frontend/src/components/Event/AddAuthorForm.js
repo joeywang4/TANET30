@@ -16,7 +16,6 @@ const AddAuthorForm = () => {
     const body = {};
     if(author._id) body['authorId'] = author._id;
     if(event._id) body['eventId'] = event._id;
-    // console.log(body);
     addAuthor(
       BACKEND+"/event/addAuthor",
       "POST", 
@@ -58,4 +57,4 @@ const AddAuthorForm = () => {
   );
 }
 
-export default AddAuthorForm ;
+export default AddAuthorForm;

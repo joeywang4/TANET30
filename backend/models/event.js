@@ -2,14 +2,14 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const EventSchema = new Schema({
-	admin: {
+  admin: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-		required: true
+    required: true
   },
-	name: {
-		type: String,
-		required: true
+  name: {
+    type: String,
+    required: true
   },
   description: {
     type: String,
@@ -24,12 +24,12 @@ const EventSchema = new Schema({
     required: true
   },
   participant: {
-	  type: [{type:  Schema.Types.ObjectId, ref: 'User'}],
-	  required: true
+    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    required: true
   },
   author: {
-	  type: [{type:  Schema.Types.ObjectId, ref: 'User'}],
-	  required: true
+    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    required: true
   },
   reward: {
     type: Number,
