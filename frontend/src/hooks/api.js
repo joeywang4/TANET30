@@ -2,7 +2,7 @@ import { useReducer } from 'react';
 
 const initialState = ({
   status: NaN,
-  resopnse: null,
+  response: null,
   errMsg: null,
   loading: false,
   success: false,

@@ -3,6 +3,7 @@ const router = express.Router();
 const Event = require("../models/event");
 const User = require("../models/user");
 const TX = require("../models/transaction");
+const Like = require("../models/like");
 
 router.post('/', async (req, res) => {
   let d = new Date();
@@ -56,7 +57,7 @@ router.post('/', async (req, res) => {
     return;
   }
 
-  const newEvent = Event({admin, name, begin, end, participant: [], reward, password});
+  const newEvent = Event({admin, name, begin, end, participant: [], author: [], reward, password});
   const done = newEvent.save()
   .then(_ => true)
   .catch(err => errHandler(err, res));
@@ -68,6 +69,89 @@ router.post('/', async (req, res) => {
   }
   else return;
 })
+
+router.get('/page', async (req, res) => {
+  if(req.query.id) {
+    if(!req.isLogin) {
+      console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create event failed: Not login`);
+      res.status(401).send("Not logged in");
+      return;
+    }
+    const eventId = req.query.id;
+    const userId = req.user.id;
+    if(!eventId) {
+      res.status(400).send('Did not pass a event id');
+      return;
+    }
+    const event = await Event.findById(eventId)
+    .populate({
+      path: 'author',
+      select: '_id name',
+      populate: { 
+        path: 'author'
+      }
+    })
+    .then(event => {
+      if(event) return event;
+      else return false;
+    })
+    .catch(_ => false);
+    if(!event) {
+      res.status(400).send("User does not exist");
+      return;
+    }
+    if(!event) {
+      res.status(404).send("Event not found");
+      return;
+    }
+    // res.status(200).send(`userId: ${userId}, event: ${event}`);
+    // console.log(event);
+    // return;
+    if(!userId in event.participant){
+      res.status(401).send('Unauthorized');
+      return;
+    }
+    // res.status(200).send(`userId: ${userId}, event: ${event._id}`);
+    const authors = [...event.author];
+    const firstId = authors[0];
+    if(!firstId) {
+      res.status(404).send(`author not found`);
+      return;
+    }
+
+    const likeResponseAry = [];
+    const likeResponse = (authorId, authorName, userId, likes) => {
+      let likeState = 0;
+      const totalLikes = likes.reduce((sum, current) => {
+        if(current.user == userId) {
+          console.log('haveLikestate');
+          likeState = current.state;
+        }
+        // console.log(current.state);
+        return (sum + current.state);
+      }, 0);
+      likeResponseAry.push( {authorId, authorName, likeState, totalLikes});
+      if(likeResponseAry.length === authors.length) {
+        res.status(200).send(likeResponseAry);
+        // console.log(`likesResponse: ${JSON.stringify(likeResponseAry)}`);
+        console.log('sended');
+        return ;
+      }
+    };
+    
+    for (let i = 0; i < authors.length; i++) {
+      let authorId = authors[i]['_id'];
+      let authorName = authors[i]['name'];
+      await Like.find({event: event._id, author: authorId}, (err, likes) => {
+        if(err) errHandler(err, res);
+        else {
+          return likeResponse(authorId, authorName, userId, likes);
+        }
+      });
+    }    
+  }
+  // authorName, authorId, totalLikes, likeState
+});
 
 router.get('/', (req, res) => {
   const userProjection = "_id name email group";
@@ -84,6 +168,14 @@ router.get('/', (req, res) => {
     Event.find({participant: req.user.id}, (err, events) => {
       if(err) errHandler(err, res);
       else res.status(200).send(events);
+    })
+    return;
+  }
+  if(req.user.group === 'root') {
+    // db.users.find().map( function(u) { return u.name; } );
+    Event.find({}, (err, events) => {
+      if(err) errHandler(err, res);
+      else  res.status(200).send(events.map((event) => ({_id: event._id, name: event.name}) ));
     })
     return;
   }
@@ -172,7 +264,7 @@ const participate = async (res, now, event, userId) => {
   await Event.updateOne({_id: event._id}, {$push: {participant: userId}});
   // Give reward to this user
   let d = new Date();
-  const newTx = TX({ from: "Faucet", to: userId, amount: event.reward, timestamp: d.getTime() })
+  const newTx = TX({ from: "eventFaucet", to: userId, amount: event.reward, timestamp: d.getTime() })
   await newTx.save()
   .then(_ => true)
   .catch(err => errHandler(err));
@@ -203,6 +295,87 @@ router.post('/join', async (req, res) => {
   }
 
   participate(res, d, event, req.user.id);
+})
+
+router.post('/clearEvent', async(req, res) => {
+  if(!req.isLogin) {
+    console.log(`Clear Event failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if(req.user.group !== "root") {
+    res.status(401).send("You are not authorized");
+    return;
+  }
+  const del = await Event.deleteMany({});
+  const delTx = await TX.deleteMany({from: "eventFaucet"});
+  res.status(200).send(`${del.deletedCount + delTx.deletedCount}`);
+})
+
+router.post('/clearLike', async(req, res) => {
+  if(!req.isLogin) {
+    console.log(`Clear Like failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if(req.user.group !== "root") {
+    res.status(401).send("You are not authorized");
+    return;
+  }
+  del = await Like.deleteMany({});
+  res.status(200).send(`${del.deletedCount}`);
+})
+
+router.post('/addAuthor', async (req, res) => {
+  
+  if(!req.isLogin) {
+    console.log(`Add author failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+
+  const { eventId, authorId } = req.body;
+  // console.log( `backend: ${req.body}`);
+  if(!eventId || !authorId) {
+    res.status(400).send("Missing field!");
+    return;
+  }
+
+  if(req.user.group !== "root") {
+    res.status(401).send("You are not authorized");
+    return;
+  }
+
+  const event = await Event.findById(eventId)
+  .then(event => event?event:false)
+  .catch(err => {
+    errHandler(err);
+    return false;
+  });
+  if(!event) {
+    res.status(400).send("Event does not exist")
+    return;
+  }
+
+  const user = await User.findById(authorId)
+  .then(user => {
+    if(user) return user;
+    else return false;
+  })
+  .catch(_ => false);
+  if(!user) {
+    res.status(400).send("User does not exist");
+    return;
+  }
+  const joined = event.author.find(_user => String(_user) === String(authorId));
+  if(joined) {
+    res.status(400).send("Already been author");
+    return;
+  }
+
+  await Event.updateOne({_id: event._id}, {$push: {author: authorId}});
+  res.status(200).send({eventName: event.name, authorName: user.name})
+
 })
 
 router.post('/addParticipant', async (req, res) => {
@@ -251,6 +424,34 @@ router.post('/addParticipant', async (req, res) => {
 
   participate(res, d, event, userId);
 })
+
+router.post('/like', async (req, res) => {
+  let d = new Date();
+  if(!req.isLogin) {
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Like or dislike failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+
+  const { eventId, authorId, likeState } = req.body;
+  const userId = req.user.id;
+  if(!eventId || !authorId || !userId) {
+    res.status(400).send("Missing field!");
+    return;
+  }
+
+  const filter = {
+    user: userId,
+    event: eventId,
+    author: authorId,
+  };
+  await Like.updateOne(filter, {state: likeState, timestamp: d.getTime()}, {
+  new: true, upsert: true })
+  .then(_ => true)
+  .catch(err => errHandler(err));
+  res.status(200).send({id: userId, event: eventId, author: authorId, likeState});
+})
+
 
 const errHandler = (err, res) => {
   console.error(err);

@@ -9,6 +9,7 @@ import {
   Events,
   CreateEvent,
   Event,
+  EventPage,
   Admin,
   FoodStaff,
   SeminarStaff,
@@ -80,8 +81,17 @@ function App({hasLoggedIn, userGroup}) {
           </Route>
           <Route exact path="/event">
             {({ location }) => {
+              console.log(location);
               const eventId = location.search.substring(4);
               return <Event eventId={eventId} />;
+            }}
+          </Route>
+          <Route exact path='/event/page'>
+            {({ location }) => {
+              if(!hasLoggedIn) return <Welcome />;
+              console.log(location);
+              const eventId = location.search.substring(4);
+              return <EventPage eventId={eventId} />;
             }}
           </Route>
           <Route exact path="/login">

@@ -6,7 +6,7 @@ const EventSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User',
 		required: true
-	},
+  },
 	name: {
 		type: String,
 		required: true
@@ -24,6 +24,10 @@ const EventSchema = new Schema({
     required: true
   },
   participant: {
+	  type: [{type:  Schema.Types.ObjectId, ref: 'User'}],
+	  required: true
+  },
+  author: {
 	  type: [{type:  Schema.Types.ObjectId, ref: 'User'}],
 	  required: true
   },

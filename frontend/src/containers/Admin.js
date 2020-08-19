@@ -4,13 +4,14 @@ import {
   RegisterForm,
   FileUpload,
   CreateEventForm,
+  AddAuthorForm,
   CreateTicketForm,
   NewUserHandler,
   ExportUserHandler,
   NewEventHandler,
   NewTicketHandler
 } from '../components';
-import { Lottery } from './';
+import { Lottery, ClearCollection } from './';
 
 const Admin = () => {
   return (
@@ -80,6 +81,36 @@ const Admin = () => {
           </Grid.Column>
         </Grid.Row>
       </Grid>
+
+      <Divider horizontal>
+        <Header as='h4'>
+          <Icon name='pencil' />
+          Add author
+        </Header>
+      </Divider>
+      <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
+        <Grid.Row columns={2}>
+          <Grid.Column style={{ width: "80%", maxWidth: "30em" }}>
+            <AddAuthorForm />
+          </Grid.Column>
+          <Grid.Column>
+            <FileUpload
+              name="Import authors from File"
+              header="Upload a .csv file"
+              help={
+                <React.Fragment>
+                  A CSV File with two columns: Event_Name, Author_Name<br/>
+                  e.g. <i>testEvent0815, author1</i><br />
+                </React.Fragment>
+              }
+              // Handler={AddAuthorHandler}
+              icon="download"
+              style={{ margin: "1vh 0" }}
+            />
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+
       <Divider horizontal>
         <Header as='h4'>
           <Icon name='food' />
@@ -117,6 +148,22 @@ const Admin = () => {
         </Header>
       </Divider>
       <Lottery />
+
+      <Divider horizontal>
+        <Header as='h4'>
+          <Icon name='trash alternate' />
+          Delete Data
+        </Header>
+      </Divider>
+      <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
+        <Grid.Row columns={2}>
+          <Grid.Column style={{ width: "80%", maxWidth: "30em" }}>
+            <ClearCollection />
+          </Grid.Column>
+          <Grid.Column>
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
     </div>
   )
 }
