@@ -8,6 +8,7 @@ import {
   CreateTicketForm,
   NewUserHandler,
   ExportUserHandler,
+  AddAuthorHandler,
   NewEventHandler,
   NewTicketHandler
 } from '../components';
@@ -99,11 +100,11 @@ const Admin = () => {
               header="Upload a .csv file"
               help={
                 <React.Fragment>
-                  A CSV File with two columns: Event_Name, Author_Name<br/>
-                  e.g. <i>testEvent0815, author1</i><br />
+                  A CSV File with multiple columns: Event Name, 1st Author Email, 2nd Author Name, 3rd Author Name, ...(in order)<br/>
+                  e.g. <i>testEvent0821,author1@test.com,author2@test.com,author3@test.com</i><br />
                 </React.Fragment>
               }
-              // Handler={AddAuthorHandler}
+              Handler={AddAuthorHandler}
               icon="download"
               style={{ margin: "1vh 0" }}
             />
