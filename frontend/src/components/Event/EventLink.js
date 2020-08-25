@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { epochToDate } from '../../util';
 
 const EventLink = ({ name, id, time, reward }) => (
-  <Card as={Link} to={`/event/page/?id=${id}`} link>
+  <Card>
     <Card.Content>
       <Card.Header>{name}</Card.Header>
       <Card.Meta>
@@ -14,8 +14,8 @@ const EventLink = ({ name, id, time, reward }) => (
       </Card.Meta>
     </Card.Content>
     <Card.Content extra>
-      <Button>
-        more details
+      <Button fluid as={Link} to={`/event/page/?id=${id}`} link>
+        view more...
       </Button>
     </Card.Content>
   </Card>

@@ -14,7 +14,7 @@ const AddAuthorForm = () => {
     e.preventDefault();
 
     const body = {};
-    if(author._id) body['authorId'] = author._id;
+    if(author._id) body['authorIds'] = author._id;
     if(event._id) body['eventId'] = event._id;
     addAuthor(
       BACKEND+"/event/addAuthor",

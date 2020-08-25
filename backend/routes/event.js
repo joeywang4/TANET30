@@ -109,19 +109,16 @@ router.get('/page', async (req, res) => {
   }
   const authors = [...event.author];
 
-  const likeResponseAry = [];
   const likeResponse = (authorId, authorName, userId, likes) => {
     let likeState = 0;
     const totalLikes = likes.reduce((sum, current) => {
-      if (current.user == userId) {
-        likeState = current.state;
-      }
+      if (current.user == userId) likeState = current.state;
       return (sum + current.state);
     }, 0);
-    likeResponseAry.push({ authorId, authorName, likeState, totalLikes });
+    return { authorId, authorName, likeState, totalLikes };
   };
 
-  await Promise.all(authors.map(author => {
+  const likeResponseAry = await Promise.all(authors.map(author => {
     const { _id: authorId, name: authorName } = author;
     return Like.find({ event: event._id, author: authorId })
       .then(likes => likeResponse(authorId, authorName, userId, likes))
@@ -276,7 +273,7 @@ router.post('/clearEvent', async (req, res) => {
     return;
   }
   const del = await Event.deleteMany({});
-  // const delTx = await TX.deleteMany({ from: "eventFaucet" });
+  const delTx = await TX.deleteMany({});
   res.status(200).send(`${del.deletedCount + delTx.deletedCount}`);
 })
 
@@ -300,8 +297,8 @@ router.post('/addAuthor', async (req, res) => {
     return;
   }
 
-  const { eventId, authorId } = req.body;
-  if (!eventId || !authorId) {
+  const { eventId, eventName, authorIds } = req.body;
+  if ((!eventId && !eventName) || !authorIds) {
     res.status(400).send("Missing field!");
     return;
   }
@@ -311,22 +308,63 @@ router.post('/addAuthor', async (req, res) => {
     return;
   }
 
-  const event = await Event.findById(eventId)
+  let event = null;
+  if (eventId) {
+    event = await Event.findById(eventId)
     .then(event => event ? event : false)
     .catch(err => {
       errHandler(err);
       return false;
     });
+  }
+  else {
+    event = await Event.findOne({name: eventName})
+    .then(event => event ? event : false)
+    .catch(err => {
+      errHandler(err);
+      return false;
+    });
+  }
   if (!event) {
     res.status(400).send("Event does not exist")
     return;
   }
+  
+  const checkAuthor = async (author) => {
+    if (author.indexOf("@") !== -1) {
+      author = await User.findOne({ email: author })
+        .then(user => {
+          if (user) return user._id;
+          else return null;
+        })
+        .catch(_ => false);
+    }
+    else {
+      author = await User.findById(author)
+        .then(user => {
+          if (user) return user;
+          else return null;
+        })
+        .catch(_ => false);
+    }
+    return author;
+  }
 
-  const user = await User.findById(authorId)
-    .then(user => user ? user : false)
-    .catch(_ => false);
-  if (!user) {
-    res.status(400).send("User does not exist");
+  if(Array.isArray(authorIds)) {
+    const checkedAuthorIds = await Promise.all(authorIds.map( authorEmail => checkAuthor(authorEmail)))
+    const errorIndex = checkedAuthorIds.findIndex(element => element === null);
+    if(errorIndex !== -1) {
+      res.status(400).send(`Please check author email, index: ${errorIndex}`);
+      return;
+    }
+    await Event.updateOne({ _id: event._id }, { author: checkedAuthorIds });
+    res.status(200).send({ eventName: event.name, authorIds: checkedAuthorIds });
+    return;
+  }
+  const authorId = authorIds;
+  const author = await checkAuthor(authorId);
+  if(!author) {
+    res.status(400).send("Author does not exist");
     return;
   }
   const joined = event.author.find(_user => String(_user._id) === authorId);
@@ -334,9 +372,8 @@ router.post('/addAuthor', async (req, res) => {
     res.status(400).send("Already been author");
     return;
   }
-
   await Event.updateOne({ _id: event._id }, { $push: { author: authorId } });
-  res.status(200).send({ eventName: event.name, authorName: user.name })
+  res.status(200).send({ eventName: event.name, authorName: author.name });
 })
 
 router.post('/addParticipant', async (req, res) => {
