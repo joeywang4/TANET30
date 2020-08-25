@@ -40,6 +40,21 @@ const Tickets = () => {
     }
   }
 
+  function checkTime( ticketTime ){
+    const d = new Date();
+    const nowday = d.getDate();
+    const nowmonth = d.getMonth();
+    console.log('today'+nowmonth+' '+nowday);
+    const arrofdate = ticketTime.split("-",3);
+    console.log(parseInt(arrofdate[1])+'/'+parseInt(arrofdate[2]));
+    if(parseInt(arrofdate[2]) < nowday && parseInt(arrofdate[1]) <= nowmonth+1){  //nowmonth+1
+      console.log(ticketTime+"false");
+      return false;
+    }
+    console.log(ticketTime+"true");
+    return true;
+  }
+
   if (connection.isInit()) {
     loadTicket();
   }
@@ -54,7 +69,7 @@ const Tickets = () => {
       display = (
         <CardGroup stackable style={{ marginTop: "1em" }} >
           {tickets
-            .filter(({ usedTime }) => (activeItem === AVAIL ? usedTime === 0 : usedTime !== 0))
+            .filter(({ usedTime, date }) => (activeItem === AVAIL ? (usedTime === 0 && checkTime(date)===true ) : (usedTime !== 0 || checkTime(date)===false )))
             .map(({ _id, type, date, usedTime }) => (
               <Card key={_id}>
                 <Card.Content>
