@@ -11,6 +11,26 @@ const today = () => {
   return `${yy}-${mm}-${dd}`;
 }
 
+function checkTime( postUser, ticketTime, ticketType ){
+  const arroftoday = today.split("-",3)
+  const nowday = arroftoday[2];
+  const nowmonth = arroftoday[1];
+  const nowhour = Date.getHours();
+  const arrofdate = ticketTime.split("-",3);
+  if(parseInt(arrofdate[2]) < nowday && parseInt(arrofdate[1]) <= nowmonth){  //check the date
+    return 1;
+  }
+  if( postUser!=="root" && parseInt(arrofdate[2])===nowday && parseInt(arrofdate[1]===nowmonth)){  //condition for adding meal today
+    if(ticketType==='lunch'){
+      return 2;
+    }
+    else if(ticketType==='dinner' && nowhour > 12){
+      return 3;
+    }
+  }
+  return 4;
+}
+
 router.post("/give", async (req, res) => {
   let {owner, type, date} = req.body;
   if(!owner || !type || !date) {
@@ -44,30 +64,38 @@ router.post("/give", async (req, res) => {
     return;
   }
   // Check the request ticket time is one day after
-  let day = parseInt(date.split('-').pop());
-  let d = new Date();
-  let nowday = d.getDate();
-  let nowhour = d.getHours();
-  /* 
-    Buggy! 
-    These conditions will fail when the date is at the end of the month.
-    For example, 30 (or 31) > 1 but it is yesterday.
-  */
-  if(day < nowday){
-    res.status(400).send("Expired date!");
-    return;
-  }
-  else if(
-    req.user.group !== "root" && day === nowday && type === 'lunch'
-  ){
-    res.status(400).send("Too late to request a lunch ticket");
-    return;
-  }
-  else if(
-    req.user.group !== "root" && day === nowday && type === 'dinner' && nowhour > 12
-  ){
-    res.status(400).send("Too late to request a dinner ticket");
-    return;
+  // let day = parseInt(date.split('-').pop());
+  
+  // let d = new Date();
+  // let nowday = d.getDate();
+  // let nowmonth = d.getMonth();
+  // let nowhour = d.getHours();
+  // /* 
+  //   Buggy! 
+  //   These conditions will fail when the date is at the end of the month.
+  //   For example, 30 (or 31) > 1 but it is yesterday.
+  // */
+  // if(day < nowday){
+  //   res.status(400).send("Expired date!");
+  //   return;
+  // }
+  // else if(
+  //   req.user.group !== "root" && day === nowday && type === 'lunch'
+  // ){
+  //   res.status(400).send("Too late to request a lunch ticket");
+  //   return;
+  // }
+  // else if(
+  //   req.user.group !== "root" && day === nowday && type === 'dinner' && nowhour > 12
+  // ){
+  //   res.status(400).send("Too late to request a dinner ticket");
+  //   return;
+  // }
+  switch(checkTime(req.user.group, date, type)){
+    case 1: res.status(400).send("Expired date!"); return;
+    case 2: res.status(400).send("Too late to request a lunch ticket"); return;
+    case 3: res.status(400).send("Too late to request a dinner ticket"); return;
+    default: break;
   }
   // Check if ticket already exists
   let tickets = await Ticket.find({owner, type, date})
