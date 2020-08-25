@@ -273,6 +273,8 @@ router.post('/clearEvent', async (req, res) => {
     return;
   }
   const del = await Event.deleteMany({});
+  // May be buggy
+  // not all transactions are came from events
   const delTx = await TX.deleteMany({});
   res.status(200).send(`${del.deletedCount + delTx.deletedCount}`);
 })
