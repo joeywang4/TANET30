@@ -14,7 +14,7 @@ const EventLink = ({ name, id, time, reward }) => (
       </Card.Meta>
     </Card.Content>
     <Card.Content extra>
-      <Button fluid as={Link} to={`/event/page/?id=${id}`} link>
+      <Button fluid as={Link} to={`/event/page/?id=${id}`}>
         view more...
       </Button>
     </Card.Content>

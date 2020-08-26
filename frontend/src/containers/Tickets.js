@@ -40,19 +40,16 @@ const Tickets = () => {
     }
   }
 
-  function checkTime( ticketTime ){
+  // Return True if not expired
+  const checkTime = ticketTime => {
     const d = new Date();
-    const nowday = d.getDate();
-    const nowmonth = d.getMonth();
-    console.log('today'+nowmonth+' '+nowday);
-    const arrofdate = ticketTime.split("-",3);
-    console.log(parseInt(arrofdate[1])+'/'+parseInt(arrofdate[2]));
-    if(parseInt(arrofdate[2]) < nowday && parseInt(arrofdate[1]) <= nowmonth+1){  //nowmonth+1
-      console.log(ticketTime+"false");
-      return false;
-    }
-    console.log(ticketTime+"true");
-    return true;
+    const [nowDay, nowMonth, nowYear] = [d.getDate(), d.getMonth()+1, d.getFullYear()];
+    const [ticketYear, ticketMonth, ticketDay] = ticketTime.split("-",3).map(s => parseInt(s));
+    return (
+      ticketYear > nowYear || 
+      (ticketYear === nowYear && ticketMonth > nowMonth) || 
+      (ticketYear === nowYear && ticketMonth === nowMonth && ticketDay >= nowDay)
+    )
   }
 
   if (connection.isInit()) {
@@ -69,7 +66,7 @@ const Tickets = () => {
       display = (
         <CardGroup stackable style={{ marginTop: "1em" }} >
           {tickets
-            .filter(({ usedTime, date }) => (activeItem === AVAIL ? (usedTime === 0 && checkTime(date)===true ) : (usedTime !== 0 || checkTime(date)===false )))
+            .filter(({ usedTime, date }) => (activeItem === AVAIL ? (usedTime === 0 && checkTime(date) ) : (usedTime !== 0 || !checkTime(date) )))
             .map(({ _id, type, date, usedTime }) => (
               <Card key={_id}>
                 <Card.Content>
