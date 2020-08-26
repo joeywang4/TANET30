@@ -5,6 +5,9 @@ import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
 
+var courseBar = 0;
+var companyBar = 0;
+
 export default () => {
   const { token } = useSelector(state => state.user);
   const [connection, connect] = useAPI("json");
@@ -15,6 +18,8 @@ export default () => {
   let display = null;
 
   const onFilter = () => {
+    courseBar = courseThreshold;
+    companyBar = companyThreshold;
     let id_to_user = {};
     let id_to_count = {}; // id -> [courseCount, companyCount]
     for(let event of connection.response) {
@@ -99,3 +104,5 @@ export default () => {
     </Grid>
   )
 }
+
+export { courseBar, companyBar };
