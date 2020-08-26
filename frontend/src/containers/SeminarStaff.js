@@ -6,7 +6,7 @@ import { BACKEND } from '../config';
 import ok from './Event/ok.mp3';
 import warning from './Event/warning.mp3';
 import { useAPI, useAudio } from '../hooks';
-import { todayRange, parseQRCode } from '../util';
+import { todayRange, parseQRCode , usedDate } from '../util';
 
 const functions = ["Scan QR-Code", "Participant"];
 
@@ -39,7 +39,7 @@ export default () => {
 
   if(getSeminarNameState.isInit()) {
     const [begin, end] = todayRange();
-    getSeminarName(BACKEND+`/event?group=seminarStaff&begin=${begin}&end=${end}`, "GET", null, { 'authorization': token });
+    getSeminarName(BACKEND+`/event?group=seminarStaff&begin=${begin}&end=${end}&populate=1`, "GET", null, { 'authorization': token });
   }
   const seminars = getSeminarNameState.response || [];
   const seminarNames = seminars.map(seminar => ({ key: seminar.name, value: seminar.name, text: seminar.name }));
@@ -137,9 +137,13 @@ export default () => {
       display = (
         <CardGroup stackable>
           {seminar.participant.map((participant) => (
-            <Card key={participant._id} link>
-              <Card.Header as='h3'>{participant.name}</Card.Header>
-              <Card.Meta>{participant.email}</Card.Meta>
+            <Card key={participant.user._id} link>
+              <Card.Header as='h3'>{participant.user.name}</Card.Header>
+              <Card.Meta>
+                {participant.user.email}
+                <br/>
+                {usedDate(participant.usedTime)}
+              </Card.Meta>
             </Card>
           ))}
         </CardGroup>

@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import QrReader from 'react-qr-reader';
 import ok from './ok.mp3';
 import { BACKEND } from '../../config';
-import { epochToTime, parseQRCode } from '../../util';
+import { epochToTime, parseQRCode, usedDate } from '../../util';
 import { useAPI, useAudio } from '../../hooks';
 
 const Event = ({ eventId, style }) => {
@@ -38,9 +38,10 @@ const Event = ({ eventId, style }) => {
   const participants = (
     <CardGroup>
       {event.participant.map(participant => (
-        <Card as={Link} to={`/user?id=${participant._id}`} key={participant._id} link>
+        <Card as={Link} to={`/user?id=${participant.user._id}`} key={participant.user._id} link>
           <Card.Content>
-            <Card.Header>{participant.name}</Card.Header>
+            <Card.Header>{participant.user.name}</Card.Header>
+            <Card.Header>{usedDate(participant.usedTime)}</Card.Header>
           </Card.Content>
         </Card>
       ))}
