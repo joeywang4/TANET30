@@ -4,6 +4,8 @@ const Event = require("../models/event");
 const User = require("../models/user");
 const TX = require("../models/transaction");
 const Like = require("../models/like");
+const Record = require("../models/record");
+const mongoose = require("mongoose");
 
 router.post('/', async (req, res) => {
   let d = new Date();
@@ -134,7 +136,7 @@ router.get('/page', async (req, res) => {
   }
 });
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const userProjection = "_id name email group";
   let timeRange = null;
   if (!req.isLogin) {
@@ -145,10 +147,15 @@ router.get('/', (req, res) => {
     timeRange = { begin: { $gte: req.query.begin }, end: { $lte: req.query.end } };
   }
 
-  if (req.user.group === 'user') {
-    Event.find({ participant: req.user.id }, (err, events) => {
-      if (err) errHandler(err, res);
-      else res.status(200).send(events);
+  if(req.user.group === 'user') {
+    Event.find()
+    .populate('participant', null, { user: mongoose.Types.ObjectId(req.user.id) })
+    .exec((err, events) => {
+      if(err) errHandler(err, res);
+      else {
+        const filteredEvents = events.filter(event => event.participant && event.participant.length > 0);
+        res.status(200).send(filteredEvents);
+      }
     })
     return;
   }
@@ -162,21 +169,11 @@ router.get('/', (req, res) => {
   if (req.query.id || req.query.name) {
     let query = null;
     if (req.query.id) query = Event.findById(req.query.id);
-    else query = Event.findOne({ name: req.query.name });
-    query
-      .populate('admin', userProjection)
-      .populate({
-        path: 'participant',
-        select: userProjection,
-        populate: {
-          path: 'participant'
-        }
-      })
-      .exec((err, event) => {
-        if (err) errHandler(err, res);
-        else if (!event) res.status(404).send("Not found");
-        else res.status(200).send(event.toObject());
-      })
+    else query = await Event.findOne({ name: req.query.name }).populate({
+      path: 'participant',
+      populate: { path: 'user'}
+    });
+    res.status(200).send(query);
     return;
   }
   else {
@@ -196,21 +193,20 @@ router.get('/', (req, res) => {
       return;
     }
     Event.find(queryObj)
-      .populate('admin', userProjection)
-      .populate(req.query.populate ? {
-        path: 'participant',
-        select: userProjection,
-        populate: {
-          path: 'participant'
-        }
-      } : '')
-      .exec((err, events) => {
-        if (err) errHandler(err, res);
-        else if (req.query.group) {
-          res.status(200).send(events.filter(event => event.admin.group === req.query.group));
-        }
-        else res.status(200).send(events);
-      })
+    .populate('admin', userProjection)
+    .populate(req.query.populate?{
+      path: 'participant',
+      populate: { 
+        path: 'user'
+      }
+    }:'')
+    .exec((err, events) => {
+      if(err) errHandler(err, res);
+      else if(req.query.group) {
+        res.status(200).send(events.filter(event => event.admin.group === req.query.group));
+      }
+      else res.status(200).send(events);
+    })
     return;
   }
 })
@@ -235,16 +231,22 @@ const participate = async (res, now, event, userId) => {
     res.status(400).send("User does not exist");
     return;
   }
-  const joined = event.participant.find(_user => String(_user) === String(userId));
-  if (joined) {
+  
+  const joined = event.participant.find(record => String(record.user) === userId);
+  if(joined) {
     res.status(400).send("Already joined event");
     return;
   }
+  let d = now.getTime();
+  const newRecord = Record({"user":userId,"usedTime":d});
+  await newRecord.save()
+  .then(_ => true)
+  .catch(err => errHandler(err));
+  
 
-  await Event.updateOne({ _id: event._id }, { $push: { participant: userId } });
+  await Event.updateOne({_id: event._id}, {$push: {participant : newRecord}});
   // Give reward to this user
-  let d = new Date();
-  const newTx = TX({ to: userId, amount: event.reward, timestamp: d.getTime() })
+  const newTx = TX({  to: userId, amount: event.reward, timestamp: d })
   await newTx.save()
     .then(_ => true)
     .catch(err => errHandler(err));
@@ -393,6 +395,7 @@ router.post('/addParticipant', async (req, res) => {
   }
   const userProjection = "_id name email group";
   const event = await Event.findById(eventId).populate('admin', userProjection)
+    .populate('participant')
     .then(event => event ? event : false)
     .catch(err => {
       errHandler(err);

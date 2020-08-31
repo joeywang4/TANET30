@@ -1,14 +1,14 @@
 import React from 'react';
 import { Card, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import { epochToDate } from '../../util';
+import { usedDate } from '../../util';
 
 const EventLink = ({ name, id, time, reward }) => (
   <Card>
     <Card.Content>
       <Card.Header>{name}</Card.Header>
       <Card.Meta>
-        <span className='date'>{epochToDate(time)}</span>
+        <span className='date'>{usedDate(time)}</span>
         <br />
         <span>$ {reward}</span>
       </Card.Meta>
