@@ -487,7 +487,7 @@ router.post('/lottery', async (req, res) => {
     return;
   }
   const {course, company} = req.body;
-  if(!course || !company) {
+  if( course===null || company===null ) {
     res.status(400).send("Missing field");
     return;
   }
