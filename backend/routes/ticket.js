@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Ticket = require("../models/ticket");
 const User = require("../models/user");
+const fs = require('fs');
+const path = require("path");
 
 const re = /(\d{4})-([0-1]\d{1})-([0-3]\d{1})/;
 const today = () => {
@@ -197,6 +199,55 @@ router.get("/", async (req, res) => {
   .catch(err => errHandler(err));
   if(tickets) res.status(200).send(tickets);
   else res.status(400).send("No Ticket Found");
+  return;
+})
+
+router.get("/avail", async (req, res) => {
+  if(!(req.isLogin)) {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  const data = fs.readFileSync( path.resolve( __dirname, '../config.json' ), {encoding:'utf8', flag:'r'});
+  const entries = JSON.parse(data);
+  const total = entries.MealBoxes.Amount;
+  const type = entries.MealBoxes.Type;
+  const date = entries.MealBoxes.Date;
+  let tickets = await Ticket.find({type, date})
+  .then(ticket => ticket)
+  .catch(err => errHandler(err));
+  let ticket = tickets.filter(ticket => ticket.usedTime !== 0)
+  if(!ticket || ticket.length===0){
+    res.status(200).send(total);
+    return;
+  }
+  const left = total - ticket.length;
+  res.status(200).send(JSON.stringify(left));
+  return;
+})
+
+router.post("/addamount", async (req, res) => {
+  if(!(req.isLogin) || (req.user.group !== "root" && req.user.group !== "foodStaff")){
+    res.status(401).send("Not authorized");
+    return;
+  }
+  const {type, amount} = req.body;
+  if(!type || !amount){
+    res.status(400).send("Missing field");
+    return;
+  }
+  const data = fs.readFileSync( path.resolve(__dirname, '../config.json'), {encoding:'utf8', flag:'r'} );
+  const entries = JSON.parse(data);
+  const date = today();
+  if( entries.MealBoxes.Date === date && entries.MealBoxes.Type === type){
+    console.log("This meal has already been updated!");
+    res.status(400).send("This meal has already been updated!");
+    return;
+  }
+  entries.MealBoxes.Date = date;
+  entries.MealBoxes.Type = type;
+  entries.MealBoxes.Amount = JSON.stringify(amount);
+  fs.writeFileSync(path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2));
+  res.status(200).send("Update mealboxes amount success");
   return;
 })
 
