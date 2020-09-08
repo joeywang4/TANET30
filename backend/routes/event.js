@@ -6,6 +6,8 @@ const TX = require("../models/transaction");
 const Like = require("../models/like");
 const Record = require("../models/record");
 const mongoose = require("mongoose");
+const fs = require("fs");
+const path = require("path");
 
 router.post('/', async (req, res) => {
   let d = new Date();
