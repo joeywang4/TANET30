@@ -459,6 +459,55 @@ router.post('/like', async (req, res) => {
   res.status(200).send({ id: userId, event: eventId, author: authorId, likeState });
 })
 
+router.get('/thresholds', async (req, res) => {
+  if (!req.isLogin) {
+    res.status(401).send("Not logged in");
+    return;
+  }
+  fs.readFile( path.resolve( __dirname, '../config.json' ) , (err, data) => {
+    if(err){
+      console.log(err);
+      return;
+    }
+    const entries = JSON.parse(data);
+    const value = entries["Thresholds"];
+    res.status(200).send(value);
+  });
+  return;
+
+})
+
+router.post('/lottery', async (req, res) => {
+  if (!req.isLogin) {
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== "root") {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  const {course, company} = req.body;
+  if(!course || !company) {
+    res.status(400).send("Missing field");
+    return;
+  }
+  fs.readFile( path.resolve(__dirname, '../config.json'), (err, data) => {
+    if(err){
+      console.log(err);
+      return;
+    } 
+    const entries = JSON.parse(data);
+    entries.Thresholds["CourseBar"] = JSON.stringify(course);
+    entries.Thresholds["CompanyBar"] = JSON.stringify(company);
+    fs.writeFile( path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2), (err) => {
+      if(err){
+        console.log(err);
+        return;
+      }
+    });
+  });
+  res.status(200).send("Update thresholds success");
+})
 
 const errHandler = (err, res) => {
   console.error(err);
