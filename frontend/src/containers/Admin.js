@@ -10,7 +10,8 @@ import {
   ExportUserHandler,
   AddAuthorHandler,
   NewEventHandler,
-  NewTicketHandler
+  NewTicketHandler,
+  UpdateMeals
 } from '../components';
 import { Lottery, ClearCollection } from './';
 
@@ -139,6 +140,21 @@ const Admin = () => {
               icon="download"
               style={{ margin: "1vh 0" }}
             />
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+     <Divider horizontal>
+        <Header as='h4'>
+          <Icon name = 'cart plus' />
+          Update Mealboxes Amount
+        </Header>
+      </Divider>
+      <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
+        <Grid.Row columns={2}>
+          <Grid.Column style={{ width: "80%", maxWidth: "30em" }}>
+            <UpdateMeals />
+          </Grid.Column>
+          <Grid.Column>
           </Grid.Column>
         </Grid.Row>
       </Grid>
