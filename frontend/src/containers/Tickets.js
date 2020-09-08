@@ -52,9 +52,6 @@ const Tickets = () => {
       )
     }
   }
-  const countLeft = (response) => {
-    return response-30;
-  }
 
   // Return True if not expired
   const checkTime = ticketTime => {
