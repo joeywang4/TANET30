@@ -7,6 +7,7 @@ import { useAPI } from '../hooks';
 import { Link } from 'react-router-dom';
 import { usedDate } from '../util';
 
+
 const [AVAIL, USED] = [0, 1];
 
 const Tickets = () => {
@@ -38,6 +39,21 @@ const Tickets = () => {
         { 'authorization': token, 'content-type': "application/json" }
       )
     }
+  }
+
+  const [checkState, check] = useAPI("text");
+  const checkAmount = () => {
+    if(checkState.isInit()){
+      check(
+        BACKEND + "/ticket/avail",
+        "GET",
+        null,
+        { 'authorization': token, 'content-type': "application/json", mode: 'cors' }
+      )
+    }
+  }
+  const countLeft = (response) => {
+    return response-30;
   }
 
   // Return True if not expired
@@ -112,6 +128,10 @@ const Tickets = () => {
           <div>
             {activeItem === AVAIL ? <Button as={Link} to="/userAddTicket">Add Meal</Button> : null}
           </div>
+        </div>
+        <div>
+          {checkAmount()}
+          <p>Current mealboxes: </p>{checkState.response}
         </div>
       </div>
     );
