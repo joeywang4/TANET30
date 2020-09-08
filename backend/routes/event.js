@@ -159,13 +159,13 @@ router.get('/', async (req, res) => {
     })
     return;
   }
-  if (req.user.group === 'root') {
-    Event.find({}, (err, events) => {
-      if (err) errHandler(err, res);
-      else res.status(200).send(events.map((event) => ({ _id: event._id, name: event.name })));
-    })
-    return;
-  }
+//   if (req.user.group === 'root') {
+//     Event.find({}, (err, events) => {
+//       if (err) errHandler(err, res);
+//       else res.status(200).send(events.map((event) => ({ _id: event._id, name: event.name })));
+//     })
+//     return;
+//   }
   if (req.query.id || req.query.name) {
     let query = null;
     if (req.query.id) query = Event.findById(req.query.id);
