@@ -4,9 +4,10 @@ import { Loader, CardGroup } from 'semantic-ui-react';
 import { ErrMsg, EventLink } from '../../components';
 import { BACKEND } from '../../config';
 import { useAPI } from '../../hooks';
-import { courseBar, companyBar } from '../Lottery.js'
+
 
 const ParticipatedEvent = () => {
+  let courseBar, companyBar;
   const { token } = useSelector(state => state.user);
   const [connection, connect] = useAPI("json");
 
@@ -19,6 +20,24 @@ const ParticipatedEvent = () => {
     );
   }
 
+  //get thresholds from backend and update the bar values
+  const [checkBar, check] = useAPI("text");
+  const checkThresholds = () => {
+    if(checkBar.isInit()){
+      check(
+        BACKEND + "/event/thresholds",
+        "GET",
+        null,
+        { 'authorization': token, 'content-type': "application/json", mode: 'cors' }
+      )
+    }
+    if(checkBar.success){
+      const values = JSON.parse(checkBar.response);
+      courseBar = values["CourseBar"];
+      companyBar = values["CompanyBar"];
+    }
+  }
+
   //return the number of course events
   function countEvents(events){
     const coursecount = events.filter(event => event.admin.group === "seminarStaff" );
@@ -29,10 +48,10 @@ const ParticipatedEvent = () => {
     return <ErrMsg />;
   }
   else if (connection.success) {
-    var coursecounts = countEvents(connection.response);
-    var companycounts = connection.response.length - coursecounts;
-    console.log(courseBar);
-    console.log(companyBar);
+    const coursecounts = countEvents(connection.response);
+    const companycounts = connection.response.length - coursecounts;
+    checkThresholds();
+    
     let display = <span>Unable to participate in the lottery!</span>
     if( coursecounts >= courseBar && companycounts >= companyBar ){
       display = <p>Qualified for the lottery!</p>
@@ -48,7 +67,6 @@ const ParticipatedEvent = () => {
     }
     
     if(connection.response.length === 0) {
-      // return <span>You have not participated in any event yet.</span>;
       return (
         <div>
           <span>You have not participated in any event yet.</span>
