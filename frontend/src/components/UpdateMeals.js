@@ -12,8 +12,7 @@ const UpdateMeals = () => {
   const [error, setError] = useState(false);
   const [errMsg, setErrMsg] = useState(false);
 
-  const onSubmit = (e) => {
-    e.preventDefault();
+  const onSubmit = () => {
     const body = { type: ticketType, amount: ticketAmount };
     if(!(ticketTypeEnum.includes(body.type))) {
       setErrMsg("Invalid Ticket Type!");
@@ -25,12 +24,12 @@ const UpdateMeals = () => {
       BACKEND + "/ticket/addamount",
       "POST", 
       JSON.stringify(body), 
-      {'authorization': token, 'content-type': "application/json"}
+      { 'authorization': token, 'content-type': "application/json" }
     )
   }
 
   return (
-    <Form onSubmit={e => onSubmit(e)} loading={createState.loading}>
+    <Form onSubmit={onSubmit} loading={createState.loading}>
       <Form.Field required>
         <label>Meal Type</label>
         <Dropdown
