@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Loader, Menu, CardGroup, Card, Button, Icon } from 'semantic-ui-react';
+import { Loader, Menu, CardGroup, Card, Button, Icon, Grid, Segment } from 'semantic-ui-react';
 import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
@@ -127,8 +127,19 @@ const Tickets = () => {
           </div>
         </div>
         <div>
-          {checkAmount()}
-          <p>Current mealboxes: </p>{checkState.response}
+          <Grid>
+            <Grid.Column width={4}>
+              <Button animated onClick = {checkAmount}>
+                <Button.Content visible>目前便當數量</Button.Content>
+                <Button.Content hidden>
+                  <Icon name = 'refresh' />
+                </Button.Content>
+              </Button>
+            </Grid.Column>
+            <Grid.Column>
+              {checkState.response}
+            </Grid.Column>
+          </Grid>
         </div>
       </div>
     );
