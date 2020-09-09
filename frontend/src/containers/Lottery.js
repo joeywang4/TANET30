@@ -19,7 +19,7 @@ export default () => {
   let display = null;
 
   const updateThresholds = (courseBar, companyBar) => {
-    if(courseBar < 0 || companyBar<0){
+    if(courseBar < 0 || companyBar < 0){
       setErrMsg("Invalid Threshold!");
       setError(true);
       return;
