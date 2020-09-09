@@ -12,7 +12,7 @@ import {
   NewEventHandler,
   NewTicketHandler
 } from '../components';
-import { Lottery, ClearCollection } from './';
+import { Lottery, ClearCollection, RenameButton } from './';
 
 const Admin = () => {
   return (
@@ -162,6 +162,7 @@ const Admin = () => {
             <ClearCollection />
           </Grid.Column>
           <Grid.Column>
+            <RenameButton />
           </Grid.Column>
         </Grid.Row>
       </Grid>
