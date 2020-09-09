@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Ticket = require("../models/ticket");
 const User = require("../models/user");
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require("path");
 
 const re = /(\d{4})-([0-1]\d{1})-([0-3]\d{1})/;
@@ -164,51 +164,31 @@ router.post("/delete", async (req, res) => {
   return;
 })
 
-router.get("/", async (req, res) => {
-  if(!(req.isLogin)) {
-    res.status(401).send("Not authorized");
-  }
-  let query = {...req.query};
-  let populate = req.query.populate;
-  delete query['populate'];
-  if(!(["root", "foodStaff"].includes(req.user.group))) {
-    query = {owner: req.user.id};
-    populate = false
-  }
-  let thenable = Ticket.find(query);
-  if(populate) thenable = thenable.populate('owner', '_id name email group');
-  /* 
-    thenable.length() will cause an error. (thenable.length is not a function)
-    Note that thenable is an unresolved Promise, and not an array.
-    ---
-    Update tickets on query is OK, but I would prefer filtering out outdated tickets in the frontend.
-    This will reduce some computational effort for both the backend and the DB.
-  */
-  // Check if available tickets are overdued
-  // for(var i = 0; i < thenable.length(); ++i){
-  //   const nowday = Date.getDate();
-  //   console.log(nowday);
-  //   console.log(thenable[i].date.split('-').pop());
-  //   if(thenable[i].date.split('-').pop() <= nowday && thenable[i].usedTime==0){
-  //     thenable[i].usedTime = 1;
-  //   }
-  // }
-  // await thenable.save();
-  const tickets = await thenable
-  .then(tickets => tickets)
-  .catch(err => errHandler(err));
-  if(tickets) res.status(200).send(tickets);
-  else res.status(400).send("No Ticket Found");
-  return;
-})
 
 router.get("/avail", async (req, res) => {
   if(!(req.isLogin)) {
     res.status(401).send("Not authorized");
     return;
   }
-  const data = fs.readFileSync( path.resolve( __dirname, '../config.json' ), {encoding:'utf8', flag:'r'});
-  const entries = JSON.parse(data);
+  const loadData = async () => {
+    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    return (JSON.parse(data));
+  }
+  const entries = await loadData()
+    .then(entries => entries)
+    .catch(_ => false);
+  if (!entries) {
+    res.status(400).send("Read File Error");
+    return;
+  }
+  if (!entries.MealBoxes) {
+    res.status(404).send("File Missing MealBoxes");
+    return;
+  }
+  if (!entries.MealBoxes.Amount || !entries.MealBoxes.Type || !entries.MealBoxes.Date) {
+    res.status(404).send("File Missing MealBoxes Data");
+    return;
+  }
   const total = entries.MealBoxes.Amount;
   const type = entries.MealBoxes.Type;
   const date = entries.MealBoxes.Date;
@@ -225,6 +205,30 @@ router.get("/avail", async (req, res) => {
   return;
 })
 
+
+router.get("/", async (req, res) => {
+  if(!(req.isLogin)) {
+    res.status(401).send("Not authorized");
+  }
+  let query = {...req.query};
+  let populate = req.query.populate;
+  delete query['populate'];
+  if(!(["root", "foodStaff"].includes(req.user.group))) {
+    query = {owner: req.user.id};
+    populate = false
+  }
+  let thenable = Ticket.find(query);
+  if(populate) thenable = thenable.populate('owner', '_id name email group');
+
+  const tickets = await thenable
+  .then(tickets => tickets)
+  .catch(err => errHandler(err));
+  if(tickets) res.status(200).send(tickets);
+  else res.status(400).send("No Ticket Found");
+  return;
+})
+
+
 router.post("/addamount", async (req, res) => {
   if(!(req.isLogin) || (req.user.group !== "root" && req.user.group !== "foodStaff")){
     res.status(401).send("Not authorized");
@@ -235,21 +239,39 @@ router.post("/addamount", async (req, res) => {
     res.status(400).send("Missing field");
     return;
   }
-  const data = fs.readFileSync( path.resolve(__dirname, '../config.json'), {encoding:'utf8', flag:'r'} );
-  const entries = JSON.parse(data);
+  const loadData = async () => {
+    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    return (JSON.parse(data));
+  }
+  const entries = await loadData()
+    .then(entries => entries)
+    .catch(_ => false);
+  if (!entries) {
+    res.status(400).send("Read File Error");
+    return;
+  }
+  if (!entries.MealBoxes) {
+    res.status(404).send("File Missing MealBoxes");
+    return;
+  }
+  if (!entries.MealBoxes.Amount || !entries.MealBoxes.Type || !entries.MealBoxes.Date) {
+    res.status(404).send("File Missing MealBoxes Data");
+    return;
+  }
   const date = today();
   if( entries.MealBoxes.Date === date && entries.MealBoxes.Type === type){
-    console.log("This meal has already been updated!");
-    res.status(400).send("This meal has already been updated!");
+    res.status(403).send("This meal has already been updated!");
     return;
   }
   entries.MealBoxes.Date = date;
   entries.MealBoxes.Type = type;
   entries.MealBoxes.Amount = JSON.stringify(amount);
-  fs.writeFileSync(path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2));
+  fs.writeFile(path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2));
   res.status(200).send("Update mealboxes amount success");
   return;
 })
+
+
 
 const errHandler = (err, res) => {
   console.error(err);
