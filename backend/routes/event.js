@@ -6,7 +6,7 @@ const TX = require("../models/transaction");
 const Like = require("../models/like");
 const Record = require("../models/record");
 const mongoose = require("mongoose");
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 
 router.post('/', async (req, res) => {
@@ -161,13 +161,13 @@ router.get('/', async (req, res) => {
     })
     return;
   }
-//   if (req.user.group === 'root') {
-//     Event.find({}, (err, events) => {
-//       if (err) errHandler(err, res);
-//       else res.status(200).send(events.map((event) => ({ _id: event._id, name: event.name })));
-//     })
-//     return;
-//   }
+  // if (req.user.group === 'root') {
+  //   Event.find({}, (err, events) => {
+  //     if (err) errHandler(err, res);
+  //     else res.status(200).send(events.map((event) => ({ _id: event._id, name: event.name })));
+  //   })
+  //   return;
+  // }
   if (req.query.id || req.query.name) {
     let query = null;
     if (req.query.id) query = Event.findById(req.query.id);
@@ -466,17 +466,27 @@ router.get('/thresholds', async (req, res) => {
     res.status(401).send("Not logged in");
     return;
   }
-  fs.readFile( path.resolve( __dirname, '../config.json' ) , (err, data) => {
-    if(err){
-      console.log(err);
-      return;
-    }
-    const entries = JSON.parse(data);
-    const value = entries["Thresholds"];
-    res.status(200).send(value);
-  });
+  const loadData = async () => {
+    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    return (JSON.parse(data));
+  }
+  const entries = await loadData()
+    .then(entries => entries)
+    .catch(_ => false);
+  if (!entries) {
+    res.status(400).send("Read File Error");
+    return;
+  }
+  if (!entries.Thresholds) {
+    res.status(404).send("File Missing Thresholds");
+    return;
+  }
+  if (!entries.Thresholds.CompanyBar || !entries.Thresholds.CourseBar) {
+    res.status(404).send("File Missing Thresholds Data");
+    return;
+  }
+  res.status(200).send(entries.Thresholds);
   return;
-
 })
 
 router.post('/lottery', async (req, res) => {
@@ -493,20 +503,25 @@ router.post('/lottery', async (req, res) => {
     res.status(400).send("Missing field");
     return;
   }
-  fs.readFile( path.resolve(__dirname, '../config.json'), (err, data) => {
+  const loadData = async () => {
+    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    return (JSON.parse(data));
+  }
+  const entries = await loadData()
+    .then(entries => entries)
+    .catch(_ => false);
+  if (!entries) {
+    res.status(400).send("Read File Error");
+    return;
+  }
+  entries.Thresholds["CourseBar"] = JSON.stringify(course);
+  entries.Thresholds["CompanyBar"] = JSON.stringify(company);
+  fs.writeFile( path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2), (err) => {
     if(err){
       console.log(err);
+      res.status(400).send("Write File Error");
       return;
-    } 
-    const entries = JSON.parse(data);
-    entries.Thresholds["CourseBar"] = JSON.stringify(course);
-    entries.Thresholds["CompanyBar"] = JSON.stringify(company);
-    fs.writeFile( path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2), (err) => {
-      if(err){
-        console.log(err);
-        return;
-      }
-    });
+    }
   });
   res.status(200).send("Update thresholds success");
 })
