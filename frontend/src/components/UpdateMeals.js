@@ -21,7 +21,7 @@ const UpdateMeals = () => {
     }
     setError(false);
     create(
-      BACKEND + "/ticket/addamount",
+      BACKEND + "/ticket/amount",
       "POST", 
       JSON.stringify(body), 
       { 'authorization': token, 'content-type': "application/json" }
