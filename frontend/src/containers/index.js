@@ -17,6 +17,7 @@ import Tickets from './Tickets';
 import Lottery from './Lottery';
 import ClearCollection from './ClearCollection';
 import Poster from './Poster';
+import Clerk from './Clerk';
 import UserAddTicket from './UserAddTicket'
 import History from './History';
 
@@ -40,6 +41,7 @@ export {
   Tickets,
   Lottery,
   Poster,
+  Clerk,
   UserAddTicket,
   History,
   ClearCollection

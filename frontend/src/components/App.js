@@ -16,6 +16,7 @@ import {
   Company,
   Register,
   Poster,
+  Clerk,
   UserAddTicket
 } from '../containers';
 
@@ -46,6 +47,9 @@ function App({hasLoggedIn, userGroup}) {
       break;
     case 'poster':
       homeComponent = <Poster />;
+      break;
+    case 'clerk':
+      homeComponent = <Clerk />;
       break;
     case 'user':
     default:
