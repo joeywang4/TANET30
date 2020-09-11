@@ -466,14 +466,13 @@ router.get('/thresholds', async (req, res) => {
     res.status(401).send("Not logged in");
     return;
   }
-  const loadData = async () => {
+  let entries = null;
+  try {
     const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
-    return (JSON.parse(data));
+    entries = JSON.parse(data);;
   }
-  const entries = await loadData()
-    .then(entries => entries)
-    .catch(_ => false);
-  if (!entries) {
+  catch(err) {
+    console.log(err);
     res.status(400).send("Read File Error");
     return;
   }
@@ -503,19 +502,18 @@ router.post('/lottery', async (req, res) => {
     res.status(400).send("Missing field");
     return;
   }
-  const loadData = async () => {
+  let entries;
+  try {
     const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
-    return (JSON.parse(data));
+    entries = JSON.parse(data);
   }
-  const entries = await loadData()
-    .then(entries => entries)
-    .catch(_ => false);
-  if (!entries) {
+  catch(err) {
+    console.log(err);
     res.status(400).send("Read File Error");
     return;
   }
-  entries.Thresholds["CourseBar"] = JSON.stringify(course);
-  entries.Thresholds["CompanyBar"] = JSON.stringify(company);
+  entries.Thresholds["CourseBar"] = String(course);
+  entries.Thresholds["CompanyBar"] = String(company);
   fs.writeFile( path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2), (err) => {
     if(err){
       console.log(err);
