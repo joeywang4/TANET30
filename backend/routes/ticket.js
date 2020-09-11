@@ -170,14 +170,13 @@ router.get("/avail", async (req, res) => {
     res.status(401).send("Not authorized");
     return;
   }
-  const loadData = async () => {
+  let entries = null;
+  try {
     const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
-    return (JSON.parse(data));
+    entries = JSON.parse(data);;
   }
-  const entries = await loadData()
-    .then(entries => entries)
-    .catch(_ => false);
-  if (!entries) {
+  catch(err) {
+    console.log(err);
     res.status(400).send("Read File Error");
     return;
   }
@@ -229,7 +228,7 @@ router.get("/", async (req, res) => {
 })
 
 
-router.post("/addamount", async (req, res) => {
+router.post("/amount", async (req, res) => {
   if(!(req.isLogin) || (req.user.group !== "root" && req.user.group !== "foodStaff")){
     res.status(401).send("Not authorized");
     return;
@@ -239,14 +238,13 @@ router.post("/addamount", async (req, res) => {
     res.status(400).send("Missing field");
     return;
   }
-  const loadData = async () => {
+  let entries = null;
+  try {
     const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
-    return (JSON.parse(data));
+    entries = JSON.parse(data);;
   }
-  const entries = await loadData()
-    .then(entries => entries)
-    .catch(_ => false);
-  if (!entries) {
+  catch(err) {
+    console.log(err);
     res.status(400).send("Read File Error");
     return;
   }
@@ -265,7 +263,7 @@ router.post("/addamount", async (req, res) => {
   }
   entries.MealBoxes.Date = date;
   entries.MealBoxes.Type = type;
-  entries.MealBoxes.Amount = JSON.stringify(amount);
+  entries.MealBoxes.Amount = String(amount);
   fs.writeFile(path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2));
   res.status(200).send("Update mealboxes amount success");
   return;
