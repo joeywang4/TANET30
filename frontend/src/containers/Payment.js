@@ -75,8 +75,6 @@ class Payment extends Component {
   render() {
     return (
       <div style={{ 
-        width: "50%",
-        maxWidth: "800px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center"

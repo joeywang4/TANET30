@@ -90,7 +90,6 @@ router.post('/purchase', async (req, res) => {
     res.status(400).send("Missing receiver or amount");
     return;
   }
-  // const to = req.user.group === "cashier" ? "Faucet" : req.user.id;
   const to = req.user.id;
   const timestamp = d.getTime();
   const TXs = await TX.find({$or: [{'from': from}, {'to': from}]}, (err, TXs) => {
@@ -102,7 +101,6 @@ router.post('/purchase', async (req, res) => {
     res.status(400).send("Not enough balance");
     return;
   }
-  console.log("from " + from + " to " + to);
   const newTX = TX({ from, to, amount, timestamp });
   const done = newTX.save()
   .then(_ => true)
