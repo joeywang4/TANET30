@@ -37,7 +37,7 @@ const History = () => {
                   </Card.Header>
                   <Card.Meta>
                     <span >
-                      {id===to._id?"from "+(from?from.name:'Faucet'):"to "+to.name}
+                      {id===to._id?"from "+(from?from.name:'Faucet'):"to "+(to.group==='cashier'?'Faucet':to.name)}
                       <br/>
                       {usedDate(timestamp)}
                     </span>

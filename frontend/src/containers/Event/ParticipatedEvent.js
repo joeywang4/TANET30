@@ -81,7 +81,7 @@ const ParticipatedEvent = () => {
           <EventLink key={_id} name={name} id={_id} time={participant[0].usedTime} reward={reward} />
         ))}
       </CardGroup>
-      <div>
+      <div style={{marginTop: "1.5em"}}>
         {display}
       </div>
       </div>
