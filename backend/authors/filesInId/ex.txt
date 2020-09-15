@@ -1,5 +1,0 @@
-author email: author1@test.com
-author name: author1
-event name: test0819#1
-title: 資訊安全
-content: this is content for author1 in test0819#1.
