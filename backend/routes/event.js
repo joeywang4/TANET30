@@ -6,6 +6,8 @@ const TX = require("../models/transaction");
 const Like = require("../models/like");
 const Record = require("../models/record");
 const mongoose = require("mongoose");
+const fs = require("fs").promises;
+const path = require("path");
 
 router.post('/', async (req, res) => {
   let d = new Date();
@@ -159,13 +161,13 @@ router.get('/', async (req, res) => {
     })
     return;
   }
-  if (req.user.group === 'root') {
-    Event.find({}, (err, events) => {
-      if (err) errHandler(err, res);
-      else res.status(200).send(events.map((event) => ({ _id: event._id, name: event.name })));
-    })
-    return;
-  }
+  // if (req.user.group === 'root') {
+  //   Event.find({}, (err, events) => {
+  //     if (err) errHandler(err, res);
+  //     else res.status(200).send(events.map((event) => ({ _id: event._id, name: event.name })));
+  //   })
+  //   return;
+  // }
   if (req.query.id || req.query.name) {
     let query = null;
     if (req.query.id) query = Event.findById(req.query.id);
@@ -459,6 +461,68 @@ router.post('/like', async (req, res) => {
   res.status(200).send({ id: userId, event: eventId, author: authorId, likeState });
 })
 
+router.get('/thresholds', async (req, res) => {
+  if (!req.isLogin) {
+    res.status(401).send("Not logged in");
+    return;
+  }
+  let entries = null;
+  try {
+    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    entries = JSON.parse(data);;
+  }
+  catch(err) {
+    console.log(err);
+    res.status(400).send("Read File Error");
+    return;
+  }
+  if (!entries.Thresholds) {
+    res.status(404).send("File Missing Thresholds");
+    return;
+  }
+  if (!entries.Thresholds.CompanyBar || !entries.Thresholds.CourseBar) {
+    res.status(404).send("File Missing Thresholds Data");
+    return;
+  }
+  res.status(200).send(entries.Thresholds);
+  return;
+})
+
+router.post('/lottery', async (req, res) => {
+  if (!req.isLogin) {
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== "root") {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  const {course, company} = req.body;
+  if( course===null || company===null ) {
+    res.status(400).send("Missing field");
+    return;
+  }
+  let entries;
+  try {
+    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    entries = JSON.parse(data);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(400).send("Read File Error");
+    return;
+  }
+  entries.Thresholds["CourseBar"] = String(course);
+  entries.Thresholds["CompanyBar"] = String(company);
+  fs.writeFile( path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2), (err) => {
+    if(err){
+      console.log(err);
+      res.status(400).send("Write File Error");
+      return;
+    }
+  });
+  res.status(200).send("Update thresholds success");
+})
 
 const errHandler = (err, res) => {
   console.error(err);

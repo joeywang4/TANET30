@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Loader, Menu, CardGroup, Card, Button, Icon } from 'semantic-ui-react';
+import { Loader, Menu, CardGroup, Card, Button, Icon, Grid, Segment } from 'semantic-ui-react';
 import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
 import { Link } from 'react-router-dom';
 import { usedDate } from '../util';
+
 
 const [AVAIL, USED] = [0, 1];
 
@@ -36,6 +37,18 @@ const Tickets = () => {
         "POST",
         JSON.stringify(body),
         { 'authorization': token, 'content-type': "application/json" }
+      )
+    }
+  }
+
+  const [checkState, check] = useAPI("text");
+  const checkAmount = () => {
+    if(checkState.isInit()){
+      check(
+        BACKEND + "/ticket/avail",
+        "GET",
+        null,
+        { 'authorization': token, 'content-type': "application/json", mode: 'cors' }
       )
     }
   }
@@ -112,6 +125,21 @@ const Tickets = () => {
           <div>
             {activeItem === AVAIL ? <Button as={Link} to="/userAddTicket">Add Meal</Button> : null}
           </div>
+        </div>
+        <div>
+          <Grid>
+            <Grid.Column width={4}>
+              <Button animated onClick = {checkAmount}>
+                <Button.Content visible>目前便當數量</Button.Content>
+                <Button.Content hidden>
+                  <Icon name = 'refresh' />
+                </Button.Content>
+              </Button>
+            </Grid.Column>
+            <Grid.Column>
+              {checkState.response}
+            </Grid.Column>
+          </Grid>
         </div>
       </div>
     );

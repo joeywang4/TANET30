@@ -6,6 +6,7 @@ import {
   UserStatus,
   Receive,
   Send,
+  Payment,
   Events,
   CreateEvent,
   Event,
@@ -16,6 +17,7 @@ import {
   Company,
   Register,
   Poster,
+  Cashier,
   UserAddTicket
 } from '../containers';
 
@@ -47,6 +49,9 @@ function App({hasLoggedIn, userGroup}) {
     case 'poster':
       homeComponent = <Poster />;
       break;
+    case 'cashier':
+      homeComponent = <Cashier />;
+      break;
     case 'user':
     default:
       break;
@@ -69,6 +74,9 @@ function App({hasLoggedIn, userGroup}) {
           </Route>
           <Route exact path="/send">
             {mustLogin(hasLoggedIn, <Send />)}
+          </Route>
+          <Route exact path="/payment">
+            {mustLogin(hasLoggedIn, <Payment />)}
           </Route>
           <Route exact path="/events">
             {mustLogin(hasLoggedIn, <Events />)}

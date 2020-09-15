@@ -1,0 +1,11 @@
+{
+  "MealBoxes": {
+    "Date": "2020-08-18",
+    "Type": "lunch",
+    "Amount": "140"
+  },
+  "Thresholds": {
+    "CourseBar": "5",
+    "CompanyBar": "3"
+  }
+}
