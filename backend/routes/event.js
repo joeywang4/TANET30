@@ -78,10 +78,10 @@ const getContent = async (id, sendOutline=false) => {
     .then((data) => {
       const lines = data.toString().split('\n');
       const outlineReducer = (acc, cur, idx) => {
-        return idx < 4 ? '' : idx === 4 ? cur.slice(8) : acc + '\n' + cur;
+        return idx < 3 ? '' : idx === 3 ? cur : acc + '\n' + cur;
       }
       return {
-        title: lines[3].slice(6),
+        title: lines[2],
         outline: (sendOutline ? lines.reduce(outlineReducer, '') : false)};
     })
     .catch((err) => {
@@ -520,6 +520,37 @@ router.post('/like', async (req, res) => {
     .then(_ => true)
     .catch(err => errHandler(err));
   res.status(200).send({ id: userId, event: eventId, author: authorId, likeState });
+})
+
+router.post('/createAuthorInfo', async (req, res) => {
+  if (!req.isLogin) {
+    console.log(`Add author failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== "root") {
+    res.status(401).send("You are not authorized");
+    return;
+  }
+
+  const { authorEmail, eventName, title, content } = req.body;
+  const path = `./authors/FilesInName/${eventName}`
+  fs.promises.mkdir(path, { recursive: false })
+  .then( async () => {
+    try {
+      await fs.promises.writeFile(`${path}/${authorEmail}.txt`, `${authorEmail}\n${eventName}\n${title}\n${content}`);
+      res.status(200).send(`${authorEmail} in ${eventName} success`);
+    } catch (err) {
+      errHandler(err, res);
+    }
+  } )
+  .catch( async err => {
+    if(err.errno === -4075) {
+      await fs.promises.writeFile(`${path}/${authorEmail}.txt`, `${authorEmail}\n${eventName}\n${title}\n${content}`);
+      res.status(200).send(`${authorEmail} in ${eventName} success`);
+    }
+    else  errHandler(err, res);
+  })
 })
 
 router.post('/rename', async (req, res) => {

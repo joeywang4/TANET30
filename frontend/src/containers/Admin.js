@@ -9,6 +9,7 @@ import {
   NewUserHandler,
   ExportUserHandler,
   AddAuthorHandler,
+  AuthorContentHandler,
   NewEventHandler,
   NewTicketHandler
 } from '../components';
@@ -152,6 +153,36 @@ const Admin = () => {
 
       <Divider horizontal>
         <Header as='h4'>
+          <Icon name='address card' />
+          Add Author Infos
+        </Header>
+      </Divider>
+      <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
+        <Grid.Row columns={2}>
+          <Grid.Column style={{ width: "80%", maxWidth: "30em" }}>
+            <FileUpload
+              name="Import authors info from File"
+              header="Upload a .csv file"
+              help={
+                <React.Fragment>
+                  A CSV File with three columns: Author Email, Event Name, Author Title, Author Content<br />
+                  e.g. <i>author1@test.com, testEvent0821, 資訊安全, "This is content for author1 in testEvent0821."</i><br />
+                  <br />
+                </React.Fragment>
+              }
+              Handler={AuthorContentHandler}
+              icon="download"
+              style={{ margin: "1vh 0" }}
+            />
+          </Grid.Column>
+          <Grid.Column>
+            <RenameButton />
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+
+      <Divider horizontal>
+        <Header as='h4'>
           <Icon name='trash alternate' />
           Delete Data
         </Header>
@@ -162,7 +193,6 @@ const Admin = () => {
             <ClearCollection />
           </Grid.Column>
           <Grid.Column>
-            <RenameButton />
           </Grid.Column>
         </Grid.Row>
       </Grid>

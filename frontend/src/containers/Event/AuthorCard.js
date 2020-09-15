@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Card, Button, Icon, Label } from 'semantic-ui-react';
+import { Card, Button, Icon } from 'semantic-ui-react';
 import { BACKEND } from '../../config';
-import { nominalTypeHack } from 'prop-types';
 
 const AuthorCard = ({ authorId, eventId, name, likes, likeState, content }) => {
-  // console.log({ authorId, eventId, name, likes, likeState });
-  // const content = 'content: to be determined';
   const initLikeState = likeState;
   const { token } = useSelector(state => state.user);
   const [ totalLikes, setTotalLikes ] = useState(likes);
