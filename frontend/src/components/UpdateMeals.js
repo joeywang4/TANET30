@@ -9,17 +9,15 @@ const UpdateMeals = () => {
   const [createState, create] = useAPI("text");
   const [ticketType, setTicketType] = useState(null);
   const [ticketAmount, setTicketAmount] = useState(-1);
-  const [error, setError] = useState(false);
-  const [errMsg, setErrMsg] = useState(false);
+  const [error, setError] = useState(null);
 
   const onSubmit = () => {
     const body = { type: ticketType, amount: ticketAmount };
     if(!(ticketTypeEnum.includes(body.type))) {
-      setErrMsg("Invalid Ticket Type!");
-      setError(true);
+      setError("Invalid Ticket Type!");
       return;
     }
-    setError(false);
+    setError(null);
     create(
       BACKEND + "/ticket/amount",
       "POST", 
@@ -49,7 +47,7 @@ const UpdateMeals = () => {
         </Form.Field>
       {createState.error || error
         ?
-        <Message negative>{error ? errMsg : createState.errMsg}</Message>
+        <Message negative>{error ? error : createState.errMsg}</Message>
         :
         null
       }

@@ -161,19 +161,12 @@ router.get('/', async (req, res) => {
     })
     return;
   }
-  // if (req.user.group === 'root') {
-  //   Event.find({}, (err, events) => {
-  //     if (err) errHandler(err, res);
-  //     else res.status(200).send(events.map((event) => ({ _id: event._id, name: event.name })));
-  //   })
-  //   return;
-  // }
   if (req.query.id || req.query.name) {
     let query = null;
     if (req.query.id) query = Event.findById(req.query.id);
     else query = await Event.findOne({ name: req.query.name }).populate({
       path: 'participant',
-      populate: { path: 'user'}
+      populate: { path: 'user', select: userProjection }
     });
     res.status(200).send(query);
     return;
@@ -198,9 +191,7 @@ router.get('/', async (req, res) => {
     .populate('admin', userProjection)
     .populate(req.query.populate?{
       path: 'participant',
-      populate: { 
-        path: 'user'
-      }
+      populate: { path: 'user', select: userProjection }
     }:'')
     .exec((err, events) => {
       if(err) errHandler(err, res);
@@ -469,7 +460,7 @@ router.get('/thresholds', async (req, res) => {
   let entries = null;
   try {
     const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
-    entries = JSON.parse(data);;
+    entries = JSON.parse(data);
   }
   catch(err) {
     console.log(err);
