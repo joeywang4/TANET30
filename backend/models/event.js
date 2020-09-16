@@ -24,7 +24,7 @@ const EventSchema = new Schema({
     required: true
   },
   participant: {
-    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    type: [{ type: Schema.Types.ObjectId, ref: 'Record' }],
     required: true
   },
   author: {

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Loader, Grid, Form, Button } from 'semantic-ui-react';
+import { Loader, Grid, Form, Button, Message } from 'semantic-ui-react';
 import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
+
 
 export default () => {
   const { token } = useSelector(state => state.user);
@@ -11,10 +12,28 @@ export default () => {
   const [courseThreshold, setCourseThreshold] = useState(-1);
   const [companyThreshold, setCompanyThreshold] = useState(-1);
   const [list, setList] = useState(null);
+  const [editState, edit] = useAPI("text");
+  const [error, setError] = useState(null);
 
   let display = null;
 
+  const updateThresholds = (courseBar, companyBar) => {
+    if(courseBar < 0 || companyBar < 0){
+      setError("Invalid Threshold!");
+      return;
+    }
+    setError(null);
+    const body = { course: courseBar, company: companyBar };
+    edit(
+      BACKEND + "/event/lottery",
+      "POST",
+      JSON.stringify(body),
+      {'authorization': token, 'content-type': "application/json"}
+    )
+  }
+
   const onFilter = () => {
+    updateThresholds(courseThreshold, companyThreshold);
     let id_to_user = {};
     let id_to_count = {}; // id -> [courseCount, companyCount]
     for(let event of connection.response) {
@@ -91,6 +110,20 @@ export default () => {
             </Form.Field>
             <Button onClick={_ => onFilter()}>Filter</Button>
           </Form>
+          {
+            editState.error || error
+            ?
+            <Message negative>{error ? error : editState.errMsg}</Message>
+            :
+            null
+          }
+          {
+            editState.success
+            ?
+            <Message positive>Update Thresholds Success!</Message>
+            :
+            null
+          }
         </Grid.Column>
         <Grid.Column>
           {display}
@@ -99,3 +132,4 @@ export default () => {
     </Grid>
   )
 }
+

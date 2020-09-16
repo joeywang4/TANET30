@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Header, Icon, Divider, Dropdown, Menu, Message, CardGroup, Card, Loader } from 'semantic-ui-react';
+import { Header, Icon, Divider, Dropdown, Menu, Message, CardGroup, Card, Loader, Button, Grid } from 'semantic-ui-react';
 import QrReader from 'react-qr-reader';
 import { useSelector } from 'react-redux';
 import { ticketTypeEnum, BACKEND } from '../config';
@@ -9,6 +9,7 @@ import noFood from './Event/no_food.wav';
 import { useAPI, useAudio } from '../hooks';
 import { today, parseQRCode } from '../util';
 import { usedDate } from '../util';
+import UpdateMeals from '../components/UpdateMeals';
 const foodTypes = ticketTypeEnum.map(type => ({ key: type, value: type, text: type }));
 const functions = ["Scan QR-Code", "Available Tickets", "Used Tickets"];
 
@@ -84,6 +85,7 @@ export default () => {
     setErrMsg("Scan QR-Code Error!");
   }
 
+
   let display = null;
   switch (activeItem) {
     default:
@@ -157,7 +159,11 @@ export default () => {
         </CardGroup>
       )
       break;
+    case 'add':
+      display = <UpdateMeals />
+      break;
   }
+
 
   return (
     <div style={{ marginTop: "2em", width: "80%" }}>
@@ -166,16 +172,30 @@ export default () => {
         <Header.Content>Send Food</Header.Content>
       </Header>
       <Divider />
-      <Menu stackable widths={3}>
-        {functions.map(_func => (
-          <Menu.Item
-            name={_func}
-            active={activeItem === _func}
+      <Grid columns={2} padded>
+        <Grid.Column width = {15} >
+          <Menu stackable widths={3}>
+            {functions.map(_func => (
+              <Menu.Item
+                name={_func}
+                active={activeItem === _func}
+                onClick={(_, { name }) => {setActiveItem(name); init();}}
+                key={_func}
+              />
+            ))}
+          </Menu>
+        </Grid.Column>
+        <Grid.Column width = {1} >
+          <Button 
+            circular 
+            color = 'teal'
+            name = 'add'
             onClick={(_, { name }) => {setActiveItem(name); init();}}
-            key={_func}
-          />
-        ))}
-      </Menu>
+          >
+            <Icon name = 'add' />
+          </Button>
+        </Grid.Column>
+      </Grid>
       {display}
       {okAudioTag}
       {warningAudioTag}

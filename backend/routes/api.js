@@ -74,6 +74,47 @@ router.post('/TX', async (req, res) => {
   return;
 })
 
+router.post('/purchase', async (req, res) => {
+  let d = new Date();
+  if(!req.isLogin) {
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create transaction failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== 'cashier') {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  const { from, amount } = req.body;
+  if(!from || !amount) {
+    res.status(400).send("Missing receiver or amount");
+    return;
+  }
+  const to = req.user.id;
+  const timestamp = d.getTime();
+  const TXs = await TX.find({$or: [{'from': from}, {'to': from}]}, (err, TXs) => {
+    if(err) return errHandler(err, res);
+    else return TXs;
+  });
+  
+  if(getBalance(from, TXs) < amount) {
+    res.status(400).send("Not enough balance");
+    return;
+  }
+  const newTX = TX({ from, to, amount, timestamp });
+  const done = newTX.save()
+  .then(_ => true)
+  .catch(err => errHandler(err, res));
+
+  if(done) {
+    let d = new Date();
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create TX success: \$${amount} from ${from} to ${to}`);
+    res.status(200).send("Create transaction success");
+  }
+  else res.status(400).send("Create transaction failed");
+  return;
+})
+
 router.get('/user', (req, res) => {
   const findUser = _id => {
     User.findById(_id, (err, user) => {
