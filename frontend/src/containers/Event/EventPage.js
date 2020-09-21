@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Loader, Card } from 'semantic-ui-react';
 import { ErrMsg } from '../../components';
-import { BACKEND } from '../../config';
+import { FRONTEND, BACKEND } from '../../config';
 import { useAPI } from '../../hooks';
 import { AuthorCard } from '../../containers';
 import { DiscussionEmbed } from 'disqus-react';
@@ -42,7 +42,7 @@ const EventPage = ({ eventId, url, id, title }) => {
               shortname='tanet30'
               config={
                 {
-                  url: `http://localhost:3000/event/page/${url}`,
+                  url: `${FRONTEND}/event/page/${url}`,
                   identifier: id,
                   title: title,
                   language: 'zh_TW' //e.g. for Traditional Chinese (Taiwan)	
