@@ -154,7 +154,7 @@ const AuthorContentHandler = ({content}) => {
         <React.Fragment>
           <Header icon>
             <Icon name="check" />
-            Added authors to {count} events!
+            Added {count} authors' content to their according events!
           </Header>
           {
             invalidEvents.length>0

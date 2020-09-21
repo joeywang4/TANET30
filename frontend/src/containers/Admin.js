@@ -14,7 +14,7 @@ import {
   NewTicketHandler,
   UpdateMeals
 } from '../components';
-import { Lottery, ClearCollection, RenameButton } from './';
+import { Lottery, RenameButton } from './';
 
 const Admin = () => {
   return (
@@ -176,6 +176,10 @@ const Admin = () => {
       <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
         <Grid.Row columns={2}>
           <Grid.Column style={{ width: "80%", maxWidth: "30em" }}>
+            <RenameButton />
+            
+          </Grid.Column>
+          <Grid.Column>
             <FileUpload
               name="Import authors info from File"
               header="Upload a .csv file"
@@ -191,27 +195,9 @@ const Admin = () => {
               style={{ margin: "1vh 0" }}
             />
           </Grid.Column>
-          <Grid.Column>
-            <RenameButton />
-          </Grid.Column>
         </Grid.Row>
       </Grid>
 
-      <Divider horizontal>
-        <Header as='h4'>
-          <Icon name='trash alternate' />
-          Delete Data
-        </Header>
-      </Divider>
-      <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
-        <Grid.Row columns={2}>
-          <Grid.Column style={{ width: "80%", maxWidth: "30em" }}>
-            <ClearCollection />
-          </Grid.Column>
-          <Grid.Column>
-          </Grid.Column>
-        </Grid.Row>
-      </Grid>
     </div>
   )
 }

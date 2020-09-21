@@ -17,7 +17,6 @@ import Register from './Register';
 import ParticipatedEvent from './Event/ParticipatedEvent';
 import Tickets from './Tickets';
 import Lottery from './Lottery';
-import ClearCollection from './ClearCollection';
 import RenameButton from './RenameButton';
 import Poster from './Poster';
 import Cashier from './Cashier';
@@ -49,6 +48,5 @@ export {
   Cashier,
   UserAddTicket,
   History,
-  ClearCollection,
   RenameButton
 };

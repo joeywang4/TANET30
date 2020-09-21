@@ -324,36 +324,6 @@ router.post('/join', async (req, res) => {
   return;
 })
 
-router.post('/clearEvent', async (req, res) => {
-  if (!req.isLogin) {
-    console.log(`Clear Event failed: Not login`);
-    res.status(401).send("Not logged in");
-    return;
-  }
-  if (req.user.group !== "root") {
-    res.status(401).send("You are not authorized");
-    return;
-  }
-  const del = await Event.deleteMany({});
-  // May be buggy
-  // not all transactions are came from events
-  const delTx = await TX.deleteMany({});
-  res.status(200).send(`${del.deletedCount + delTx.deletedCount}`);
-})
-
-router.post('/clearLike', async (req, res) => {
-  if (!req.isLogin) {
-    res.status(401).send("Not logged in");
-    return;
-  }
-  if (req.user.group !== "root") {
-    res.status(401).send("You are not authorized");
-    return;
-  }
-  del = await Like.deleteMany({});
-  res.status(200).send(`${del.deletedCount}`);
-})
-
 router.post('/addAuthor', async (req, res) => {
   if (!req.isLogin) {
     console.log(`Add author failed: Not login`);
