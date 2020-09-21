@@ -4,8 +4,11 @@ const Event = require("../models/event");
 const User = require("../models/user");
 const TX = require("../models/transaction");
 const Like = require("../models/like");
-const fs = require("fs");
 const rename = require("../authors/rename");
+const Record = require("../models/record");
+const mongoose = require("mongoose");
+const fs = require("fs").promises;
+const path = require("path");
 
 router.post('/', async (req, res) => {
   let d = new Date();
@@ -74,7 +77,7 @@ router.post('/', async (req, res) => {
 
 const getContent = async (id, sendOutline=false) => {
   const path = `./authors/filesInId/${id.slice(0,24)}/${id}.txt`;
-  const content = await fs.promises.readFile(path)
+  const content = await fs.readFile(path)
     .then((data) => {
       const lines = data.toString().split('\n');
       const outlineReducer = (acc, cur, idx) => {
@@ -202,7 +205,7 @@ router.get('/page', async (req, res) => {
   }
 });
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const userProjection = "_id name email group";
   let timeRange = null;
   if (!req.isLogin) {
@@ -213,38 +216,26 @@ router.get('/', (req, res) => {
     timeRange = { begin: { $gte: req.query.begin }, end: { $lte: req.query.end } };
   }
 
-  if (req.user.group === 'user') {
-    Event.find({ participant: req.user.id }, (err, events) => {
-      if (err) errHandler(err, res);
-      else res.status(200).send(events);
-    })
-    return;
-  }
-  if (req.user.group === 'root') {
-    Event.find({}, (err, events) => {
-      if (err) errHandler(err, res);
-      else res.status(200).send(events.map((event) => ({ _id: event._id, name: event.name })));
+  if(req.user.group === 'user') {
+    Event.find()
+    .populate('participant', null, { user: mongoose.Types.ObjectId(req.user.id) })
+    .exec((err, events) => {
+      if(err) errHandler(err, res);
+      else {
+        const filteredEvents = events.filter(event => event.participant && event.participant.length > 0);
+        res.status(200).send(filteredEvents);
+      }
     })
     return;
   }
   if (req.query.id || req.query.name) {
     let query = null;
     if (req.query.id) query = Event.findById(req.query.id);
-    else query = Event.findOne({ name: req.query.name });
-    query
-      .populate('admin', userProjection)
-      .populate({
-        path: 'participant',
-        select: userProjection,
-        populate: {
-          path: 'participant'
-        }
-      })
-      .exec((err, event) => {
-        if (err) errHandler(err, res);
-        else if (!event) res.status(404).send("Not found");
-        else res.status(200).send(event.toObject());
-      })
+    else query = await Event.findOne({ name: req.query.name }).populate({
+      path: 'participant',
+      populate: { path: 'user', select: userProjection }
+    });
+    res.status(200).send(query);
     return;
   }
   else {
@@ -264,21 +255,18 @@ router.get('/', (req, res) => {
       return;
     }
     Event.find(queryObj)
-      .populate('admin', userProjection)
-      .populate(req.query.populate ? {
-        path: 'participant',
-        select: userProjection,
-        populate: {
-          path: 'participant'
-        }
-      } : '')
-      .exec((err, events) => {
-        if (err) errHandler(err, res);
-        else if (req.query.group) {
-          res.status(200).send(events.filter(event => event.admin.group === req.query.group));
-        }
-        else res.status(200).send(events);
-      })
+    .populate('admin', userProjection)
+    .populate(req.query.populate?{
+      path: 'participant',
+      populate: { path: 'user', select: userProjection }
+    }:'')
+    .exec((err, events) => {
+      if(err) errHandler(err, res);
+      else if(req.query.group) {
+        res.status(200).send(events.filter(event => event.admin.group === req.query.group));
+      }
+      else res.status(200).send(events);
+    })
     return;
   }
 })
@@ -303,16 +291,22 @@ const participate = async (res, now, event, userId) => {
     res.status(400).send("User does not exist");
     return;
   }
-  const joined = event.participant.find(_user => String(_user) === String(userId));
-  if (joined) {
+  
+  const joined = event.participant.find(record => String(record.user) === userId);
+  if(joined) {
     res.status(400).send("Already joined event");
     return;
   }
+  let d = now.getTime();
+  const newRecord = Record({"user":userId,"usedTime":d});
+  await newRecord.save()
+  .then(_ => true)
+  .catch(err => errHandler(err));
+  
 
-  await Event.updateOne({ _id: event._id }, { $push: { participant: userId } });
+  await Event.updateOne({_id: event._id}, {$push: {participant : newRecord}});
   // Give reward to this user
-  let d = new Date();
-  const newTx = TX({ to: userId, amount: event.reward, timestamp: d.getTime() })
+  const newTx = TX({  to: userId, amount: event.reward, timestamp: d })
   await newTx.save()
     .then(_ => true)
     .catch(err => errHandler(err));
@@ -341,6 +335,8 @@ router.post('/clearEvent', async (req, res) => {
     return;
   }
   const del = await Event.deleteMany({});
+  // May be buggy
+  // not all transactions are came from events
   const delTx = await TX.deleteMany({});
   res.status(200).send(`${del.deletedCount + delTx.deletedCount}`);
 })
@@ -459,6 +455,7 @@ router.post('/addParticipant', async (req, res) => {
   }
   const userProjection = "_id name email group";
   const event = await Event.findById(eventId).populate('admin', userProjection)
+    .populate('participant')
     .then(event => event ? event : false)
     .catch(err => {
       errHandler(err);
@@ -535,10 +532,10 @@ router.post('/createAuthorInfo', async (req, res) => {
 
   const { authorEmail, eventName, title, content } = req.body;
   const path = `./authors/FilesInName/${eventName}`
-  fs.promises.mkdir(path, { recursive: false })
+  fs.mkdir(path, { recursive: false })
   .then( async () => {
     try {
-      await fs.promises.writeFile(`${path}/${authorEmail}.txt`, `${authorEmail}\n${eventName}\n${title}\n${content}`);
+      await fs.writeFile(`${path}/${authorEmail}.txt`, `${authorEmail}\n${eventName}\n${title}\n${content}`);
       res.status(200).send(`${authorEmail} in ${eventName} success`);
     } catch (err) {
       errHandler(err, res);
@@ -546,7 +543,7 @@ router.post('/createAuthorInfo', async (req, res) => {
   } )
   .catch( async err => {
     if(err.errno === -4075) {
-      await fs.promises.writeFile(`${path}/${authorEmail}.txt`, `${authorEmail}\n${eventName}\n${title}\n${content}`);
+      await fs.writeFile(`${path}/${authorEmail}.txt`, `${authorEmail}\n${eventName}\n${title}\n${content}`);
       res.status(200).send(`${authorEmail} in ${eventName} success`);
     }
     else  errHandler(err, res);
@@ -567,6 +564,68 @@ router.post('/rename', async (req, res) => {
   res.status(200).send({failedAry: await rename()});
 })
 
+router.get('/thresholds', async (req, res) => {
+  if (!req.isLogin) {
+    res.status(401).send("Not logged in");
+    return;
+  }
+  let entries = null;
+  try {
+    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    entries = JSON.parse(data);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(400).send("Read File Error");
+    return;
+  }
+  if (!entries.Thresholds) {
+    res.status(404).send("File Missing Thresholds");
+    return;
+  }
+  if (!entries.Thresholds.CompanyBar || !entries.Thresholds.CourseBar) {
+    res.status(404).send("File Missing Thresholds Data");
+    return;
+  }
+  res.status(200).send(entries.Thresholds);
+  return;
+})
+
+router.post('/lottery', async (req, res) => {
+  if (!req.isLogin) {
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== "root") {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  const {course, company} = req.body;
+  if( course===null || company===null ) {
+    res.status(400).send("Missing field");
+    return;
+  }
+  let entries;
+  try {
+    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    entries = JSON.parse(data);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(400).send("Read File Error");
+    return;
+  }
+  entries.Thresholds["CourseBar"] = String(course);
+  entries.Thresholds["CompanyBar"] = String(company);
+  fs.writeFile( path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2), (err) => {
+    if(err){
+      console.log(err);
+      res.status(400).send("Write File Error");
+      return;
+    }
+  });
+  res.status(200).send("Update thresholds success");
+})
 
 const errHandler = (err, res) => {
   console.error(err);

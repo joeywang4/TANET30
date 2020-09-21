@@ -39,7 +39,7 @@ const UserStatus = () => {
       }}>
         <Header as='h2'>{`Your Balance: ${balance}`}</Header>
         <div>
-          <Button as={Link} to="/receive">Receive</Button>
+          <Button as={Link} to="/receive">My QRcode</Button>
           <Button as={Link} to="/send">Send</Button>
         </div>
         <div>

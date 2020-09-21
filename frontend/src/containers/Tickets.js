@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Loader, Menu, CardGroup, Card, Button, Icon } from 'semantic-ui-react';
+import { Loader, Menu, CardGroup, Card, Button, Icon, Grid, Segment } from 'semantic-ui-react';
 import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
 import { Link } from 'react-router-dom';
+import { usedDate } from '../util';
+
 
 const [AVAIL, USED] = [0, 1];
 
@@ -39,6 +41,30 @@ const Tickets = () => {
     }
   }
 
+  const [checkState, check] = useAPI("text");
+  const checkAmount = () => {
+    if(checkState.isInit()){
+      check(
+        BACKEND + "/ticket/avail",
+        "GET",
+        null,
+        { 'authorization': token, 'content-type': "application/json", mode: 'cors' }
+      )
+    }
+  }
+
+  // Return True if not expired
+  const checkTime = ticketTime => {
+    const d = new Date();
+    const [nowDay, nowMonth, nowYear] = [d.getDate(), d.getMonth()+1, d.getFullYear()];
+    const [ticketYear, ticketMonth, ticketDay] = ticketTime.split("-",3).map(s => parseInt(s));
+    return (
+      ticketYear > nowYear || 
+      (ticketYear === nowYear && ticketMonth > nowMonth) || 
+      (ticketYear === nowYear && ticketMonth === nowMonth && ticketDay >= nowDay)
+    )
+  }
+
   if (connection.isInit()) {
     loadTicket();
   }
@@ -53,8 +79,8 @@ const Tickets = () => {
       display = (
         <CardGroup stackable style={{ marginTop: "1em" }} >
           {tickets
-            .filter(({ usedTime }) => (activeItem === AVAIL ? usedTime === 0 : usedTime !== 0))
-            .map(({ _id, type, date }) => (
+            .filter(({ usedTime, date }) => (activeItem === AVAIL ? (usedTime === 0 && checkTime(date) ) : (usedTime !== 0 || !checkTime(date) )))
+            .map(({ _id, type, date, usedTime }) => (
               <Card key={_id}>
                 <Card.Content>
                   <Card.Header>
@@ -62,7 +88,7 @@ const Tickets = () => {
                   </Card.Header>
                   <Card.Meta>
                     <span className='date'>
-                      {date}
+                      {usedTime===0?date:usedDate(usedTime)}
                     </span>
                   </Card.Meta>
                 </Card.Content>
@@ -99,6 +125,21 @@ const Tickets = () => {
           <div>
             {activeItem === AVAIL ? <Button as={Link} to="/userAddTicket">Add Meal</Button> : null}
           </div>
+        </div>
+        <div>
+          <Grid>
+            <Grid.Column width={4}>
+              <Button animated onClick = {checkAmount}>
+                <Button.Content visible>目前便當數量</Button.Content>
+                <Button.Content hidden>
+                  <Icon name = 'refresh' />
+                </Button.Content>
+              </Button>
+            </Grid.Column>
+            <Grid.Column>
+              {checkState.response}
+            </Grid.Column>
+          </Grid>
         </div>
       </div>
     );

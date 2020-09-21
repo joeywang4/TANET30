@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Ticket = require("../models/ticket");
 const User = require("../models/user");
+const fs = require('fs').promises;
+const path = require("path");
 
 const re = /(\d{4})-([0-1]\d{1})-([0-3]\d{1})/;
 const today = () => {
@@ -9,6 +11,39 @@ const today = () => {
   const dtf = new Intl.DateTimeFormat('en', { year: 'numeric', month: '2-digit', day: '2-digit' });
   const [{ value: mm },,{ value: dd },,{ value: yy }] = dtf.formatToParts(d);
   return `${yy}-${mm}-${dd}`;
+}
+const [EXPIRED, INVALID_LUNCH, INVALID_DINNER, OK] = [1, 2, 3, 4];
+
+function checkTime( postUser, ticketTime, ticketType ){
+  const d = new Date();
+  const [nowHour, nowDay, nowMonth, nowYear] = [
+    d.getHours(), 
+    d.getDate(), 
+    d.getMonth()+1, 
+    d.getFullYear()
+  ];
+  const [ticketYear, ticketMonth, ticketDay] = ticketTime.split("-",3).map(s => parseInt(s));
+  //check the date
+  if (
+    ticketYear < nowYear || 
+    (ticketYear === nowYear && ticketMonth < nowMonth) || 
+    (ticketYear === nowYear && ticketMonth === nowMonth && ticketDay < nowDay)
+  ) {
+    return EXPIRED;
+  }
+  //condition for adding meal today
+  if (
+    postUser !== "root" && // no restrictions for root
+    ticketYear === nowYear && ticketMonth === nowMonth && ticketDay === nowDay // is today
+  ) {
+    if(ticketType === 'lunch'){
+      return INVALID_LUNCH;
+    }
+    else if(ticketType === 'dinner' && nowHour > 12){
+      return INVALID_DINNER;
+    }
+  }
+  return OK;
 }
 
 router.post("/give", async (req, res) => {
@@ -43,31 +78,12 @@ router.post("/give", async (req, res) => {
     res.status(400).send("Invalid Date");
     return;
   }
-  // Check the request ticket time is one day after
-  let day = parseInt(date.split('-').pop());
-  let d = new Date();
-  let nowday = d.getDate();
-  let nowhour = d.getHours();
-  /* 
-    Buggy! 
-    These conditions will fail when the date is at the end of the month.
-    For example, 30 (or 31) > 1 but it is yesterday.
-  */
-  if(day < nowday){
-    res.status(400).send("Expired date!");
-    return;
-  }
-  else if(
-    req.user.group !== "root" && day === nowday && type === 'lunch'
-  ){
-    res.status(400).send("Too late to request a lunch ticket");
-    return;
-  }
-  else if(
-    req.user.group !== "root" && day === nowday && type === 'dinner' && nowhour > 12
-  ){
-    res.status(400).send("Too late to request a dinner ticket");
-    return;
+  switch(checkTime(req.user.group, date, type)){
+    case OK: break;
+    default:
+    case EXPIRED: res.status(400).send("Expired date!"); return;
+    case INVALID_LUNCH: res.status(400).send("Too late to request a lunch ticket"); return;
+    case INVALID_DINNER: res.status(400).send("Too late to request a dinner ticket"); return;
   }
   // Check if ticket already exists
   let tickets = await Ticket.find({owner, type, date})
@@ -148,6 +164,47 @@ router.post("/delete", async (req, res) => {
   return;
 })
 
+
+router.get("/avail", async (req, res) => {
+  if(!(req.isLogin)) {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  let entries = null;
+  try {
+    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    entries = JSON.parse(data);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(400).send("Read File Error");
+    return;
+  }
+  if (!entries.MealBoxes) {
+    res.status(404).send("File Missing MealBoxes");
+    return;
+  }
+  if (!entries.MealBoxes.Amount || !entries.MealBoxes.Type || !entries.MealBoxes.Date) {
+    res.status(404).send("File Missing MealBoxes Data");
+    return;
+  }
+  const total = entries.MealBoxes.Amount;
+  const type = entries.MealBoxes.Type;
+  const date = entries.MealBoxes.Date;
+  let tickets = await Ticket.find({type, date})
+  .then(ticket => ticket)
+  .catch(err => errHandler(err));
+  let ticket = tickets.filter(ticket => ticket.usedTime !== 0)
+  if(!ticket || ticket.length===0){
+    res.status(200).send(total);
+    return;
+  }
+  const left = total - ticket.length;
+  res.status(200).send(JSON.stringify(left));
+  return;
+})
+
+
 router.get("/", async (req, res) => {
   if(!(req.isLogin)) {
     res.status(401).send("Not authorized");
@@ -161,23 +218,7 @@ router.get("/", async (req, res) => {
   }
   let thenable = Ticket.find(query);
   if(populate) thenable = thenable.populate('owner', '_id name email group');
-  /* 
-    thenable.length() will cause an error. (thenable.length is not a function)
-    Note that thenable is an unresolved Promise, and not an array.
-    ---
-    Update tickets on query is OK, but I would prefer filtering out outdated tickets in the frontend.
-    This will reduce some computational effort for both the backend and the DB.
-  */
-  // Check if available tickets are overdued
-  // for(var i = 0; i < thenable.length(); ++i){
-  //   const nowday = Date.getDate();
-  //   console.log(nowday);
-  //   console.log(thenable[i].date.split('-').pop());
-  //   if(thenable[i].date.split('-').pop() <= nowday && thenable[i].usedTime==0){
-  //     thenable[i].usedTime = 1;
-  //   }
-  // }
-  // await thenable.save();
+
   const tickets = await thenable
   .then(tickets => tickets)
   .catch(err => errHandler(err));
@@ -185,6 +226,50 @@ router.get("/", async (req, res) => {
   else res.status(400).send("No Ticket Found");
   return;
 })
+
+
+router.post("/amount", async (req, res) => {
+  if(!(req.isLogin) || (req.user.group !== "root" && req.user.group !== "foodStaff")){
+    res.status(401).send("Not authorized");
+    return;
+  }
+  const {type, amount} = req.body;
+  if(!type || !amount){
+    res.status(400).send("Missing field");
+    return;
+  }
+  let entries = null;
+  try {
+    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    entries = JSON.parse(data);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(400).send("Read File Error");
+    return;
+  }
+  if (!entries.MealBoxes) {
+    res.status(404).send("File Missing MealBoxes");
+    return;
+  }
+  if (!entries.MealBoxes.Amount || !entries.MealBoxes.Type || !entries.MealBoxes.Date) {
+    res.status(404).send("File Missing MealBoxes Data");
+    return;
+  }
+  const date = today();
+  if( entries.MealBoxes.Date === date && entries.MealBoxes.Type === type){
+    res.status(403).send("This meal has already been updated!");
+    return;
+  }
+  entries.MealBoxes.Date = date;
+  entries.MealBoxes.Type = type;
+  entries.MealBoxes.Amount = String(amount);
+  fs.writeFile(path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2));
+  res.status(200).send("Update mealboxes amount success");
+  return;
+})
+
+
 
 const errHandler = (err, res) => {
   console.error(err);
