@@ -4,6 +4,7 @@ const Event = require("../models/event");
 const User = require("../models/user");
 const TX = require("../models/transaction");
 const Like = require("../models/like");
+const rename = require("../authors/rename");
 const Record = require("../models/record");
 const mongoose = require("mongoose");
 const fs = require("fs").promises;
@@ -74,6 +75,67 @@ router.post('/', async (req, res) => {
   else return;
 })
 
+const getContent = async (id, sendOutline=false) => {
+  const path = `./authors/filesInId/${id.slice(0,24)}/${id}.txt`;
+  const content = await fs.readFile(path)
+    .then((data) => {
+      const lines = data.toString().split('\n');
+      const outlineReducer = (acc, cur, idx) => {
+        return idx < 3 ? '' : idx === 3 ? cur : acc + '\n' + cur;
+      }
+      return {
+        title: lines[2],
+        outline: (sendOutline ? lines.reduce(outlineReducer, '') : false)};
+    })
+    .catch((err) => {
+        return {title: 'error', outline: (sendOutline ? err.message : false) };
+    });
+  // console.log(content);
+  return content;
+}
+
+router.get('/authorPage', async (req, res) => {
+  if (!req.isLogin) {
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create event failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (!req.query || !req.query.id || !req.user || !req.user.id) {
+    res._destroy(400).send("Missing field");
+    return;
+  }
+  // console.log(req.query.id);
+  const eventId = req.query.id.substring(0, 24);
+  const authorId = req.query.id.substring(24);
+  const userId = req.user.id;
+  const user = await User.findById(userId)
+    .then(user => user)
+    .catch(_ => false);
+  if (!user) {
+    res.status(400).send("User does not exist");
+    return;
+  }
+  const event = await Event.findById(eventId)
+    .then(event => event ? event : false)
+    .catch(_ => false);
+  if (!event) {
+    res.status(404).send("Event not found");
+    return;
+  }
+  if (!userId in event.participant) {
+    res.status(401).send('Unauthorized');
+    return;
+  }
+  const authors = [...event.author];
+  if(!authorId in authors) {
+    res.status(400).send('Invalid author id');
+    return;
+  }
+  const content = await getContent(req.query.id, sendOutline=true);
+  res.status(200).send(content);
+  return;
+});
+
 router.get('/page', async (req, res) => {
   if (!req.isLogin) {
     console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create event failed: Not login`);
@@ -125,7 +187,12 @@ router.get('/page', async (req, res) => {
   const likeResponseAry = await Promise.all(authors.map(author => {
     const { _id: authorId, name: authorName } = author;
     return Like.find({ event: event._id, author: authorId })
-      .then(likes => likeResponse(authorId, authorName, userId, likes))
+      .then( async likes => (
+        {
+          ...likeResponse(authorId, authorName, userId, likes),
+          content: await getContent(`${event._id}${authorId}`)
+        }
+      ))
       .catch(err => errHandler(err, res))
   }))
 
@@ -255,36 +322,6 @@ router.post('/join', async (req, res) => {
   }
   res.status(401).send("Join event with password is currently not allowed");
   return;
-})
-
-router.post('/clearEvent', async (req, res) => {
-  if (!req.isLogin) {
-    console.log(`Clear Event failed: Not login`);
-    res.status(401).send("Not logged in");
-    return;
-  }
-  if (req.user.group !== "root") {
-    res.status(401).send("You are not authorized");
-    return;
-  }
-  const del = await Event.deleteMany({});
-  // May be buggy
-  // not all transactions are came from events
-  const delTx = await TX.deleteMany({});
-  res.status(200).send(`${del.deletedCount + delTx.deletedCount}`);
-})
-
-router.post('/clearLike', async (req, res) => {
-  if (!req.isLogin) {
-    res.status(401).send("Not logged in");
-    return;
-  }
-  if (req.user.group !== "root") {
-    res.status(401).send("You are not authorized");
-    return;
-  }
-  del = await Like.deleteMany({});
-  res.status(200).send(`${del.deletedCount}`);
 })
 
 router.post('/addAuthor', async (req, res) => {
@@ -450,6 +487,51 @@ router.post('/like', async (req, res) => {
     .then(_ => true)
     .catch(err => errHandler(err));
   res.status(200).send({ id: userId, event: eventId, author: authorId, likeState });
+})
+
+router.post('/createAuthorInfo', async (req, res) => {
+  if (!req.isLogin) {
+    console.log(`Add author failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== "root") {
+    res.status(401).send("You are not authorized");
+    return;
+  }
+
+  const { authorEmail, eventName, title, content } = req.body;
+  const path = `./authors/FilesInName/${eventName}`
+  fs.mkdir(path, { recursive: false })
+  .then( async () => {
+    try {
+      await fs.writeFile(`${path}/${authorEmail}.txt`, `${authorEmail}\n${eventName}\n${title}\n${content}`);
+      res.status(200).send(`${authorEmail} in ${eventName} success`);
+    } catch (err) {
+      errHandler(err, res);
+    }
+  } )
+  .catch( async err => {
+    if(err.errno === -4075) {
+      await fs.writeFile(`${path}/${authorEmail}.txt`, `${authorEmail}\n${eventName}\n${title}\n${content}`);
+      res.status(200).send(`${authorEmail} in ${eventName} success`);
+    }
+    else  errHandler(err, res);
+  })
+})
+
+router.post('/rename', async (req, res) => {
+  if (!req.isLogin) {
+    console.log(`Add author failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+
+  if (req.user.group !== "root") {
+    res.status(401).send("You are not authorized");
+    return;
+  }
+  res.status(200).send({failedAry: await rename()});
 })
 
 router.get('/thresholds', async (req, res) => {

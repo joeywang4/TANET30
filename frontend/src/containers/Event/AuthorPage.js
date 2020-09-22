@@ -2,56 +2,51 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Loader, Card } from 'semantic-ui-react';
 import { ErrMsg } from '../../components';
-import { FRONTEND, BACKEND } from '../../config';
+import { BACKEND } from '../../config';
 import { useAPI } from '../../hooks';
 import { AuthorCard } from '../../containers';
 import { DiscussionEmbed } from 'disqus-react';
+import { FRONTEND } from '../../config';
 
-
-const EventPage = ({ eventId, url, id, title }) => {
+const AuthorPage = ({ id, info }) => {
   const { token } = useSelector(state => state.user);
   const [connection, connect] = useAPI("json");
-  // console.log(token);
   if (connection.isInit()) {
     connect(
-      BACKEND + `/event/page?id=${eventId}`,
+      BACKEND + `/event/authorPage/?id=${id}`,
       "GET",
       null,
       { 'authorization': token, 'content-type': "application/json" }
     );
   }
-  let authors = connection.response || [];
+  let content = connection.response || false;
 
   if (connection.error) {
     return <ErrMsg />;
   }
   else if (connection.success) {
-    return ( authors.length === 0 ? 
-      <span>This event has no author.</span> : 
+    return ( content&&info&&info.hasInfo ? 
       <Card.Group style={{marginTop: "2em", width: "80%"}}>
-        {authors.map(
-          (author, idx) => (
-            <AuthorCard key={idx} authorId={author.authorId} eventId={eventId} name={author.authorName} likes={author.totalLikes} likeState={author.likeState} content={author.content}>
-              {author.authorId}
-            </AuthorCard>
-          )
-        )}
+        <AuthorCard authorId={id.substring(24)} eventId={id.substring(0,24)} name={info.authorName} likes={info.likes} likeState={info.likeState} content={content}>
+          {id}
+        </AuthorCard>
         <Card fluid> 
           <Card.Content>
             <DiscussionEmbed
               shortname='tanet30'
               config={
                 {
-                  url: `${FRONTEND}/event/page/${url}`,
+                  url: `${FRONTEND}/author/page/?id=${id}`,
                   identifier: id,
-                  title: title,
+                  title: id,
                   language: 'zh_TW' //e.g. for Traditional Chinese (Taiwan)	
                 }
               }
             />
           </Card.Content>
         </Card>
-      </Card.Group>
+      </Card.Group> : 
+      <span>You are not allowed to see this page.</span>
     );
   }
   else {
@@ -59,4 +54,4 @@ const EventPage = ({ eventId, url, id, title }) => {
   }
 };
 
-export default EventPage;
+export default AuthorPage;
