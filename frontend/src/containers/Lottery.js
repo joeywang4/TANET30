@@ -13,18 +13,16 @@ export default () => {
   const [companyThreshold, setCompanyThreshold] = useState(-1);
   const [list, setList] = useState(null);
   const [editState, edit] = useAPI("text");
-  const [errMsg, setErrMsg] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
 
   let display = null;
 
   const updateThresholds = (courseBar, companyBar) => {
     if(courseBar < 0 || companyBar < 0){
-      setErrMsg("Invalid Threshold!");
-      setError(true);
+      setError("Invalid Threshold!");
       return;
     }
-    setError(false);
+    setError(null);
     const body = { course: courseBar, company: companyBar };
     edit(
       BACKEND + "/event/lottery",
@@ -115,7 +113,7 @@ export default () => {
           {
             editState.error || error
             ?
-            <Message negative>{error ? errMsg : editState.errMsg}</Message>
+            <Message negative>{error ? error : editState.errMsg}</Message>
             :
             null
           }

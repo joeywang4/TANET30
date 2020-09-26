@@ -13,16 +13,15 @@ const UpdateMeals = () => {
   const [meatTicketAmount, setMeatTicketAmount] = useState(-1);
   const [veganTicketAmount, setVeganTicketAmount] = useState(-1);
   const [error, setError] = useState(false);
-  const [errMsg, setErrMsg] = useState(false);
+  // const [errMsg, setErrMsg] = useState(false);
 
   const onSubmit = () => {
     const body = { type: ticketType, meat: meatTicketAmount, vegan: veganTicketAmount };
     if(!(ticketTypeEnum.includes(body.type))) {
-      setErrMsg("Invalid Ticket Type!");
-      setError(true);
+      setError("Invalid Ticket Type!");
       return;
     }
-    setError(false);
+    setError(null);
     create(
       BACKEND + "/ticket/amount",
       "POST", 
@@ -60,7 +59,7 @@ const UpdateMeals = () => {
       </Form.Field>
       {createState.error || error
         ?
-        <Message negative>{error ? errMsg : createState.errMsg}</Message>
+        <Message negative>{error ? error : createState.errMsg}</Message>
         :
         null
       }

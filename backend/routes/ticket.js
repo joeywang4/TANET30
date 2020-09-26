@@ -255,7 +255,7 @@ router.post("/amount", async (req, res) => {
   let entries = null;
   try {
     const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
-    entries = JSON.parse(data);;
+    entries = JSON.parse(data);
   }
   catch(err) {
     console.log(err);

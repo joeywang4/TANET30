@@ -8,8 +8,8 @@ const RecordSchema = new Schema({
     required: true
   },
   usedTime: {
-	  type: Number,
-	  required: true
+    type: Number,
+    required: true
   }
 });
 

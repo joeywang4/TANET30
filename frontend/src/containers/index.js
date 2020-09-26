@@ -7,6 +7,7 @@ import Events from './Event/Events';
 import CreateEvent from './Event/CreateEvent';
 import Event from './Event/Event';
 import EventPage from './Event/EventPage';
+import AuthorPage from './Event/AuthorPage';
 import AuthorCard from './Event/AuthorCard';
 import Admin from './Admin';
 import FoodStaff from './FoodStaff';
@@ -16,7 +17,7 @@ import Register from './Register';
 import ParticipatedEvent from './Event/ParticipatedEvent';
 import Tickets from './Tickets';
 import Lottery from './Lottery';
-import ClearCollection from './ClearCollection';
+import RenameButton from './RenameButton';
 import Poster from './Poster';
 import Cashier from './Cashier';
 import UserAddTicket from './UserAddTicket'
@@ -33,6 +34,7 @@ export {
   CreateEvent, 
   Event, 
   EventPage,
+  AuthorPage,
   AuthorCard,
   Admin, 
   FoodStaff, 
@@ -46,5 +48,5 @@ export {
   Cashier,
   UserAddTicket,
   History,
-  ClearCollection
+  RenameButton
 };

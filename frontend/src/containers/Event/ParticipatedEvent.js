@@ -7,9 +7,9 @@ import { useAPI } from '../../hooks';
 
 
 const ParticipatedEvent = () => {
-  let courseBar, companyBar;
   const { token } = useSelector(state => state.user);
   const [connection, connect] = useAPI("json");
+  const [checkBar, check] = useAPI("text");
 
   if (connection.isInit()) {
     connect(
@@ -19,51 +19,39 @@ const ParticipatedEvent = () => {
       { 'authorization': token, 'content-type': "application/json" }
     );
   }
-
-  //get thresholds from backend and update the bar values
-  const [checkBar, check] = useAPI("text");
-  const checkThresholds = () => {
-    if(checkBar.isInit()){
-      check(
-        BACKEND + "/event/thresholds",
-        "GET",
-        null,
-        { 'authorization': token, 'content-type': "application/json", mode: 'cors' }
-      )
-    }
-    if(checkBar.success){
-      const values = JSON.parse(checkBar.response);
-      courseBar = values["CourseBar"];
-      companyBar = values["CompanyBar"];
-    }
+  // get thresholds from backend and update the bar values
+  if(checkBar.isInit()){
+    check(
+      BACKEND + "/event/thresholds",
+      "GET",
+      null,
+      { 'authorization': token, 'content-type': "application/json" }
+    )
   }
 
   //return the number of course events
-  function countEvents(events){
-    const coursecount = events.filter(event => event.admin.group === "seminarStaff" );
-    return coursecount.length;
-  }
+  const countCourses = events => events.filter(event => event.admin.group === "seminarStaff").length;
 
-  if (connection.error) {
+  if (connection.error || checkBar.error) {
     return <ErrMsg />;
   }
-  else if (connection.success) {
-    const coursecounts = countEvents(connection.response);
-    const companycounts = connection.response.length - coursecounts;
-    checkThresholds();
+  else if (connection.success && checkBar.success) {
+    const courseCounts = countCourses(connection.response);
+    const companyCounts = connection.response.length - courseCounts;
+    const { CourseBar: courseBar, CompanyBar: companyBar } = JSON.parse(checkBar.response);
     
     let display = <span>Unable to participate in the lottery!</span>
-    if( coursecounts >= courseBar && companycounts >= companyBar ){
+    if( courseCounts >= courseBar && companyCounts >= companyBar ){
       display = <p>Qualified for the lottery!</p>
     }
-    else if ( coursecounts >= courseBar && companycounts < companyBar ){
-      display = <p>Require {companyBar - companycounts} more company events to participate in the lottery.</p>
+    else if ( courseCounts >= courseBar && companyCounts < companyBar ){
+      display = <p>Require {companyBar - companyCounts} more company events to participate in the lottery.</p>
     }
-    else if( coursecounts < courseBar && companycounts >= companyBar ){
-      display = <p>Require {courseBar - coursecounts} more course events to participate in the lottery.</p>
+    else if( courseCounts < courseBar && companyCounts >= companyBar ){
+      display = <p>Require {courseBar - courseCounts} more course events to participate in the lottery.</p>
     }
     else{
-      display = <p>Require {courseBar - coursecounts} more course events and {companyBar - companycounts} more company events to participate in the lottery.</p>
+      display = <p>Require {courseBar - courseCounts} more course events and {companyBar - companyCounts} more company events to participate in the lottery.</p>
     }
     
     if(connection.response.length === 0) {
@@ -77,7 +65,7 @@ const ParticipatedEvent = () => {
     return (
       <div>
       <CardGroup stackable style={{marginTop: "1em"}}>
-        {connection.response.map(({name, _id, begin, reward, participant}) => (
+        {connection.response.map(({name, _id, reward, participant}) => (
           <EventLink key={_id} name={name} id={_id} time={participant[0].usedTime} reward={reward} />
         ))}
       </CardGroup>
