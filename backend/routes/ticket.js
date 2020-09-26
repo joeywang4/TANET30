@@ -36,7 +36,7 @@ function checkTime( postUser, ticketTime, ticketType ){
     postUser !== "root" && // no restrictions for root
     ticketYear === nowYear && ticketMonth === nowMonth && ticketDay === nowDay // is today
   ) {
-    if(ticketType === 'lunch'){
+    if(ticketType === 'lunch' || ticketType === 'lunch(vegan)'){
       return INVALID_LUNCH;
     }
     else if(ticketType === 'dinner' && nowHour > 12){
@@ -173,7 +173,7 @@ router.get("/avail", async (req, res) => {
   let entries = null;
   try {
     const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
-    entries = JSON.parse(data);;
+    entries = JSON.parse(data);
   }
   catch(err) {
     console.log(err);
@@ -184,23 +184,37 @@ router.get("/avail", async (req, res) => {
     res.status(404).send("File Missing MealBoxes");
     return;
   }
-  if (!entries.MealBoxes.Amount || !entries.MealBoxes.Type || !entries.MealBoxes.Date) {
+  if (!entries.MealBoxes.Meat || !entries.MealBoxes.Vegan || !entries.MealBoxes.Type || !entries.MealBoxes.Date) {
     res.status(404).send("File Missing MealBoxes Data");
     return;
   }
-  const total = entries.MealBoxes.Amount;
+  const total_m = entries.MealBoxes.Meat;
+  const total_v = entries.MealBoxes.Vegan;
   const type = entries.MealBoxes.Type;
   const date = entries.MealBoxes.Date;
+  const type_v = type === "lunch" ? "lunch(vegan)" : "dinner(vegan)";
   let tickets = await Ticket.find({type, date})
   .then(ticket => ticket)
   .catch(err => errHandler(err));
+  let vtickets = await Ticket.find({type: type_v, date})
+  .then(ticket => ticket)
+  .catch(err => errHandler(err));
   let ticket = tickets.filter(ticket => ticket.usedTime !== 0)
+  let vticket = vtickets.filter(ticket => ticket.usedTime !== 0);
+  let left_m, left_v;
   if(!ticket || ticket.length===0){
-    res.status(200).send(total);
-    return;
+    left_m = total_m;
   }
-  const left = total - ticket.length;
-  res.status(200).send(JSON.stringify(left));
+  else {
+    left_m = total_m - ticket.length;
+  }
+  if (!vticket || vticket.length === 0) {
+    left_v = total_v;
+  }
+  else {
+    left_v = total_v - vticket.length;
+  }
+  res.status(200).send({"meat": left_m, "vegan": left_v});
   return;
 })
 
@@ -233,8 +247,8 @@ router.post("/amount", async (req, res) => {
     res.status(401).send("Not authorized");
     return;
   }
-  const {type, amount} = req.body;
-  if(!type || !amount){
+  let {type, meat, vegan} = req.body;
+  if(!type || !meat || !vegan){
     res.status(400).send("Missing field");
     return;
   }
@@ -252,18 +266,19 @@ router.post("/amount", async (req, res) => {
     res.status(404).send("File Missing MealBoxes");
     return;
   }
-  if (!entries.MealBoxes.Amount || !entries.MealBoxes.Type || !entries.MealBoxes.Date) {
+  if (!entries.MealBoxes.Meat || !entries.MealBoxes.Vegan || !entries.MealBoxes.Type || !entries.MealBoxes.Date) {
     res.status(404).send("File Missing MealBoxes Data");
     return;
   }
   const date = today();
-  if( entries.MealBoxes.Date === date && entries.MealBoxes.Type === type){
+  if( entries.MealBoxes.Date === date && entries.MealBoxes.Type === type && req.user.group !== "root" ){
     res.status(403).send("This meal has already been updated!");
     return;
   }
   entries.MealBoxes.Date = date;
   entries.MealBoxes.Type = type;
-  entries.MealBoxes.Amount = String(amount);
+  entries.MealBoxes.Meat = String(meat);
+  entries.MealBoxes.Vegan = String(vegan);
   fs.writeFile(path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2));
   res.status(200).send("Update mealboxes amount success");
   return;

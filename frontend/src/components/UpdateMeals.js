@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Form, Dropdown, Button, Message } from 'semantic-ui-react';
-import { BACKEND, ticketTypeEnum } from '../config';
+import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
+
+const ticketTypeEnum = ['lunch', 'dinner'];
 
 const UpdateMeals = () => {
   const { token } = useSelector(state => state.user);
   const [createState, create] = useAPI("text");
   const [ticketType, setTicketType] = useState(null);
-  const [ticketAmount, setTicketAmount] = useState(-1);
+  const [meatTicketAmount, setMeatTicketAmount] = useState(-1);
+  const [veganTicketAmount, setVeganTicketAmount] = useState(-1);
   const [error, setError] = useState(false);
   const [errMsg, setErrMsg] = useState(false);
 
   const onSubmit = () => {
-    const body = { type: ticketType, amount: ticketAmount };
+    const body = { type: ticketType, meat: meatTicketAmount, vegan: veganTicketAmount };
     if(!(ticketTypeEnum.includes(body.type))) {
       setErrMsg("Invalid Ticket Type!");
       setError(true);
@@ -40,13 +43,21 @@ const UpdateMeals = () => {
         />
       </Form.Field>
       <Form.Field required>
-        <label>Mealboxes Amount</label>
+        <label>Mealboxes Amount (Meat)</label>
         <input 
             type='number' 
             placeholder='Some Number...' 
-            onInput={e => setTicketAmount(parseInt(e.target.value))} 
+            onInput={e => setMeatTicketAmount(parseInt(e.target.value))} 
           />
-        </Form.Field>
+      </Form.Field>
+      <Form.Field required>
+        <label>Mealboxes Amount (Vegan)</label>
+        <input 
+            type='number' 
+            placeholder='Some Number...' 
+            onInput={e => setVeganTicketAmount(parseInt(e.target.value))} 
+          />
+      </Form.Field>
       {createState.error || error
         ?
         <Message negative>{error ? errMsg : createState.errMsg}</Message>
