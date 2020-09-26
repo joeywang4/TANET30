@@ -9,12 +9,13 @@ const RegisterForm = () => {
   const [group, setGroup] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [sharing, setSharing] = useState("");
 
   return (
     <Form
       onSubmit={e => {
         e.preventDefault();
-        registerAPI(name, email, password, group);
+        registerAPI(name, email, password, group, sharing);
       }}
     >
       <Form.Field>
@@ -28,6 +29,9 @@ const RegisterForm = () => {
       </Form.Field>
       <Form.Field>
         <Form.Input icon='lock' iconPosition='left' placeholder="Password" type="password" required={true} id="userPassword" onChange={e => { setPassword(e.target.value); }} />
+      </Form.Field>
+      <Form.Field>
+        <Form.Input icon='share alternate' iconPosition='left' placeholder="Share data and connect with companies (yes/no)" type="text" required={true} id="userSharing" onChange={e => { setSharing(e.target.value); }} />
       </Form.Field>
       <Button color="green" type="submit">
         Register

@@ -252,7 +252,7 @@ const participate = async (res, now, event, userId) => {
   await newTx.save()
     .then(_ => true)
     .catch(err => errHandler(err));
-  res.status(200).send({ id: user._id, name: user.name });
+  res.status(200).send({ id: user._id, name: user.name, sharing: user.sharing });
 }
 
 router.post('/join', async (req, res) => {
@@ -426,7 +426,6 @@ router.post('/addParticipant', async (req, res) => {
       return;
     }
   }
-
   participate(res, d, event, userId);
 })
 

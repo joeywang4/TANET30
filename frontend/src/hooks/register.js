@@ -6,11 +6,11 @@ export default () => {
   const [connection, connect] = useAPI();
   const {token} = useSelector(state => state.user);
 
-  const register = (name, email, password, group) => {
+  const register = (name, email, password, group, sharing) => {
     connect(
       BACKEND+"/auth/register", 
       "POST", 
-      JSON.stringify({name, email, pwd: password, group}), 
+      JSON.stringify({name, email, pwd: password, group, sharing}), 
       {'authorization': token, 'content-type': "application/json"}
     );
   }

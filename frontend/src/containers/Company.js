@@ -89,8 +89,18 @@ export default () => {
                 {signinState.response.name}
               </Message.Header>
               <Message.Content>
-                checkin success!
+                check in success!
               </Message.Content>
+              {signinState.response.sharing === "yes"
+                ?
+                <Message.Content>
+                  {signinState.response.name} is sharing data with you.
+                </Message.Content>
+                :
+                <Message.Content>
+                  {signinState.response.name} does NOT share data with you.
+                </Message.Content>
+              }
             </Message>
             :
             null
