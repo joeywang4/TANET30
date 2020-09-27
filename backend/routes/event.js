@@ -4,8 +4,9 @@ const Event = require("../models/event");
 const User = require("../models/user");
 const TX = require("../models/transaction");
 const Like = require("../models/like");
-const rename = require("../authors/rename");
+const Paper = require("../models/paper");
 const Record = require("../models/record");
+const rename = require("../papers/rename");
 const mongoose = require("mongoose");
 const fs = require("fs").promises;
 const path = require("path");
@@ -489,9 +490,9 @@ router.post('/like', async (req, res) => {
   res.status(200).send({ id: userId, event: eventId, author: authorId, likeState });
 })
 
-router.post('/createAuthorInfo', async (req, res) => {
+router.post('/addPaper', async (req, res) => {
   if (!req.isLogin) {
-    console.log(`Add author failed: Not login`);
+    console.log(`Add paper failed: Not login`);
     res.status(401).send("Not logged in");
     return;
   }
@@ -500,24 +501,58 @@ router.post('/createAuthorInfo', async (req, res) => {
     return;
   }
 
-  const { authorEmail, eventName, title, content } = req.body;
-  const path = `./authors/FilesInName/${eventName}`
-  fs.mkdir(path, { recursive: false })
-  .then( async () => {
-    try {
-      await fs.writeFile(`${path}/${authorEmail}.txt`, `${authorEmail}\n${eventName}\n${title}\n${content}`);
-      res.status(200).send(`${authorEmail} in ${eventName} success`);
-    } catch (err) {
-      errHandler(err, res);
-    }
-  } )
-  .catch( async err => {
-    if(err.errno === -4075) {
-      await fs.writeFile(`${path}/${authorEmail}.txt`, `${authorEmail}\n${eventName}\n${title}\n${content}`);
-      res.status(200).send(`${authorEmail} in ${eventName} success`);
-    }
-    else  errHandler(err, res);
+  const { eventName, paperId, paperTitle, paperAuthors, paperContent, paperGroup } = req.body;
+  if(!eventName || !paperId || !paperTitle || !paperAuthors || !paperContent || !paperGroup) {
+    res.status(400).send("Missing field!");
+  }
+  const event = await Event.findOne({name: eventName})
+    .then(event => event ? event : false)
+    .catch(err => {
+      errHandler(err);
+      return false;
+    });
+  if(!event) {
+    res.status(404).send("event not found");
+    return;
+  }
+  // update(or create) paper
+  let d = new Date();
+  const update = {
+    title: paperTitle, 
+    event: event, 
+    authors: paperAuthors, 
+    group: paperGroup,
+    timestamp: d.getTime()
+  }
+  const paperUpdate = await Paper.updateOne({ title: paperTitle }, update, {
+    new: true, upsert: true
   })
+    .then(_ => true)
+    .catch(err => {
+      errHandler(err, res);
+      return false;
+    });
+  if(!paperUpdate) return;
+  //create content file(in name and in id)
+  const path = `./papers/filesInId/${event._id}`;
+  const createPaperFile = async () => {
+    await fs.writeFile(`${path}/${paperId}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
+    await fs.writeFile(`./papers/filesInName/${paperTitle.split(' ').join()}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
+    res.status(200).send(`Write ${paperTitle}'s content file in ${eventName} success`);
+  }
+  fs.mkdir(path, { recursive: true })
+    .then( async () => {
+      try {
+        createPaperFile();
+      } catch (err) {
+        errHandler(err, res);
+        return;
+      }
+    } )
+    .catch( async err => {
+      if(err.errno === -4075) createPaperFile();
+      else  errHandler(err, res);
+    })
 })
 
 router.post('/rename', async (req, res) => {
