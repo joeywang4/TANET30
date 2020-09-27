@@ -407,7 +407,7 @@ router.post('/addAuthor', async (req, res) => {
     res.status(400).send("Already been author");
     return;
   }
-  await Event.updateOne({ _id: event._id }, { $push: { author: authorId } });
+  await Event.updateOne({ _id: event._id }, { $push: { author: author } });
   res.status(200).send({ eventName: event.name, authorName: author.name });
 })
 
@@ -501,7 +501,7 @@ router.post('/addPaper', async (req, res) => {
     return;
   }
 
-  const { eventName, paperId, paperTitle, paperAuthors, paperContent, paperGroup } = req.body;
+  const { eventName, paperId, paperTitle, paperAuthors, paperGroup, paperContent } = req.body;
   if(!eventName || !paperId || !paperTitle || !paperAuthors || !paperContent || !paperGroup) {
     res.status(400).send("Missing field!");
   }
@@ -527,17 +527,35 @@ router.post('/addPaper', async (req, res) => {
   const paperUpdate = await Paper.updateOne({ title: paperTitle }, update, {
     new: true, upsert: true
   })
-    .then(_ => true)
+    .then(({upserted}) => upserted ? upserted[0] : true  //format of upserted: [ { index: 0, _id: 5f70ac5d6ffeb69ab66efc0e } ]
+      )
     .catch(err => {
       errHandler(err, res);
       return false;
     });
   if(!paperUpdate) return;
+  //push the new or the updated paper in the corresponded event
+  if(paperUpdate._id !== undefined) {
+    const paper = await Paper.findById(paperUpdate._id)
+      .then(paper => paper ? paper : false)
+      .catch(_ => false);
+    if(paper) {
+      Event.updateOne({_id: event._id}, {$push: {papers : paper}})
+        .then()
+        .catch(err => {
+          errHandler(err, res);
+          return;
+        });
+    } else {
+      res.status(404).send("paper not found");
+      return;
+    }
+  }
   //create content file(in name and in id)
   const path = `./papers/filesInId/${event._id}`;
   const createPaperFile = async () => {
     await fs.writeFile(`${path}/${paperId}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
-    await fs.writeFile(`./papers/filesInName/${paperTitle.split(' ').join()}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
+    // await fs.writeFile(`./papers/filesInName/${eventName}/${paperTitle.split(' ').join()}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
     res.status(200).send(`Write ${paperTitle}'s content file in ${eventName} success`);
   }
   fs.mkdir(path, { recursive: true })
