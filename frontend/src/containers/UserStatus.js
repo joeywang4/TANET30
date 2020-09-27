@@ -12,10 +12,16 @@ const UserStatus = () => {
 
   if(connection.isInit()) connect(BACKEND+`/TX?id=${id}`);
   let balance = 0;
+  let maxmoney = 0;
   if(connection.response) {
     for(let TX of connection.response) {
-      if(TX.to._id === id) balance += parseInt(TX.amount);
-      else balance -= parseInt(TX.amount);
+      if(TX.to._id === id) {
+        balance += parseInt(TX.amount);
+        maxmoney += parseInt(TX.amount);
+      } 
+      else {
+        balance -= parseInt(TX.amount);
+      }
     }
   }
 
@@ -38,6 +44,7 @@ const UserStatus = () => {
         alignItems: "center"
       }}>
         <Header as='h2'>{`Your Balance: ${balance}`}</Header>
+        <Header as='h3'>{`Your Maximum Balance: ${maxmoney}`}</Header>
         <div>
           <Button as={Link} to="/receive">My QRcode</Button>
           <Button as={Link} to="/send">Send</Button>
