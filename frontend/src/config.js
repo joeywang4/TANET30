@@ -6,4 +6,4 @@ export const loginURL="https://tanet30.tp1rc.edu.tw/login";
 export const FRONTEND="https://tanet30.tp1rc.edu.tw";
 export const localStateName = "TANET-30";
 export const userGroupEnum = ['root', 'foodStaff', 'seminarStaff', 'company', 'user', 'poster', 'cashier'];
-export const ticketTypeEnum = ['lunch', 'dinner'];
+export const ticketTypeEnum = ['lunch', 'dinner', 'lunch(vegan)', 'dinner(vegan)'];

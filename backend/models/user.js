@@ -19,6 +19,10 @@ const UserSchema = new Schema({
   email: {
 	  type: String,
 	  required: [true, 'Email field is required.']
+  },
+  sharing: {
+    type: String,
+    required: [true, 'Would you like to share your personal info?']
   }
 });
 

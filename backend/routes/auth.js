@@ -56,11 +56,12 @@ router.post('/register', async (req, res) => {
   const _pwd  = req.body.pwd;
   const _name = req.body.name;
   const _group = req.body.group;
+  const _sharing = req.body.sharing;
   if(!(req.user) || req.user.group !== 'root') {
     res.status(401).send("Operation not allowed");
     return;
   }
-  if(!_name || !_email || !_pwd || !_group){
+  if(!_name || !_email || !_pwd || !_group || !_sharing){
     res.status(400).send("Missing field");
     return;
   }
@@ -83,7 +84,7 @@ router.post('/register', async (req, res) => {
   .then(_hash => _hash)
   .catch(err => errHandler(err, res, "Create hash error"));
 
-  const newUser = User({name: _name, pwdHash: _pwdHash, email: _email, group: _group});
+  const newUser = User({name: _name, pwdHash: _pwdHash, email: _email, group: _group, sharing: _sharing});
   const done = await newUser.save()
   .then(_ => true)
   .catch(err => errHandler(err));

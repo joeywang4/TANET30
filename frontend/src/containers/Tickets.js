@@ -41,6 +41,8 @@ const Tickets = () => {
     }
   }
 
+  const [amountMeat, setAmountMeat] = useState(null);
+  const [amountVegan, setAmountVegan] = useState(null);
   const [checkState, check] = useAPI("text");
   const checkAmount = () => {
     if(checkState.isInit()){
@@ -50,6 +52,11 @@ const Tickets = () => {
         null,
         { 'authorization': token, 'content-type': "application/json", mode: 'cors' }
       )
+    }
+    if(checkState.success){
+      const amounts = JSON.parse(checkState.response);
+      setAmountMeat(amounts.meat);
+      setAmountVegan(amounts.vegan);
     }
   }
 
@@ -137,7 +144,8 @@ const Tickets = () => {
               </Button>
             </Grid.Column>
             <Grid.Column>
-              {checkState.response}
+              <p>Meat: {amountMeat}</p>
+              <p>Vegan: {amountVegan}</p>
             </Grid.Column>
           </Grid>
         </div>

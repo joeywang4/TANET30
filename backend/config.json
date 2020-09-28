@@ -1,11 +1,12 @@
 {
   "MealBoxes": {
-    "Date": "2020-08-18",
+    "Date": "2020-09-26",
     "Type": "lunch",
-    "Amount": "140"
+    "Meat": "150",
+    "Vegan": "30"
   },
   "Thresholds": {
-    "CourseBar": "5",
-    "CompanyBar": "3"
+    "CourseBar": "3",
+    "CompanyBar": "2"
   }
 }
