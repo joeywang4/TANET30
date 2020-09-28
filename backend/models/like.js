@@ -12,9 +12,9 @@ const LikeSchema = new Schema({
     ref: 'Event',
     required: true
   },
-  author: {
+  paper: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Paper',
     required: true
   },
   state: {

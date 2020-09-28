@@ -129,7 +129,7 @@ const CreatePaperHandler = ({content}) => {
         <React.Fragment>
           <Header icon>
             <Icon name="check" />
-            Added {count} authors' content to their according events!
+            Added {count} papers!
           </Header>
           {
             invalidEvents.length>0

@@ -4,7 +4,7 @@ import { Loader, Card } from 'semantic-ui-react';
 import { ErrMsg } from '../../components';
 import { FRONTEND, BACKEND } from '../../config';
 import { useAPI } from '../../hooks';
-import { AuthorCard } from '../../containers';
+import { PaperCard } from '../../containers';
 import { DiscussionEmbed } from 'disqus-react';
 
 
@@ -20,20 +20,20 @@ const EventPage = ({ eventId, url, id, title }) => {
       { 'authorization': token, 'content-type': "application/json" }
     );
   }
-  let authors = connection.response || [];
+  let papers = connection.response || [];
 
   if (connection.error) {
     return <ErrMsg />;
   }
   else if (connection.success) {
-    return ( authors.length === 0 ? 
+    return ( papers.length === 0 ? 
       <span>This event has no author.</span> : 
       <Card.Group style={{marginTop: "2em", width: "80%"}}>
-        {authors.map(
-          (author, idx) => (
-            <AuthorCard key={idx} authorId={author.authorId} eventId={eventId} name={author.authorName} likes={author.totalLikes} likeState={author.likeState} content={author.content}>
-              {author.authorId}
-            </AuthorCard>
+        {papers.map(
+          (paper, idx) => (
+            <PaperCard key={idx} paperId={paper.paperId} eventId={eventId} title={paper.paperTitle} authors={paper.paperAuthors} likes={paper.totalLikes} likeState={paper.likeState} content={paper.content}>
+              {paper.paperId}
+            </PaperCard>
           )
         )}
         <Card fluid> 

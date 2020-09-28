@@ -76,26 +76,23 @@ router.post('/', async (req, res) => {
   else return;
 })
 
-const getContent = async (id, sendOutline=false) => {
-  const path = `./authors/filesInId/${id.slice(0,24)}/${id}.txt`;
+const getContent = async (id) => {
+  const path = `./papers/filesInId/${id.slice(0,24)}/${id.slice(24)}.txt`;
   const content = await fs.readFile(path)
     .then((data) => {
       const lines = data.toString().split('\n');
       const outlineReducer = (acc, cur, idx) => {
-        return idx < 3 ? '' : idx === 3 ? cur : acc + '\n' + cur;
+        return idx === 0 ? cur : acc + '\n' + cur;
       }
-      return {
-        title: lines[2],
-        outline: (sendOutline ? lines.reduce(outlineReducer, '') : false)};
+      return lines.reduce(outlineReducer, '');
     })
     .catch((err) => {
-        return {title: 'error', outline: (sendOutline ? err.message : false) };
+      return err.message;
     });
-  // console.log(content);
   return content;
 }
 
-router.get('/authorPage', async (req, res) => {
+router.get('/paperPage', async (req, res) => {
   if (!req.isLogin) {
     console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create event failed: Not login`);
     res.status(401).send("Not logged in");
@@ -105,9 +102,9 @@ router.get('/authorPage', async (req, res) => {
     res._destroy(400).send("Missing field");
     return;
   }
-  // console.log(req.query.id);
+  console.log(req.query.id);
   const eventId = req.query.id.substring(0, 24);
-  const authorId = req.query.id.substring(24);
+  const paperId = req.query.id.substring(24);
   const userId = req.user.id;
   const user = await User.findById(userId)
     .then(user => user)
@@ -127,12 +124,12 @@ router.get('/authorPage', async (req, res) => {
     res.status(401).send('Unauthorized');
     return;
   }
-  const authors = [...event.author];
-  if(!authorId in authors) {
-    res.status(400).send('Invalid author id');
+  const papers = [...event.papers];
+  if(!paperId in papers) {
+    res.status(400).send('Invalid paper id');
     return;
   }
-  const content = await getContent(req.query.id, sendOutline=true);
+  const content = await getContent(req.query.id);
   res.status(200).send(content);
   return;
 });
@@ -158,10 +155,10 @@ router.get('/page', async (req, res) => {
   }
   const event = await Event.findById(eventId)
     .populate({
-      path: 'author',
-      select: '_id name',
+      path: 'papers',
+      select: '_id title authors ',
       populate: {
-        path: 'author'
+        path: 'paper'
       }
     })
     .then(event => event ? event : false)
@@ -174,30 +171,30 @@ router.get('/page', async (req, res) => {
     res.status(401).send('Unauthorized');
     return;
   }
-  const authors = [...event.author];
+  const papers = [...event.papers];
 
-  const likeResponse = (authorId, authorName, userId, likes) => {
+  const likeResponse = (paperId, paperTitle, paperAuthors, userId, likes) => {
     let likeState = 0;
     const totalLikes = likes.reduce((sum, current) => {
       if (current.user == userId) likeState = current.state;
       return (sum + current.state);
     }, 0);
-    return { authorId, authorName, likeState, totalLikes };
+    return { paperId, paperTitle, paperAuthors, likeState, totalLikes };
   };
 
-  const likeResponseAry = await Promise.all(authors.map(author => {
-    const { _id: authorId, name: authorName } = author;
-    return Like.find({ event: event._id, author: authorId })
+  const likeResponseAry = await Promise.all(papers.map(paper => {
+    const { _id: paperId, authors: paperAuthors, title: paperTitle } = paper;
+    return Like.find({ event: event._id, paper: paperId })
       .then( async likes => (
         {
-          ...likeResponse(authorId, authorName, userId, likes),
-          content: await getContent(`${event._id}${authorId}`)
+          ...likeResponse(paperId, paperTitle, paperAuthors, userId, likes),
+          content: false//await getContent(`${event._id}${paperId}`)
         }
       ))
       .catch(err => errHandler(err, res))
   }))
 
-  if (likeResponseAry.length === authors.length) {
+  if (likeResponseAry.length === papers.length) {
     res.status(200).send(likeResponseAry);
     return;
   }
@@ -467,12 +464,12 @@ router.post('/like', async (req, res) => {
     return;
   }
 
-  let { eventId, authorId, likeState } = req.body;
+  let { eventId, paperId, likeState } = req.body;
   if (Math.abs(likeState) > 0) {
     likeState = likeState > 0 ? 1 : -1;
   }
   const userId = req.user.id;
-  if (!eventId || !authorId || !userId) {
+  if (!eventId || !paperId || !userId) {
     res.status(400).send("Missing field!");
     return;
   }
@@ -480,14 +477,14 @@ router.post('/like', async (req, res) => {
   const filter = {
     user: userId,
     event: eventId,
-    author: authorId,
+    paper: paperId,
   };
   await Like.updateOne(filter, { state: likeState, timestamp: d.getTime() }, {
     new: true, upsert: true
   })
     .then(_ => true)
     .catch(err => errHandler(err));
-  res.status(200).send({ id: userId, event: eventId, author: authorId, likeState });
+  res.status(200).send({ id: userId, event: eventId, paper: paperId, likeState });
 })
 
 router.post('/addPaper', async (req, res) => {
@@ -524,19 +521,25 @@ router.post('/addPaper', async (req, res) => {
     group: paperGroup,
     timestamp: d.getTime()
   }
-  const paperUpdate = await Paper.updateOne({ title: paperTitle }, update, {
-    new: true, upsert: true
+  const paperUpdated = await Paper.findOneAndUpdate({ title: paperTitle }, update, {
+    new: true,
+    upsert: true,
+    rawResult: true
   })
-    .then(({upserted}) => upserted ? upserted[0] : true  //format of upserted: [ { index: 0, _id: 5f70ac5d6ffeb69ab66efc0e } ]
-      )
+    .then( doc => 
+      doc.lastErrorObject.updatedExisting ? 
+      {upserted: false, id: doc.value._id} : 
+      {upserted: true, id: doc.lastErrorObject.upserted}
+      // ({upserted}) => upserted ? upserted[0] : true  //format of upserted: [ { index: 0, _id: 5f70ac5d6ffeb69ab66efc0e } ]
+    )
     .catch(err => {
       errHandler(err, res);
       return false;
     });
-  if(!paperUpdate) return;
+  if(!paperUpdated) return;
   //push the new or the updated paper in the corresponded event
-  if(paperUpdate._id !== undefined) {
-    const paper = await Paper.findById(paperUpdate._id)
+  if(paperUpdated.upserted === true) {
+    const paper = await Paper.findById(paperUpdated.id)
       .then(paper => paper ? paper : false)
       .catch(_ => false);
     if(paper) {
@@ -554,7 +557,7 @@ router.post('/addPaper', async (req, res) => {
   //create content file(in name and in id)
   const path = `./papers/filesInId/${event._id}`;
   const createPaperFile = async () => {
-    await fs.writeFile(`${path}/${paperId}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
+    await fs.writeFile(`${path}/${paperUpdated.id}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
     // await fs.writeFile(`./papers/filesInName/${eventName}/${paperTitle.split(' ').join()}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
     res.status(200).send(`Write ${paperTitle}'s content file in ${eventName} success`);
   }
