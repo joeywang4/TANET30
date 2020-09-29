@@ -27,7 +27,7 @@ const EventPage = ({ eventId, url, id, title }) => {
   }
   else if (connection.success) {
     return ( papers.length === 0 ? 
-      <span>This event has no author.</span> : 
+      <span>This event has no paper yet.</span> : 
       <Card.Group style={{marginTop: "2em", width: "80%"}}>
         {papers.map(
           (paper, idx) => (

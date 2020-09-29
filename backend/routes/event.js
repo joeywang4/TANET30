@@ -289,6 +289,10 @@ const participate = async (res, now, event, userId) => {
     res.status(400).send("User does not exist");
     return;
   }
+  if (user.group !== 'user') {
+    res.status(401).send("Not user type");
+    return;
+  }
   
   const joined = event.participant.find(record => String(record.user) === userId);
   if(joined) {
@@ -479,11 +483,17 @@ router.post('/like', async (req, res) => {
     event: eventId,
     paper: paperId,
   };
-  await Like.updateOne(filter, { state: likeState, timestamp: d.getTime() }, {
+  const upserted = await Like.updateOne(filter, { state: likeState, timestamp: d.getTime() }, {
     new: true, upsert: true
   })
-    .then(_ => true)
+    .then(doc => doc.upserted)
     .catch(err => errHandler(err));
+  if(upserted !== undefined) {
+    const newTx = TX({  to: userId, amount: 2, timestamp: d.getTime() })
+    await newTx.save()
+      .then(_ => true)
+      .catch(err => errHandler(err));
+  }
   res.status(200).send({ id: userId, event: eventId, paper: paperId, likeState });
 })
 
