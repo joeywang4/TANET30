@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Loader, CardGroup, Divider, Header, Icon } from 'semantic-ui-react';
+import { Loader, CardGroup } from 'semantic-ui-react';
 import { ErrMsg, EventLink } from '../../components';
 import { BACKEND } from '../../config';
 import { useAPI } from '../../hooks';
@@ -56,28 +56,13 @@ const ParticipatedEvent = () => {
     
     if(connection.response.length === 0) {
       return (
-        <div style={{marginTop: "2em", width: "80%"}}>
-          <Divider horizontal>
-          <Header as='h4'>
-          <Icon name='calendar' />
-          Participated Events
-          </Header>
-          </Divider>
         <div>
           <span>You have not participated in any event yet.</span>
           {display}
         </div>
-        </div>
       )
     }
     return (
-      <div style={{marginTop: "2em", width: "80%"}}>
-        <Divider horizontal>
-          <Header as='h4'>
-          <Icon name='calendar' />
-          Participated Events
-          </Header>
-          </Divider>
       <div>
       <CardGroup stackable style={{marginTop: "1em"}}>
         {connection.response.map(({name, _id, reward, participant}) => (
@@ -86,7 +71,6 @@ const ParticipatedEvent = () => {
       </CardGroup>
       <div style={{marginTop: "1.5em"}}>
         {display}
-      </div>
       </div>
       </div>
     );
