@@ -17,6 +17,11 @@ export default () => {
 
   let display = null;
 
+  //把名字第二個字變Ｏ
+  const replace = (word, idx, char) => {
+    return word.substring(0,idx) + char + word.substring(idx+1);
+  }
+
   const updateThresholds = (courseBar, companyBar) => {
     if(courseBar < 0 || companyBar < 0){
       setError("Invalid Threshold!");
@@ -37,7 +42,6 @@ export default () => {
     let id_to_user = {};
     let id_to_count = {}; // id -> [courseCount, companyCount]
     for(let event of connection.response) {
-      console.log(event);
       const isCourse = event.admin.group === "seminarStaff";
       for(let participant of event.participant) {
         if(id_to_user[participant.user._id] === undefined) {
@@ -74,7 +78,7 @@ export default () => {
   else if (connection.success) {
     display = <div>Set filter first.</div>;
     if(list !== null) {
-      const text = "Username,Email\n" + list.map(user => `${user.name},${user.email}`).join("\n");
+      const text = "Username,Email\n" + list.map(user => `${replace(user.name, 1, "Ｏ")},${user.email}`).join("\n");
       const data = new Blob([text], {type: 'text/plain'});
       const url = window.URL.createObjectURL(data);
       display = (
