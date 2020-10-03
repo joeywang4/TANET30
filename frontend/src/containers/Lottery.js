@@ -37,16 +37,17 @@ export default () => {
     let id_to_user = {};
     let id_to_count = {}; // id -> [courseCount, companyCount]
     for(let event of connection.response) {
+      console.log(event);
       const isCourse = event.admin.group === "seminarStaff";
       for(let participant of event.participant) {
-        if(id_to_user[participant._id] === undefined) {
-          id_to_user[participant._id] = participant;
-          id_to_count[participant._id] = [0,0];
+        if(id_to_user[participant.user._id] === undefined) {
+          id_to_user[participant.user._id] = participant.user;
+          id_to_count[participant.user._id] = [0,0];
         }
-        let count = id_to_count[participant._id];
+        let count = id_to_count[participant.user._id];
         if(isCourse) count[0] = count[0] += 1;
         else count[1] = count[1] += 1;
-        id_to_count[participant._id] = count;
+        id_to_count[participant.user._id] = count;
       }
     }
     let userList = [];
