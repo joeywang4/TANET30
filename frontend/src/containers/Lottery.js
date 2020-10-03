@@ -78,7 +78,7 @@ export default () => {
   else if (connection.success) {
     display = <div>Set filter first.</div>;
     if(list !== null) {
-      const text = "Username,Email\n" + list.map(user => `${replace(user.name, 1, "Ｏ")},${user.email}`).join("\n");
+      const text = "Index,Username,Email\n" + list.map((user, index) => `${index+1},${replace(user.name, 1, "Ｏ")},${user.email}`).join("\n");
       const data = new Blob([text], {type: 'text/plain'});
       const url = window.URL.createObjectURL(data);
       display = (
