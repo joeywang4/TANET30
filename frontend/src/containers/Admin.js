@@ -5,6 +5,7 @@ import {
   FileUpload,
   CreateEventForm,
   AddAuthorForm,
+  PriceTableHandler,
   CreateTicketForm,
   NewUserHandler,
   ExportUserHandler,
@@ -14,7 +15,7 @@ import {
   NewTicketHandler,
   UpdateMeals
 } from '../components';
-import { Lottery, RenameButton } from './';
+import { Lottery } from './';
 
 const Admin = () => {
   return (
@@ -176,8 +177,20 @@ const Admin = () => {
       <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
         <Grid.Row columns={2}>
           <Grid.Column style={{ width: "80%", maxWidth: "30em" }}>
-            <RenameButton />
-            
+            <FileUpload
+              name="Import price table from file"
+              header="Upload a .csv file"
+              help={
+                <React.Fragment>
+                  A CSV File with two columns: itemName, price<br />
+                  e.g. <i>T-shirt, 2000</i><br />
+                  <br />
+                </React.Fragment>
+              }
+              Handler={PriceTableHandler}
+              icon="download"
+              style={{ margin: "1vh 0" }}
+              />
           </Grid.Column>
           <Grid.Column>
             <FileUpload
@@ -185,8 +198,8 @@ const Admin = () => {
               header="Upload a .csv file"
               help={
                 <React.Fragment>
-                  A CSV File with three columns: Event Name, Paper Id, Paper Title, Paper Authors, Paper Group, Paper Content<br />
-                  e.g. <i>testEvent0927, paperID_09272206, "paperTitle1", "author1 author2 author3 author4", "This is content for paperTitle1 in testEvent0927."</i><br />
+                  A CSV File with six columns: Event Name, Paper Group, Paper Id, Paper Title, Paper Authors, Paper Content<br />
+                  e.g. <i>testEvent0927, A, paperID_09272206, "paperTitle1", "author1 author2 author3 author4", "This is content for paperTitle1 in testEvent0927."</i><br />
                   <br />
                 </React.Fragment>
               }

@@ -7,7 +7,7 @@ import { BACKEND } from '../../config';
 
 const [INIT, PARSING, CREATING, DONE, ERROR] = [0,1,2,3,4];
 
-const CreatePaperHandler = ({content}) => {
+const PriceTableHandler = ({content}) => {
   const [status, setStatus] = useState(INIT);
   const [count, setCount] = useState(0);
   const [errMsg, setErrMsg] = useState("");
@@ -16,15 +16,11 @@ const CreatePaperHandler = ({content}) => {
 
   const create = async (event) => {
     const _event = {
-      eventName: event[0],
-      paperGroup: event[1],
-      paperId: event[2],
-      paperTitle: event[3],
-      paperAuthors: event[4],
-      paperContent: [...event.slice(5)].join()
+      itemName: event[0],
+      price: event[1]
     }
     return await fetch(
-      BACKEND+"/event/addPaper",
+      BACKEND+"/event/addPriceTable",
       { 
         method: "POST", 
         body: JSON.stringify(_event),
@@ -34,7 +30,7 @@ const CreatePaperHandler = ({content}) => {
     .then(res => {
       if(res.status !== 200){
         res.text()
-        .then(errMsg => console.error(`Got ${res.status} for event:`, _event, `, Response: ${errMsg}`))
+        .then(errMsg => console.error(`Got ${res.status} for item:`, _event, `, Response: ${errMsg}`))
         .catch( err => console.error(err));
         return false;
       }
@@ -80,13 +76,7 @@ const CreatePaperHandler = ({content}) => {
           for(let i = 0;i < results.data.length;i++) {
             const event = results.data[i];
             if(i === 0) {
-              const check = ["event name", "paper id", "paper title", "paper authors", "paper group", "paper content"];
-              const lowerArr = event.map(field => field.toLowerCase());
-              let same = true;
-              for(let field = 0;field < 6;field++) {
-                same = same && lowerArr[field].trim() === check[field];
-              }
-              if(same) continue;
+              if(Number(event[1].trim()) === NaN) continue;
             }
             // Check invalid row (except empty row)
             if(event.length === 1 && event[0] === "") continue;
@@ -129,7 +119,7 @@ const CreatePaperHandler = ({content}) => {
         <React.Fragment>
           <Header icon>
             <Icon name="check" />
-            Added {count} papers!
+            Creatded {count} items in the price table!
           </Header>
           {
             invalidEvents.length>0
@@ -147,8 +137,8 @@ const CreatePaperHandler = ({content}) => {
   )
 }
 
-CreatePaperHandler.propTypes = {
+PriceTableHandler.propTypes = {
   content: PropTypes.string.isRequired
 }
 
-export default CreatePaperHandler;
+export default PriceTableHandler;
