@@ -7,8 +7,8 @@ import Events from './Event/Events';
 import CreateEvent from './Event/CreateEvent';
 import Event from './Event/Event';
 import EventPage from './Event/EventPage';
-import AuthorPage from './Event/AuthorPage';
-import AuthorCard from './Event/AuthorCard';
+import PaperPage from './Event/PaperPage';
+import PaperCard from './Event/PaperCard';
 import Admin from './Admin';
 import FoodStaff from './FoodStaff';
 import SeminarStaff from './SeminarStaff';
@@ -34,8 +34,8 @@ export {
   CreateEvent, 
   Event, 
   EventPage,
-  AuthorPage,
-  AuthorCard,
+  PaperPage,
+  PaperCard,
   Admin, 
   FoodStaff, 
   SeminarStaff, 

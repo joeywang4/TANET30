@@ -9,7 +9,7 @@ import {
   NewUserHandler,
   ExportUserHandler,
   AddAuthorHandler,
-  AuthorContentHandler,
+  CreatePaperHandler,
   NewEventHandler,
   NewTicketHandler,
   UpdateMeals
@@ -181,16 +181,16 @@ const Admin = () => {
           </Grid.Column>
           <Grid.Column>
             <FileUpload
-              name="Import authors info from File"
+              name="Import papers' info from file"
               header="Upload a .csv file"
               help={
                 <React.Fragment>
-                  A CSV File with three columns: Author Email, Event Name, Author Title, Author Content<br />
-                  e.g. <i>author1@test.com, testEvent0821, 資訊安全, "This is content for author1 in testEvent0821."</i><br />
+                  A CSV File with three columns: Event Name, Paper Id, Paper Title, Paper Authors, Paper Group, Paper Content<br />
+                  e.g. <i>testEvent0927, paperID_09272206, "paperTitle1", "author1 author2 author3 author4", "This is content for paperTitle1 in testEvent0927."</i><br />
                   <br />
                 </React.Fragment>
               }
-              Handler={AuthorContentHandler}
+              Handler={CreatePaperHandler}
               icon="download"
               style={{ margin: "1vh 0" }}
             />

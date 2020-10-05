@@ -7,7 +7,7 @@ import { BACKEND } from '../../config';
 
 const [INIT, PARSING, CREATING, DONE, ERROR] = [0,1,2,3,4];
 
-const AuthorContentHandler = ({content}) => {
+const CreatePaperHandler = ({content}) => {
   const [status, setStatus] = useState(INIT);
   const [count, setCount] = useState(0);
   const [errMsg, setErrMsg] = useState("");
@@ -16,13 +16,15 @@ const AuthorContentHandler = ({content}) => {
 
   const create = async (event) => {
     const _event = {
-      authorEmail: event[0],
-      eventName: event[1],
-      title: event[2],
-      content: [...event.slice(3)].join()
+      eventName: event[0],
+      paperId: event[1],
+      paperTitle: event[2],
+      paperAuthors: event[3],
+      paperGroup: event[4],
+      paperContent: [...event.slice(5)].join()
     }
     return await fetch(
-      BACKEND+"/event/createAuthorInfo",
+      BACKEND+"/event/addPaper",
       { 
         method: "POST", 
         body: JSON.stringify(_event),
@@ -47,37 +49,10 @@ const AuthorContentHandler = ({content}) => {
     })
   }
 
-  const rename = async () => {
-    return await fetch(
-      BACKEND+"/event/rename",
-      { 
-        method: "POST", 
-        body: JSON.stringify({}),
-        headers: {'authorization': token, 'content-type': "application/json"}
-      }
-    )
-    .then(res => {
-      if(res.status !== 200){
-        res.text()
-        .then(errMsg => console.error(`${errMsg}`))
-        .catch( err => console.error(err));
-        return false;
-      }
-      else {
-        return true;
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      return false;
-    })
-  }
-
   const createAll = (events, newInvalidEvents = []) => {
     if(count !== 0) setCount(0);
     Promise.all(events.map(event => create(event)))
-    .then(async result => {
-      await rename();
+    .then(result => {
       setStatus(DONE);
       setCount(result.reduce((prevValue, success) => prevValue + (success?1:0)));
       let errEvents = result.reduce((errEvents, success, idx) => {
@@ -105,10 +80,10 @@ const AuthorContentHandler = ({content}) => {
           for(let i = 0;i < results.data.length;i++) {
             const event = results.data[i];
             if(i === 0) {
-              const check = ["event name", "author email", "author email"];
+              const check = ["event name", "paper id", "paper title", "paper authors", "paper group", "paper content"];
               const lowerArr = event.map(field => field.toLowerCase());
               let same = true;
-              for(let field = 0;field < 3;field++) {
+              for(let field = 0;field < 6;field++) {
                 same = same && lowerArr[field].trim() === check[field];
               }
               if(same) continue;
@@ -154,7 +129,7 @@ const AuthorContentHandler = ({content}) => {
         <React.Fragment>
           <Header icon>
             <Icon name="check" />
-            Added {count} authors' content to their according events!
+            Added {count} papers!
           </Header>
           {
             invalidEvents.length>0
@@ -172,8 +147,8 @@ const AuthorContentHandler = ({content}) => {
   )
 }
 
-AuthorContentHandler.propTypes = {
+CreatePaperHandler.propTypes = {
   content: PropTypes.string.isRequired
 }
 
-export default AuthorContentHandler;
+export default CreatePaperHandler;

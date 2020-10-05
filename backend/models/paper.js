@@ -1,10 +1,9 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const LikeSchema = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+const PaperSchema = new Schema({
+  title: {
+    type: String,
     required: true
   },
   event: {
@@ -12,13 +11,14 @@ const LikeSchema = new Schema({
     ref: 'Event',
     required: true
   },
-  paper: {
-    type: Schema.Types.ObjectId,
-    ref: 'Paper',
+  authors: {
+    type: String,
     required: true
+    // type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    // required: true
   },
-  state: {
-    type: Number,
+  group: {
+    type: String,
     required: true
   },
   timestamp: {
@@ -28,7 +28,7 @@ const LikeSchema = new Schema({
 });
 
 // Creating a table within database with the defined schema
-const Like = mongoose.model('Like', LikeSchema);
+const Paper = mongoose.model('Paper', PaperSchema);
 
 // Exporting table for querying and mutating
-module.exports = Like;
+module.exports = Paper;
