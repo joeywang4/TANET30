@@ -23,6 +23,10 @@ const UserSchema = new Schema({
   sharing: {
     type: String,
     required: [true, 'Would you like to share your personal info?']
+  },
+  sector: {
+    type: String,
+    required: false
   }
 });
 

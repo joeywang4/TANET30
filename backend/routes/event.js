@@ -216,6 +216,7 @@ router.get('/', async (req, res) => {
 
   if(req.user.group === 'user') {
     Event.find()
+    .populate('admin', userProjection)
     .populate('participant', null, { user: mongoose.Types.ObjectId(req.user.id) })
     .exec((err, events) => {
       if(err) errHandler(err, res);

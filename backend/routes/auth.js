@@ -57,6 +57,7 @@ router.post('/register', async (req, res) => {
   const _name = req.body.name;
   const _group = req.body.group;
   const _sharing = req.body.sharing;
+  const _sector = req.body.sector;
   if(!(req.user) || req.user.group !== 'root') {
     res.status(401).send("Operation not allowed");
     return;
@@ -84,7 +85,7 @@ router.post('/register', async (req, res) => {
   .then(_hash => _hash)
   .catch(err => errHandler(err, res, "Create hash error"));
 
-  const newUser = User({name: _name, pwdHash: _pwdHash, email: _email, group: _group, sharing: _sharing});
+  const newUser = User({name: _name, pwdHash: _pwdHash, email: _email, group: _group, sharing: _sharing, sector: _sector});
   const done = await newUser.save()
   .then(_ => true)
   .catch(err => errHandler(err));

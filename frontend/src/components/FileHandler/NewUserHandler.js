@@ -20,7 +20,8 @@ const NewUserHandler = ({content}) => {
       group: user[1],
       email: user[2],
       pwd: user[3],
-      sharing: user[4]
+      sharing: user[4],
+      sector: user[5]
     }
     return await fetch(
       BACKEND+"/auth/register",
@@ -77,7 +78,7 @@ const NewUserHandler = ({content}) => {
           for(let i = 0;i < results.data.length;i++) {
             const user = results.data[i];
             if(i === 0) {
-              const check = ["name", "group", "email", "password", "sharing"];
+              const check = ["name", "group", "email", "password", "sharing", "sector"];
               const lowerArr = user.map(field => field.toLowerCase());
               let same = true;
               for(let field = 0;field < 5;field++) {
@@ -86,7 +87,7 @@ const NewUserHandler = ({content}) => {
               if(same) continue;
             }
             // Check invalid row (except empty row)
-            if(user.length !== 5) {
+            if(user.length !== 6) {
               if(user.length === 1 && user[0] === "") continue;
               console.error("Invalid user:", user);
               newInvalidUsers.push(user);
