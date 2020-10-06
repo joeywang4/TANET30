@@ -22,7 +22,8 @@ import Poster from './Poster';
 import Cashier from './Cashier';
 import UserAddTicket from './UserAddTicket'
 import History from './History';
-
+import MainPage from './MainPage';
+import UserHead from './UserHead'
 
 export {
   Upload, 
@@ -48,5 +49,7 @@ export {
   Cashier,
   UserAddTicket,
   History,
-  RenameButton
+  RenameButton,
+  MainPage,
+  UserHead
 };

@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { Header, Divider, Form, Dropdown, Button, Message } from 'semantic-ui-react';
 import { BACKEND, ticketTypeEnum } from '../config';
 import { useAPI } from '../hooks';
+import { UserHead } from './index'
 
 const AddTicketForm = () => {
   const { token } = useSelector(state => state.user);
@@ -71,8 +72,9 @@ const AddTicketForm = () => {
 
 const UserAddTicket = () => (
   <div style={{ marginTop: "2em", width: "80%" }}>
+    <UserHead />
     <Divider horizontal>
-      <Header as='h2'>
+      <Header as='h3'>
         Add Meal
         </Header>
     </Divider>

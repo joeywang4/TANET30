@@ -1,13 +1,13 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Header, Button, Icon, Divider } from 'semantic-ui-react';
+import { Header, Button, Icon, Divider, Segment, Grid } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import { ParticipatedEvent, Tickets, History } from './index';
+import { History, UserHead } from './index';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
 
 const UserStatus = () => {
-  const {id} = useSelector(state => state.user);
+  const { id } = useSelector(state => state.user);
   const [connection, connect] = useAPI("json");
 
   if(connection.isInit()) connect(BACKEND+`/TX?id=${id}`);
@@ -27,46 +27,36 @@ const UserStatus = () => {
 
   return (
     <div style={{marginTop: "2em", width: "80%"}}>
-      <Header as='h2' icon textAlign='center'>
-        <Icon name='user circle' circular />
-        <Header.Content>Your Profile</Header.Content>
-      </Header>
+      <UserHead />
       <Divider horizontal>
-        <Header as='h4'>
+        <Header as='h3'>
           <Icon name='dollar' />
           Money
         </Header>
       </Divider>
-      <div style={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center"
-      }}>
-        <Header as='h2'>{`Your Balance: ${balance}`}</Header>
-        <Header as='h3'>{`Your Maximum Balance: ${maxmoney}`}</Header>
-        <div>
-          <Button as={Link} to="/receive">My QRcode</Button>
-          <Button as={Link} to="/send">Send</Button>
-        </div>
-        <div>
-          <History/>
-        </div>
-      </div>
-      <Divider horizontal>
-        <Header as='h4'>
-          <Icon name='calendar' />
-          Participated Events
-        </Header>
-      </Divider>
-      <ParticipatedEvent />
-      <Divider horizontal>
-        <Header as='h4'>
-          <Icon name='food' />
-          Food Tickets
-        </Header>
-      </Divider>
-      <Tickets />
+      <Grid celled='internally' stackable style={{paddingBottom:"2em"}}>
+        <Grid.Row textAlign='center'>
+        <Grid.Column width={11} style={{fontFamily:"Verdana", paddingBottom:"3em", paddingTop:"3em"}}>
+            <Header as='h2'>Your Balance:</Header>
+            <p style={{fontSize:"1.65em"}}>${balance}</p>
+          </Grid.Column>
+          <Grid.Column width={4} style={{fontFamily:"Verdana", paddingLeft:"1.5em", paddingBottom:"3em", paddingTop:"3em"}}>
+            <Header as='h2' style={{fontSize:"1.4em"}}>Maximum Balance:</Header>
+            <p style={{fontSize:"1.55em"}}>${maxmoney}</p>
+          </Grid.Column>
+        </Grid.Row>
+        <Grid.Row textAlign="center">
+          <Grid.Column width="100%" style={{paddingTop:"1.5em"}}>
+            <div>
+            <Button as={Link} to="/receive">My QRcode</Button>
+            <Button as={Link} to="/send">Send</Button>
+            </div>
+            <div style={{paddingTop:"0.8em"}}>
+              <History/>
+            </div>
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
     </div>
   )
 }
