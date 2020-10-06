@@ -21,7 +21,7 @@ const NewUserHandler = ({content}) => {
       email: user[2],
       pwd: user[3],
       sharing: user[4],
-      sector: user[5]
+      sector: user[5] ? user[5] : null
     }
     return await fetch(
       BACKEND+"/auth/register",
@@ -52,7 +52,7 @@ const NewUserHandler = ({content}) => {
     Promise.all(users.map(user => register(user)))
     .then(result => {
       setStatus(DONE);
-      setCount(result.reduce((prevValue, success) => prevValue + (success?1:0)));
+      setCount(result.reduce((prevValue, success) => prevValue + (success?1:0),0));
       let errUsers = result.reduce((errUsers, success, idx) => {
         if(!success) return [...errUsers, idx];
         else return errUsers;
@@ -87,7 +87,7 @@ const NewUserHandler = ({content}) => {
               if(same) continue;
             }
             // Check invalid row (except empty row)
-            if(user.length !== 6) {
+            if(user.length < 5 || user.length > 6) {
               if(user.length === 1 && user[0] === "") continue;
               console.error("Invalid user:", user);
               newInvalidUsers.push(user);

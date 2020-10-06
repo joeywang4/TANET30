@@ -39,7 +39,7 @@ const Admin = () => {
             <FileUpload
               name="Import Users from File"
               header="Upload a .csv file"
-              help="A CSV File with four columns: Name, Group, Email, Password"
+              help="A CSV File with four columns: Name, Group, Email, Password, Sharing(yes/no), Sector"
               Handler={NewUserHandler}
               icon="download"
               style={{ margin: "1vh 0" }}
@@ -48,7 +48,7 @@ const Admin = () => {
             <FileUpload
               name="Export User QR-Code"
               header="Upload a .csv file"
-              help="A CSV File with four columns: Name, Group, Email, Password"
+              help="A CSV File with four columns: Name, Group, Email, Password, Sharing(yes/no), Sector"
               Handler={ExportUserHandler}
               icon="upload"
               style={{ margin: "1vh 0" }}
