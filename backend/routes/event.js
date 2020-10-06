@@ -214,7 +214,7 @@ router.get('/', async (req, res) => {
     timeRange = { begin: { $gte: req.query.begin }, end: { $lte: req.query.end } };
   }
 
-  if(req.user.group === 'user') {
+  if( !( ['root', 'foodStaff', 'seminarStaff', 'company'].includes(req.user.group) ) ) {
     Event.find()
     .populate('admin', userProjection)
     .populate('participant', null, { user: mongoose.Types.ObjectId(req.user.id) })
@@ -229,7 +229,7 @@ router.get('/', async (req, res) => {
   }
   if (req.query.id || req.query.name) {
     let query = null;
-    if (req.query.id) query = Event.findById(req.query.id);
+    if (req.query.id) query = await Event.findById(req.query.id);
     else query = await Event.findOne({ name: req.query.name }).populate({
       path: 'participant',
       populate: { path: 'user', select: userProjection }
@@ -277,7 +277,7 @@ const participate = async (res, now, event, userId) => {
     beginDate.getMonth() !== now.getMonth() ||
     beginDate.getDate() !== now.getDate()
   ) {
-    res.status(400).send("Event is ended or is not started yet");
+    res.status(403).send("Event is ended or is not started yet");
     return;
   }
   const user = await User.findById(userId)
@@ -287,17 +287,17 @@ const participate = async (res, now, event, userId) => {
     })
     .catch(_ => false);
   if (user === false) {
-    res.status(400).send("User does not exist");
+    res.status(422).send("User does not exist");
     return;
   }
   if (user.group !== 'user') {
-    res.status(401).send("Not user type");
+    res.status(422).send("Not user type");
     return;
   }
   
   const joined = event.participant.find(record => String(record.user) === userId);
   if(joined) {
-    res.status(400).send("Already joined event");
+    res.status(403).send("Already joined event");
     return;
   }
   let d = now.getTime();
@@ -436,7 +436,7 @@ router.post('/addParticipant', async (req, res) => {
     });
 
   if (!event) {
-    res.status(400).send("Event does not exist")
+    res.status(404).send("Event does not exist")
     return;
   }
   if (req.user.id !== String(event.admin._id) && req.user.group !== 'root') {
