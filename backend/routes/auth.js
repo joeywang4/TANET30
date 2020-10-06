@@ -38,14 +38,11 @@ router.post('/login', async (req, res) => {
   }
 
   const sessionInfo = {id: user._id, name: user.name, email: user.email, group: user.group};
-  const token = jwt.sign(sessionInfo, process.env.JWT_SECRET, { expiresIn: req.query.long? '10d' : '1d'});
+  const token = await jwt.sign(sessionInfo, process.env.JWT_SECRET, { expiresIn: '1d'});
 
   if(token) {
     let d = new Date();
-    console.log(
-      `[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Login success: ${user.name} ${_email}`, 
-      req.query.long?'with long term token':''
-    );
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Login success: ${user.name} ${_email}`);
     res.status(200).json({'token': token, 'name': user.name, 'email': user.email, 'id': user._id, 'group': user.group});
   }
   else res.status(500).send("Login failed");

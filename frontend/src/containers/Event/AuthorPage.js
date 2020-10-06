@@ -4,16 +4,16 @@ import { Loader, Card } from 'semantic-ui-react';
 import { ErrMsg } from '../../components';
 import { BACKEND } from '../../config';
 import { useAPI } from '../../hooks';
-import { PaperCard } from '..';
+import { AuthorCard } from '../../containers';
 import { DiscussionEmbed } from 'disqus-react';
 import { FRONTEND } from '../../config';
 
-const PaperPage = ({ id, info }) => {
+const AuthorPage = ({ id, info }) => {
   const { token } = useSelector(state => state.user);
-  const [connection, connect] = useAPI("text");
+  const [connection, connect] = useAPI("json");
   if (connection.isInit()) {
     connect(
-      BACKEND + `/event/paperPage/?id=${id}`,
+      BACKEND + `/event/authorPage/?id=${id}`,
       "GET",
       null,
       { 'authorization': token, 'content-type': "application/json" }
@@ -27,16 +27,16 @@ const PaperPage = ({ id, info }) => {
   else if (connection.success) {
     return ( content&&info&&info.hasInfo ? 
       <Card.Group style={{marginTop: "2em", width: "80%"}}>
-        <PaperCard paperId={id.substring(24)} eventId={id.substring(0,24)} title={info.title} authors={info.authors} likes={info.likes} likeState={info.likeState} content={content}>
+        <AuthorCard authorId={id.substring(24)} eventId={id.substring(0,24)} name={info.authorName} likes={info.likes} likeState={info.likeState} content={content}>
           {id}
-        </PaperCard>
+        </AuthorCard>
         <Card fluid> 
           <Card.Content>
             <DiscussionEmbed
               shortname='tanet30'
               config={
                 {
-                  url: `${FRONTEND}/paper/page/?id=${id}`,
+                  url: `${FRONTEND}/author/page/?id=${id}`,
                   identifier: id,
                   title: id,
                   language: 'zh_TW' //e.g. for Traditional Chinese (Taiwan)	
@@ -46,7 +46,7 @@ const PaperPage = ({ id, info }) => {
           </Card.Content>
         </Card>
       </Card.Group> : 
-      <span>{`You are not allowed to see this page.${content&&info&&info.hasInfo}`}</span>
+      <span>You are not allowed to see this page.</span>
     );
   }
   else {
@@ -54,4 +54,4 @@ const PaperPage = ({ id, info }) => {
   }
 };
 
-export default PaperPage;
+export default AuthorPage;

@@ -11,7 +11,7 @@ import {
   CreateEvent,
   Event,
   EventPage,
-  PaperPage,
+  AuthorPage,
   Admin,
   FoodStaff,
   SeminarStaff,
@@ -100,10 +100,10 @@ function App({hasLoggedIn, userGroup}) {
               return mustLogin(hasLoggedIn, <EventPage eventId={eventId} url={location.search} id={eventId} title={eventId} />);
             }}
           </Route>
-          <Route exact path='/paper/page'>
+          <Route exact path='/author/page'>
             {({ location }) => {
               const id = location.search.substring(4);
-              return mustLogin(hasLoggedIn, <PaperPage id={id} info={location.state} />);
+              return mustLogin(hasLoggedIn, <AuthorPage id={id} info={location.state} />);
             }}
           </Route>
           <Route exact path="/login">
