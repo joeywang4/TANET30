@@ -3,13 +3,12 @@ import UserStatus from './UserStatus';
 import Receive from './Receive';
 import Send from './Send';
 import Payment from './Payment';
-import Purchase from './Purchase';
 import Events from './Event/Events';
 import CreateEvent from './Event/CreateEvent';
 import Event from './Event/Event';
 import EventPage from './Event/EventPage';
-import PaperPage from './Event/PaperPage';
-import PaperCard from './Event/PaperCard';
+import AuthorPage from './Event/AuthorPage';
+import AuthorCard from './Event/AuthorCard';
 import Admin from './Admin';
 import FoodStaff from './FoodStaff';
 import SeminarStaff from './SeminarStaff';
@@ -31,13 +30,12 @@ export {
   Receive, 
   Send, 
   Payment,
-  Purchase,
   Events, 
   CreateEvent, 
   Event, 
   EventPage,
-  PaperPage,
-  PaperCard,
+  AuthorPage,
+  AuthorCard,
   Admin, 
   FoodStaff, 
   SeminarStaff, 

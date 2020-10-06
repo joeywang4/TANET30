@@ -12,8 +12,7 @@ import UpdateMeals from './UpdateMeals';
 import NewUserHandler from './FileHandler/NewUserHandler';
 import ExportUserHandler from './FileHandler/ExportUserHandler';
 import AddAuthorHandler from './FileHandler/AddAuthorHandler';
-import CreatePaperHandler from './FileHandler/CreatePaperHandler';
-import PriceTableHandler from './FileHandler/PriceTableHandler';
+import AuthorContentHandler from './FileHandler/AuthorContentHandler';
 import NewEventHandler from './FileHandler/NewEventHandler';
 import NewTicketHandler from './FileHandler/NewTicketHandler';
 import ErrMsg from './ErrMsg';
@@ -33,8 +32,7 @@ export {
   NewUserHandler,
   ExportUserHandler,
   AddAuthorHandler,
-  PriceTableHandler,
-  CreatePaperHandler,
+  AuthorContentHandler,
   NewEventHandler,
   NewTicketHandler,
   ErrMsg

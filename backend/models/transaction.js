@@ -11,10 +11,6 @@ const TXSchema = new Schema({
     ref: 'User',
     required: true
   },
-  item: {
-    type: String, 
-    required: false
-  }, 
   amount: {
     type: Number,
     required: true

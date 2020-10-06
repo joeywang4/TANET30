@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Header, Icon, Divider, Menu } from 'semantic-ui-react';
-import { Purchase, History } from './index';
+import { Payment, History } from './index';
 
 const [SCAN, REC] = [0,1];
 
@@ -11,7 +11,7 @@ export default () => {
   switch (activeItem) {
     default:
     case SCAN:
-      display = <Purchase />;
+      display = <Payment />;
       break;
     case REC:
       display = <History />;
