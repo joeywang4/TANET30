@@ -17,10 +17,10 @@ const CreatePaperHandler = ({content}) => {
   const create = async (event) => {
     const _event = {
       eventName: event[0],
-      paperId: event[1],
-      paperTitle: event[2],
-      paperAuthors: event[3],
-      paperGroup: event[4],
+      paperGroup: event[1],
+      paperId: event[2],
+      paperTitle: event[3],
+      paperAuthors: event[4],
       paperContent: [...event.slice(5)].join()
     }
     return await fetch(
@@ -54,7 +54,7 @@ const CreatePaperHandler = ({content}) => {
     Promise.all(events.map(event => create(event)))
     .then(result => {
       setStatus(DONE);
-      setCount(result.reduce((prevValue, success) => prevValue + (success?1:0)));
+      setCount(result.reduce((prevValue, success) => prevValue + (success?1:0), 0));
       let errEvents = result.reduce((errEvents, success, idx) => {
         if(!success) return [...errEvents, idx];
         else return errEvents;

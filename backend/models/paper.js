@@ -2,6 +2,10 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const PaperSchema = new Schema({
+  ID: {
+    type: String,
+    required: false
+  },
   title: {
     type: String,
     required: true
@@ -14,8 +18,6 @@ const PaperSchema = new Schema({
   authors: {
     type: String,
     required: true
-    // type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    // required: true
   },
   group: {
     type: String,

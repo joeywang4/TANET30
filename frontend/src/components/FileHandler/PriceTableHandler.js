@@ -7,33 +7,31 @@ import { BACKEND } from '../../config';
 
 const [INIT, PARSING, CREATING, DONE, ERROR] = [0,1,2,3,4];
 
-const NewUserHandler = ({content}) => {
+const PriceTableHandler = ({content}) => {
   const [status, setStatus] = useState(INIT);
   const [count, setCount] = useState(0);
   const [errMsg, setErrMsg] = useState("");
-  const [invalidUsers, setInvalidUsers] = useState([]);
+  const [invalidEvents, setInvalidEvents] = useState([]);
   const {token} = useSelector(state => state.user);
 
-  const register = async (user) => {
-    const _user = {
-      name: user[0],
-      group: user[1],
-      email: user[2],
-      pwd: user[3],
-      sharing: user[4],
-      sector: user[5] ? user[5] : null
+  const create = async (event) => {
+    const _event = {
+      itemName: event[0],
+      price: event[1]
     }
     return await fetch(
-      BACKEND+"/auth/register",
+      BACKEND+"/event/addPriceTable",
       { 
         method: "POST", 
-        body: JSON.stringify(_user),
+        body: JSON.stringify(_event),
         headers: {'authorization': token, 'content-type': "application/json"}
       }
     )
     .then(res => {
       if(res.status !== 200){
-        console.error(`Got ${res.status} for user:`, _user)
+        res.text()
+        .then(errMsg => console.error(`Got ${res.status} for item:`, _event, `, Response: ${errMsg}`))
+        .catch( err => console.error(err));
         return false;
       }
       else {
@@ -47,17 +45,17 @@ const NewUserHandler = ({content}) => {
     })
   }
 
-  const registerAll = (users, newInvalidUsers = []) => {
+  const createAll = (events, newInvalidEvents = []) => {
     if(count !== 0) setCount(0);
-    Promise.all(users.map(user => register(user)))
+    Promise.all(events.map(event => create(event)))
     .then(result => {
       setStatus(DONE);
-      setCount(result.reduce((prevValue, success) => prevValue + (success?1:0),0));
-      let errUsers = result.reduce((errUsers, success, idx) => {
-        if(!success) return [...errUsers, idx];
-        else return errUsers;
-      }, []).map(userIdx => users[userIdx]);
-      setInvalidUsers([...invalidUsers, ...newInvalidUsers, ...errUsers]);
+      setCount(result.reduce((prevValue, success) => prevValue + (success?1:0), 0));
+      let errEvents = result.reduce((errEvents, success, idx) => {
+        if(!success) return [...errEvents, idx];
+        else return errEvents;
+      }, []).map(eventIdx => events[eventIdx]);
+      setInvalidEvents([...invalidEvents, ...newInvalidEvents, ...errEvents]);
     })
   }
 
@@ -73,31 +71,19 @@ const NewUserHandler = ({content}) => {
         }
         else {
           setStatus(CREATING);
-          const users = [];
-          const newInvalidUsers = [];
+          const events = [];
+          const newInvalidEvents = [];
           for(let i = 0;i < results.data.length;i++) {
-            const user = results.data[i];
+            const event = results.data[i];
             if(i === 0) {
-              const check = ["name", "group", "email", "password", "sharing", "sector"];
-              const lowerArr = user.map(field => field.toLowerCase());
-              let same = true;
-              for(let field = 0;field < 5;field++) {
-                same = same && lowerArr[field].trim() === check[field];
-              }
-              if(same) continue;
+              if(Number(event[1].trim()) === NaN) continue;
             }
             // Check invalid row (except empty row)
-            if(user.length < 5 || user.length > 6) {
-              if(user.length === 1 && user[0] === "") continue;
-              console.error("Invalid user:", user);
-              newInvalidUsers.push(user);
-              continue;
-            }
-            // Remove spaces, then push to toAdd list
-            users.push(user.map(field => field.trim()));
+            if(event.length === 1 && event[0] === "") continue;
+            events.push(event.map(field => field.trim()));
           }
-          // Start Registration
-          registerAll(users, newInvalidUsers);
+          // Start Creation
+          createAll(events, newInvalidEvents);
         }
       }
     })
@@ -125,7 +111,7 @@ const NewUserHandler = ({content}) => {
       break;
     case CREATING:
       node = (
-        <Dimmer active><Loader active>Creating Users...</Loader></Dimmer>
+        <Dimmer active><Loader active>Adding Authors...</Loader></Dimmer>
       )
       break;
     case DONE:
@@ -133,11 +119,11 @@ const NewUserHandler = ({content}) => {
         <React.Fragment>
           <Header icon>
             <Icon name="check" />
-            Added {count} users!
+            Creatded {count} items in the price table!
           </Header>
           {
-            invalidUsers.length>0
-            ?<p>Failed user(s): {`${invalidUsers.map(user => user[0]).join(", ")}`}</p>
+            invalidEvents.length>0
+            ?<p>Failed event(s): {`${invalidEvents.map(event => event[0]).join(", ")}`}</p>
             :null
           }
         </React.Fragment>
@@ -151,8 +137,8 @@ const NewUserHandler = ({content}) => {
   )
 }
 
-NewUserHandler.propTypes = {
+PriceTableHandler.propTypes = {
   content: PropTypes.string.isRequired
 }
 
-export default NewUserHandler;
+export default PriceTableHandler;

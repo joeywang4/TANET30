@@ -102,7 +102,6 @@ router.get('/paperPage', async (req, res) => {
     res._destroy(400).send("Missing field");
     return;
   }
-  console.log(req.query.id);
   const eventId = req.query.id.substring(0, 24);
   const paperId = req.query.id.substring(24);
   const userId = req.user.id;
@@ -327,6 +326,29 @@ router.post('/join', async (req, res) => {
   return;
 })
 
+router.post('/addPriceTable', async (req, res) => {
+  if (!req.isLogin) {
+    console.log(`Add author failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== "root") {
+    res.status(401).send("You are not authorized");
+    return;
+  }
+
+  const { itemName: item, price: price } = req.body;
+  if(!item || !price) {
+    res.status(400).send('missing feild');
+    return;
+  }
+  prize = { item, price };
+  itemFileName = item.split(' ').join('');
+  fs.writeFile(`./prizes/${itemFileName}.json`, JSON.stringify(prize))
+    .then( _ => res.status(200).send('success') )
+    .catch( err => errHandler(err, res) );
+});
+
 router.post('/addAuthor', async (req, res) => {
   if (!req.isLogin) {
     console.log(`Add author failed: Not login`);
@@ -394,7 +416,7 @@ router.post('/addAuthor', async (req, res) => {
       res.status(400).send(`Please check author email, index: ${errorIndex}`);
       return;
     }
-    await Event.updateOne({ _id: event._id }, { author: checkedAuthorIds });
+    await Event.updateOne({ _id: event._id }, { participant: checkedAuthorIds });
     res.status(200).send({ eventName: event.name, authorIds: checkedAuthorIds });
     return;
   }
@@ -508,7 +530,7 @@ router.post('/addPaper', async (req, res) => {
     return;
   }
 
-  const { eventName, paperId, paperTitle, paperAuthors, paperGroup, paperContent } = req.body;
+  const { eventName, paperGroup, paperId, paperTitle, paperAuthors, paperContent } = req.body;
   if(!eventName || !paperId || !paperTitle || !paperAuthors || !paperContent || !paperGroup) {
     res.status(400).send("Missing field!");
   }
@@ -525,13 +547,13 @@ router.post('/addPaper', async (req, res) => {
   // update(or create) paper
   let d = new Date();
   const update = {
-    title: paperTitle, 
     event: event, 
-    authors: paperAuthors, 
     group: paperGroup,
+    title: paperTitle, 
+    authors: paperAuthors, 
     timestamp: d.getTime()
   }
-  const paperUpdated = await Paper.findOneAndUpdate({ title: paperTitle }, update, {
+  const paperUpdated = await Paper.findOneAndUpdate({ ID: paperId }, update, {
     new: true,
     upsert: true,
     rawResult: true
