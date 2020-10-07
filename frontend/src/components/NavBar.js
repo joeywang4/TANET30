@@ -1,5 +1,5 @@
 import React from 'react';
-import { Header, Dropdown, Menu, Image, Button, Container } from 'semantic-ui-react';
+import { Dropdown, Menu, Image, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { logout } from '../actions';
@@ -49,10 +49,11 @@ function NavBar ({hasLoggedin, name, userGroup, logout}) {
         <Menu.Item 
           name='general'
           as={Link} to="/mainPage"
+          style={{color:'white'}}
         >
         大會資訊
         </Menu.Item>
-        <Dropdown text='My Info' className='link item'>
+        <Dropdown text='My Info' className='link item' style={{color:'white'}}>
           <Dropdown.Menu>
             <Dropdown.Item as={Link} to="/participatedEvents">Events</Dropdown.Item>
             <Dropdown.Item as={Link} to="/tickets">Food Tickets</Dropdown.Item>
@@ -62,6 +63,7 @@ function NavBar ({hasLoggedin, name, userGroup, logout}) {
         <Menu.Item
           name='wallet'
           as={Link} to="/receive"
+          style={{color:'white'}}
         >
         My QRcode
         </Menu.Item>
