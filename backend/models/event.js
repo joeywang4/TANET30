@@ -27,8 +27,8 @@ const EventSchema = new Schema({
     type: [{ type: Schema.Types.ObjectId, ref: 'Record' }],
     required: true
   },
-  author: {
-    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  papers: {
+    type: [{ type: Schema.Types.ObjectId, ref: 'Paper' }],
     required: true
   },
   reward: {

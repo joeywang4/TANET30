@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const TX = require("../models/transaction");
 const User = require("../models/user");
+const fs = require("fs").promises;
+const path = require("path");
 
 const getBalance = (id, TXs) => {
   let balance = 0;
@@ -85,30 +87,39 @@ router.post('/purchase', async (req, res) => {
     res.status(401).send("Not authorized");
     return;
   }
-  const { from, amount } = req.body;
-  if(!from || !amount) {
-    res.status(400).send("Missing receiver or amount");
+  const { from, prize } = req.body;
+  if(!from || !prize) {
+    res.status(400).send("Missing receiver or prize");
     return;
   }
+  const { item, price } = prize;
   const to = req.user.id;
   const timestamp = d.getTime();
+  const tx = await TX.findOne({ from, item }, (err, tx) => {
+    if(err) return errHandler(err, res);
+    else return tx
+  });
+  if(tx) {
+    res.status(400).send("This prize had already been purchased by this user!");
+    return;
+  }
   const TXs = await TX.find({$or: [{'from': from}, {'to': from}]}, (err, TXs) => {
     if(err) return errHandler(err, res);
     else return TXs;
   });
   
-  if(getBalance(from, TXs) < amount) {
+  if(getBalance(from, TXs) < price) {
     res.status(400).send("Not enough balance");
     return;
   }
-  const newTX = TX({ from, to, amount, timestamp });
+  const newTX = TX({ from, to, item, amount: price, timestamp });
   const done = newTX.save()
   .then(_ => true)
   .catch(err => errHandler(err, res));
 
   if(done) {
     let d = new Date();
-    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create TX success: \$${amount} from ${from} to ${to}`);
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create TX success: buy ${item} with \$${price} from ${from} to ${to}`);
     res.status(200).send("Create transaction success");
   }
   else res.status(400).send("Create transaction failed");
@@ -147,6 +158,30 @@ router.get('/user', (req, res) => {
   }
   else res.status(400).send("Missing Query Info");
 })
+
+router.get('/prize', async (req, res) => {
+  if(!req.isLogin) {
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create transaction failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== 'cashier') {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  const prizesPath = './prizes'
+  const files = await fs.readdir(prizesPath);
+  prizes = []
+  for (const file of files) {
+    if(file.split(".")[1] === 'json') {
+      const data = await fs.readFile(path.resolve(__dirname, `../${prizesPath}/${file}`));
+      const prize = JSON.parse(data);
+      prizes.push(prize);
+    }
+  }
+
+  res.status(200).send(prizes)
+});
 
 const errHandler = (err, res) => {
   console.error(err);
