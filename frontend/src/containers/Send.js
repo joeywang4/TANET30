@@ -79,7 +79,9 @@ class Send extends Component {
         maxWidth: "800px",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center"
+        alignItems: "center",
+        marginTop: "2em", 
+        marginBottom: "2em"
       }}>
         <QrReader
           delay={300}

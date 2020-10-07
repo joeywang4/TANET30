@@ -172,8 +172,8 @@ export default () => {
         <Header.Content>Send Food</Header.Content>
       </Header>
       <Divider />
-      <Grid columns={2} padded>
-        <Grid.Column width = {15} >
+      <Grid columns={2} padded textAlign="center">
+        <Grid.Column width = {14} >
           <Menu stackable widths={3}>
             {functions.map(_func => (
               <Menu.Item
@@ -196,10 +196,15 @@ export default () => {
           </Button>
         </Grid.Column>
       </Grid>
-      {display}
-      {okAudioTag}
-      {warningAudioTag}
-      {noFoodAudioTag}
+      <Grid textAlign="center" padded>
+        <Grid.Column width = {15}>
+          {display}
+          {okAudioTag}
+          {warningAudioTag}
+          {noFoodAudioTag}
+        </Grid.Column>
+      </Grid>
+      
     </div>
   )
 }
