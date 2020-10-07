@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card, Button, Icon } from 'semantic-ui-react';
 import { BACKEND } from '../../config';
 
-const AuthorCard = ({ authorId, eventId, name, likes, likeState, content }) => {
+const PaperCard = ({ paperId, eventId, title, authors, likes, likeState, content }) => {
   const initLikeState = likeState;
   const { token } = useSelector(state => state.user);
   const [ totalLikes, setTotalLikes ] = useState(likes);
@@ -15,7 +15,7 @@ const AuthorCard = ({ authorId, eventId, name, likes, likeState, content }) => {
       console.log(`cancel ${userLikeState>0 ? 'like' : 'dislike'}`);
       fetch(BACKEND+"/event/like", {
         method: "POST",
-        body: JSON.stringify({ eventId, authorId, likeState: 0 }),
+        body: JSON.stringify({ eventId, paperId, likeState: 0 }),
         headers: { authorization: token, 'content-type': "application/json" }
       })
       .then(res => {
@@ -33,7 +33,7 @@ const AuthorCard = ({ authorId, eventId, name, likes, likeState, content }) => {
     console.log(`clicked ${newLikeState}`);
     fetch(BACKEND+"/event/like", {
       method: "POST",
-      body: JSON.stringify({ eventId, authorId, likeState: newLikeState }),
+      body: JSON.stringify({ eventId, paperId, likeState: newLikeState }),
       headers: { authorization: token, 'content-type': "application/json" }
     })
     .then(res => {
@@ -48,27 +48,27 @@ const AuthorCard = ({ authorId, eventId, name, likes, likeState, content }) => {
     setUserLikeState(newLikeState);
   }
 
-  const hasOutline = content.outline ? true : false;
+  // const hasOutline = content.outline ? true : false;
 
   return (
-    <Card fluid={hasOutline ? true : false}> 
+    <Card fluid={content ? true : false}> 
       <Card.Content>
-        <Card.Header>{name}</Card.Header>
+        <Card.Header>{title}</Card.Header>
         <Card.Meta>
-          <span className='title'>{content.title}</span>
+          <span className='title'>{authors}</span>
         </Card.Meta>
       </Card.Content>
       <Card.Content>
         <Card.Description>
-          {hasOutline ? <span className='content'>{content.outline.split('\n').map((val, idx) => 
+          {content ? <span className='content'>{content.split('\n').map((val, idx) => 
             <p id={idx}>
               {val}
             </p>
           )}</span> : 
           <Link to={{
-              pathname: "/author/page/",
-              search: `?id=${eventId}${authorId}`,
-              state: { hasInfo: true, authorName: name, content: content, likes: totalLikes, likeState: userLikeState }
+              pathname: "/paper/page/",
+              search: `?id=${eventId}${paperId}`,
+              state: { hasInfo: true, title: title, authors:authors, content: content, likes: totalLikes, likeState: userLikeState }
             }} >
             ...view more
           </Link>} 
@@ -79,7 +79,7 @@ const AuthorCard = ({ authorId, eventId, name, likes, likeState, content }) => {
         <span>{` ${totalLikes}`}</span>
       </Card.Content>
       <Card.Content extra>
-      <Button.Group fluid={hasOutline ? false : true}>
+      <Button.Group fluid={content ? false : true}>
         <Button 
           content='  Like  ' size='tiny' labelPosition='left' color='green' 
           icon={userLikeState<=0 ? 'thumbs up outline' : 'thumbs up'} 
@@ -100,7 +100,7 @@ const AuthorCard = ({ authorId, eventId, name, likes, likeState, content }) => {
           // attached='left'
           label={{ basic: true, color: 'green', pointing: 'left', content: `${totalLikes}` }}
         /> */}
-        {hasOutline ? 
+        {content ? 
           <Button color='blue' floated='right' as={Link} to={`/event/page/?id=${eventId}`} link>
             <Icon name='arrow alternate circle left outline' />
             Go back
@@ -111,4 +111,4 @@ const AuthorCard = ({ authorId, eventId, name, likes, likeState, content }) => {
   );
 }
 
-export default AuthorCard;
+export default PaperCard;
