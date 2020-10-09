@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
     res.status(401).send("Not logged in");
     return;
   }
-  const { name, period, date, begin, end, password, reward,  } = req.body;
+  const { name, period, date, begin, end, password, reward } = req.body;
   let admin = req.user.id;
   if (!name || !period || !date || !begin || !end || !admin || !reward) {
     res.status(400).send("Missing field");
