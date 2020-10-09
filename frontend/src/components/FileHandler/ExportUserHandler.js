@@ -84,7 +84,8 @@ const ExportUserHandler = ({ content }) => {
               if (same) continue;
             }
             // Check invalid row (except empty row)
-            if (user.length !== 4) {
+            if (user.length !== 5 && user.length !== 6) {
+              console.log(user);
               if (user.length === 1 && user[0] === "") continue;
               console.error("Invalid user:", user);
               newInvalidUsers.push(user);

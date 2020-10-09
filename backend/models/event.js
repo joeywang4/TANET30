@@ -15,6 +15,10 @@ const EventSchema = new Schema({
     type: String,
     required: false
   },
+  date: {
+    type: String, 
+    required: true
+  },
   begin: {
     type: Number,
     required: true
@@ -38,6 +42,10 @@ const EventSchema = new Schema({
   password: {
     type: String,
     required: false
+  },
+  period: {
+    type: Number,
+    required: true
   }
 });
 
