@@ -505,8 +505,11 @@ router.post('/like', async (req, res) => {
   }
 
   let { eventId, paperId, likeState } = req.body;
-  if (Math.abs(likeState) > 0) {
-    likeState = likeState > 0 ? 1 : -1;
+  if (likeState > 3) {
+    likeState = 3;
+  }
+  else if (likeState < 0) {
+    likeState = 0;
   }
   const userId = req.user.id;
   if (!eventId || !paperId || !userId) {
