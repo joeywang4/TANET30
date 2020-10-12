@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Loader, Menu, CardGroup, Card, Button, Icon, Grid, Segment } from 'semantic-ui-react';
+import { Loader, Menu, CardGroup, Card, Button, Icon, Divider, Header } from 'semantic-ui-react';
 import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
 import { Link } from 'react-router-dom';
 import { usedDate } from '../util';
+import { UserHead } from './index'
 
 
 const [AVAIL, USED] = [0, 1];
@@ -41,24 +42,6 @@ const Tickets = () => {
     }
   }
 
-  const [amountMeat, setAmountMeat] = useState(null);
-  const [amountVegan, setAmountVegan] = useState(null);
-  const [checkState, check] = useAPI("text");
-  const checkAmount = () => {
-    if(checkState.isInit()){
-      check(
-        BACKEND + "/ticket/avail",
-        "GET",
-        null,
-        { 'authorization': token, 'content-type': "application/json", mode: 'cors' }
-      )
-    }
-    if(checkState.success){
-      const amounts = JSON.parse(checkState.response);
-      setAmountMeat(amounts.meat);
-      setAmountVegan(amounts.vegan);
-    }
-  }
 
   // Return True if not expired
   const checkTime = ticketTime => {
@@ -81,7 +64,7 @@ const Tickets = () => {
   }
   else if (connection.success) {
     const tickets = connection.response;
-    let display = <span>You have no ticket.</span>;
+    let display = <span style={{fontFamily:"Verdana", fontSize:"1em"}}>You have no ticket.</span>;
     if (tickets.length > 0) {
       display = (
         <CardGroup stackable style={{ marginTop: "1em" }} >
@@ -114,6 +97,14 @@ const Tickets = () => {
       )
     }
     return (
+      <div style={{marginTop: "2em", width: "80%"}}>
+        <UserHead />
+        <Divider horizontal>
+        <Header as='h3'>
+          <Icon name='food' />
+          Food Tickets
+        </Header>
+      </Divider>
       <div>
         <Menu stackable widths={2}>
           <Menu.Item
@@ -133,22 +124,7 @@ const Tickets = () => {
             {activeItem === AVAIL ? <Button as={Link} to="/userAddTicket">Add Meal</Button> : null}
           </div>
         </div>
-        <div>
-          <Grid>
-            <Grid.Column width={4}>
-              <Button animated onClick = {checkAmount}>
-                <Button.Content visible>目前便當數量</Button.Content>
-                <Button.Content hidden>
-                  <Icon name = 'refresh' />
-                </Button.Content>
-              </Button>
-            </Grid.Column>
-            <Grid.Column>
-              <p>Meat: {amountMeat}</p>
-              <p>Vegan: {amountVegan}</p>
-            </Grid.Column>
-          </Grid>
-        </div>
+      </div>
       </div>
     );
   }

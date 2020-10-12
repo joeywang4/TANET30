@@ -19,7 +19,11 @@ import {
   Register,
   Poster,
   Cashier,
-  UserAddTicket
+  UserAddTicket,
+  Tickets,
+  ParticipatedEvent,
+  MainPage, 
+  UserHead
 } from '../containers';
 
 const mapStateToProps = (state) => ({
@@ -87,6 +91,21 @@ function App({hasLoggedIn, userGroup}) {
           </Route>
           <Route exact path="/userAddTicket">
             {mustLogin(hasLoggedIn, <UserAddTicket />)}
+          </Route>
+          <Route exact path="/tickets">
+            {mustLogin(hasLoggedIn, <Tickets />)}
+          </Route>
+          <Route exact path="/participatedEvents">
+            {mustLogin(hasLoggedIn, <ParticipatedEvent />)}
+          </Route>
+          <Route exact path="/userStatus">
+            {mustLogin(hasLoggedIn, <UserStatus />)}
+          </Route>
+          <Route exact path="/mainPage">
+            {mustLogin(hasLoggedIn, <MainPage />)}
+          </Route>
+          <Route exact path="/userHead">
+            {mustLogin(hasLoggedIn, <UserHead />)}
           </Route>
           <Route exact path="/event">
             {({ location }) => {

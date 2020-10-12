@@ -8,7 +8,7 @@ const mapStateToProps = (state) => ({
 
 class Receive extends Component {
   render() {
-    return <QRCode value={this.props.id} size={512} level={'H'} style={{margin: "auto", display: "block", width: "80%", maxWidth: "500px", height: "auto"}}  />
+    return <QRCode value={this.props.id} size={512} level={'H'} style={{marginTop:"3em", display: "block", width: "80%", maxWidth: "500px", height: "auto"}}  />
   }
 }
 

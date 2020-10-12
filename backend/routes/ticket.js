@@ -111,10 +111,15 @@ router.post("/use", async (req, res) => {
     res.status(401).send("Not authorized");
     return;
   }
-  const {owner, type} = req.body;
-  if(!owner || !type) {
+  let {owner, type} = req.body;
+  if(!owner) {
     res.status(400).send("Missing field");
     return;
+  }
+  if(!type) {
+    const d = new Date();
+    const h = d.getHours();
+    type = h > 15 ? "dinner" : "lunch";
   }
   const date = today();
   let tickets = await Ticket.find({owner, type, date})
@@ -122,12 +127,12 @@ router.post("/use", async (req, res) => {
   .then(ticket => ticket)
   .catch(err => errHandler(err));
   if(!tickets || tickets.length === 0) {
-    res.status(401).send("No Ticket!");
+    res.status(403).send("No Ticket!");
     return;
   }
   let ticket = tickets.find(ticket => ticket.usedTime === 0);
   if(!ticket) {
-    res.status(401).send("Ticket is used!");
+    res.status(403).send("Ticket is used!");
     return;
   }
   ticket.usedTime = Date.now();
