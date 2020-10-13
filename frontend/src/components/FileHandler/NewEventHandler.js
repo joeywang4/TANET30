@@ -17,10 +17,12 @@ const NewEventHandler = ({content}) => {
   const create = async (event) => {
     const _event = {
       name: event[0],
-      admin: event[1],
-      begin: Date.parse(event[2])+8*60*60*1000, // Default begin at 8 am
-      end: Date.parse(event[2])+10*60*60*1000, // Default end at 10 am
-      reward: event.length>3 ? event[3] : 0
+      period: event[1],
+      admin: event[2],
+      date: event[3],
+      begin: Date.parse(event[3])+8*60*60*1000, // Default begin at 8 am
+      end: Date.parse(event[3])+10*60*60*1000, // Default end at 10 am
+      reward: event.length>4 ? event[4] : 0
     }
     return await fetch(
       BACKEND+"/event/",
@@ -77,16 +79,16 @@ const NewEventHandler = ({content}) => {
           for(let i = 0;i < results.data.length;i++) {
             const event = results.data[i];
             if(i === 0) {
-              const check = ["name", "admin email", "date", "reward"];
+              const check = ["name", "period", "admin email", "date", "reward"];
               const lowerArr = event.map(field => field.toLowerCase());
               let same = true;
-              for(let field = 0;field < 3;field++) {
+              for(let field = 0;field < 4;field++) {
                 same = same && lowerArr[field].trim() === check[field];
               }
               if(same) continue;
             }
             // Check invalid row (except empty row)
-            if(event.length < 3 || event.length > 4) {
+            if(event.length < 4 || event.length > 5) {
               if(event.length === 1 && event[0] === "") continue;
               console.error("Invalid event:", event);
               newInvalidEvents.push(event);

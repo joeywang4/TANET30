@@ -5,32 +5,15 @@ import { Card, Button, Icon } from 'semantic-ui-react';
 import { BACKEND } from '../../config';
 
 const PaperCard = ({ paperId, eventId, title, authors, likes, likeState, content }) => {
-  const initLikeState = likeState;
   const { token } = useSelector(state => state.user);
   const [ totalLikes, setTotalLikes ] = useState(likes);
   const [ userLikeState, setUserLikeState ] = useState(likeState);
+  const [ hoverLikeState, setHoverLikeState ] = useState(likeState);
+  const [ useHoverState, setUseHoverState ] = useState(false)
 
   const onClickLike = (newLikeState) => {
-    if(newLikeState-userLikeState === 0) {
-      console.log(`cancel ${userLikeState>0 ? 'like' : 'dislike'}`);
-      fetch(BACKEND+"/event/like", {
-        method: "POST",
-        body: JSON.stringify({ eventId, paperId, likeState: 0 }),
-        headers: { authorization: token, 'content-type': "application/json" }
-      })
-      .then(res => {
-        if(res.status === 200) {
-          console.log(`cancel ${userLikeState>0 ? 'like' : 'dislike'} success`);
-        }
-        else {
-          console.log(`cancel ${userLikeState>0 ? 'like' : 'dislike'} failed`);
-        }
-      })
-      setTotalLikes(likes -= initLikeState);
-      setUserLikeState(0);
-      return;
-    }
-    console.log(`clicked ${newLikeState}`);
+    if(newLikeState-userLikeState === 0) newLikeState = 0;
+    console.log(newLikeState ? `clicked ${newLikeState}`: `cancel ${userLikeState}`);
     fetch(BACKEND+"/event/like", {
       method: "POST",
       body: JSON.stringify({ eventId, paperId, likeState: newLikeState }),
@@ -38,16 +21,25 @@ const PaperCard = ({ paperId, eventId, title, authors, likes, likeState, content
     })
     .then(res => {
       if(res.status === 200) {
-        console.log('like success');
+        console.log('success');
       }
       else {
-        console.log('like failed');
+        console.log('failed');
       }
     })
     setTotalLikes(likes += newLikeState-likeState);
     setUserLikeState(newLikeState);
+    setHoverLikeState(newLikeState);
   }
 
+  const onHover = (star) => {
+    setUseHoverState(true);
+    setHoverLikeState(star);
+  }
+  const unHover = () => {
+    setUseHoverState(false);
+    setHoverLikeState(0);
+  }
   // const hasOutline = content.outline ? true : false;
 
   return (
@@ -75,31 +67,25 @@ const PaperCard = ({ paperId, eventId, title, authors, likes, likeState, content
         </Card.Description>
         <br />
         {/* <Button circular active icon='thumbs up' size='mini' color='blue' /> */}
-        <Icon name='thumbs up outline' color='blue' />
+        <Icon name='like' color='red'/>
         <span>{` ${totalLikes}`}</span>
       </Card.Content>
       <Card.Content extra>
-      <Button.Group fluid={content ? false : true}>
-        <Button 
-          content='  Like  ' size='tiny' labelPosition='left' color='green' 
-          icon={userLikeState<=0 ? 'thumbs up outline' : 'thumbs up'} 
-          basic={userLikeState<=0} compact onClick={()=>onClickLike(1)} 
-        />
-        <Button 
-          content='Dislike' size='tiny' labelPosition='right' color='red'
-          icon={userLikeState>=0 ? 'thumbs down outline' : 'thumbs down'} 
-          basic={userLikeState>=0} compact onClick={()=>onClickLike(-1)} 
-        />
-      </Button.Group> 
-        {/* <Button
-          color='green'
-          content='Like'
-          basic={userLikeState<=0}
-          icon={userLikeState<=0 ? 'thumbs up outline' : 'thumbs up'}
-          onClick={()=>onClickLike(1)}
-          // attached='left'
-          label={{ basic: true, color: 'green', pointing: 'left', content: `${totalLikes}` }}
-        /> */}
+        <div onMouseLeave={()=>unHover()} >
+          {[1, 2, 3].map( (val, idx) => 
+            <Icon 
+              key={idx} 
+              name={
+                useHoverState ? 
+                (hoverLikeState>idx ? 'star' : 'star outline') :
+                (userLikeState >idx ? 'star' : 'star outline') 
+              } 
+              size='large' 
+              color='yellow' 
+              onMouseEnter={()=>onHover(val)} 
+              onClick={()=>onClickLike(val)} />
+          )}
+        </div>
         {content ? 
           <Button color='blue' floated='right' as={Link} to={`/event/page/?id=${eventId}`} link>
             <Icon name='arrow alternate circle left outline' />
