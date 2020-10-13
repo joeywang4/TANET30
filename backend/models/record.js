@@ -10,6 +10,14 @@ const RecordSchema = new Schema({
   usedTime: {
     type: Number,
     required: true
+  },
+  date: {
+    type: String,
+    required: true
+  },
+  period: {
+    type: String,
+    required: true
   }
 });
 

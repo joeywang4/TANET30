@@ -6,7 +6,6 @@ const TX = require("../models/transaction");
 const Like = require("../models/like");
 const Paper = require("../models/paper");
 const Record = require("../models/record");
-const rename = require("../papers/rename");
 const mongoose = require("mongoose");
 const fs = require("fs").promises;
 const path = require("path");
@@ -18,9 +17,9 @@ router.post('/', async (req, res) => {
     res.status(401).send("Not logged in");
     return;
   }
-  const { name, begin, end, password, reward } = req.body;
+  const { name, period, date, begin, end, password, reward } = req.body;
   let admin = req.user.id;
-  if (!name || !begin || !end || !admin || !reward) {
+  if (!name || !period || !date || !begin || !end || !admin || !reward) {
     res.status(400).send("Missing field");
     return;
   }
@@ -63,7 +62,7 @@ router.post('/', async (req, res) => {
     return;
   }
 
-  const newEvent = Event({ admin, name, begin, end, participant: [], author: [], reward, password });
+  const newEvent = Event({ admin, name, date, begin, end, participant: [], reward, password, period });
   const done = newEvent.save()
     .then(_ => true)
     .catch(err => errHandler(err, res));
@@ -160,13 +159,14 @@ router.get('/page', async (req, res) => {
         path: 'paper'
       }
     })
+    .populate('participant', null, { user: mongoose.Types.ObjectId(userId) })
     .then(event => event ? event : false)
     .catch(_ => false);
   if (!event) {
     res.status(404).send("Event not found");
     return;
   }
-  if (!userId in event.participant) {
+  if (!(event.participant && event.participant.length > 0)) {
     res.status(401).send('Unauthorized');
     return;
   }
@@ -300,19 +300,32 @@ const participate = async (res, now, event, userId) => {
     return;
   }
   let d = now.getTime();
-  const newRecord = Record({"user":userId,"usedTime":d});
+  
+  const samePeriod = await Record.findOne({ user: userId, date: event.date, period: event.period }, (err, rec) => {
+    if (rec) return rec;
+    else if (err) {
+      errHandler(err, res);
+      return true;
+    }
+    return false;
+  });
+  // console.log(samePeriod);
+  if (!samePeriod) {
+    // Give reward to this user
+    const newTx = TX({  to: userId, amount: event.reward, timestamp: d })
+    await newTx.save()
+    .then(_ => true)
+    .catch(err => errHandler(err));
+  }
+  
+  const newRecord = Record({ user: userId, usedTime: d, date: event.date, period: event.period });
   await newRecord.save()
   .then(_ => true)
   .catch(err => errHandler(err));
   
-
   await Event.updateOne({_id: event._id}, {$push: {participant : newRecord}});
-  // Give reward to this user
-  const newTx = TX({  to: userId, amount: event.reward, timestamp: d })
-  await newTx.save()
-    .then(_ => true)
-    .catch(err => errHandler(err));
-  res.status(200).send({ id: user._id, name: user.name, sharing: user.sharing });
+
+  res.status(200).send({ id: user._id, name: user.name, sharing: user.sharing, reward: !samePeriod });
 }
 
 router.post('/join', async (req, res) => {
@@ -491,8 +504,11 @@ router.post('/like', async (req, res) => {
   }
 
   let { eventId, paperId, likeState } = req.body;
-  if (Math.abs(likeState) > 0) {
-    likeState = likeState > 0 ? 1 : -1;
+  if (likeState > 3) {
+    likeState = 3;
+  }
+  else if (likeState < 0) {
+    likeState = 0;
   }
   const userId = req.user.id;
   if (!eventId || !paperId || !userId) {
@@ -606,20 +622,6 @@ router.post('/addPaper', async (req, res) => {
       if(err.errno === -4075) createPaperFile();
       else  errHandler(err, res);
     })
-})
-
-router.post('/rename', async (req, res) => {
-  if (!req.isLogin) {
-    console.log(`Add author failed: Not login`);
-    res.status(401).send("Not logged in");
-    return;
-  }
-
-  if (req.user.group !== "root") {
-    res.status(401).send("You are not authorized");
-    return;
-  }
-  res.status(200).send({failedAry: await rename()});
 })
 
 router.get('/thresholds', async (req, res) => {
