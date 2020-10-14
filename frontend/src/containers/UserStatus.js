@@ -47,10 +47,10 @@ const UserStatus = () => {
         </Grid.Row>
         <Grid.Row textAlign="center">
           <Grid.Column width="100%" style={{paddingTop:"1.5em"}}>
-            <div>
+            {/* <div>
             <Button as={Link} to="/receive">My QRcode</Button>
             <Button as={Link} to="/send">Send</Button>
-            </div>
+            </div> */}
             <div style={{paddingTop:"0.8em"}}>
               <History/>
             </div>

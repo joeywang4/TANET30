@@ -39,7 +39,7 @@ const Admin = () => {
             <FileUpload
               name="Import Users from File"
               header="Upload a .csv file"
-              help="A CSV File with four columns: Name, Group, Email, Password, Sharing(yes/no), Sector"
+              help="A CSV File with six columns: Name, Group, Email, Password, Sharing(yes/no), Sector"
               Handler={NewUserHandler}
               icon="download"
               style={{ margin: "1vh 0" }}

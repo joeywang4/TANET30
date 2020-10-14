@@ -102,7 +102,7 @@ function App({hasLoggedIn, userGroup}) {
             {mustLogin(hasLoggedIn, <UserStatus />)}
           </Route>
           <Route exact path="/mainPage">
-            {mustLogin(hasLoggedIn, <MainPage />)}
+            {mustLogin(true, <MainPage />)}
           </Route>
           <Route exact path="/userHead">
             {mustLogin(hasLoggedIn, <UserHead />)}
