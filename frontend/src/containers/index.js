@@ -1,5 +1,6 @@
 import Upload from "./Upload";
 import UserStatus from './UserStatus';
+import Receive from './Receive';
 import Purchase from './Purchase';
 import Events from './Event/Events';
 import CreateEvent from './Event/CreateEvent';
@@ -26,6 +27,7 @@ import UserHead from './UserHead'
 export {
   Upload, 
   UserStatus,
+  Receive,
   Purchase,
   Events, 
   CreateEvent, 

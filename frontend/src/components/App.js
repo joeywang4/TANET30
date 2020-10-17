@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { NavBar, Welcome, Login, AutoLogin } from '../components';
 import { 
   UserStatus,
+  Receive,
   Events,
   CreateEvent,
   Event,
@@ -70,6 +71,9 @@ function App({hasLoggedIn, userGroup}) {
               :
               <Welcome />
             }
+          </Route>
+          <Route exact path="/receive">
+            {mustLogin(hasLoggedIn, <Receive />)}
           </Route>
           <Route exact path="/events">
             {mustLogin(hasLoggedIn, <Events />)}
