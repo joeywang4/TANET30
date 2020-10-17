@@ -32,14 +32,12 @@ const Tickets = () => {
       return;
     }
     const body = { owner: id, type: ticketType, date: ticketDate };
-    if (editState.isInit()) {
-      edit(
-        BACKEND + "/ticket/delete",
-        "POST",
-        JSON.stringify(body),
-        { 'authorization': token, 'content-type': "application/json" }
-      )
-    }
+    edit(
+      BACKEND + "/ticket/delete",
+      "POST",
+      JSON.stringify(body),
+      { 'authorization': token, 'content-type': "application/json" }
+    )
   }
 
 
