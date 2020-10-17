@@ -28,7 +28,9 @@ const CreateEventForm = () => {
       return;
     }
 
-    const body = {name, begin, end, reward};
+    const date = beginDate;
+    let password = null;
+    const body = {name, period, date, begin, end, password, reward};
     if(admin._id) body['admin'] = admin._id;
     create(
       BACKEND+"/event",
@@ -63,9 +65,14 @@ const CreateEventForm = () => {
         </Form.Group>
       </Form.Field>
       <Form.Field required>
+        <label>Period</label>
+        <Form.Input type="number" required={true} placeholder="1~8" id="period" onChange={e => { setPeriod(e.target.value); }} />        
+      </Form.Field>
+      <Form.Field required>
         <label>Reward</label>
         <Form.Input type="number" required={true} placeholder="e.g. 100" id="reward" onChange={e => { setReward(e.target.value); }} />        
       </Form.Field>
+      <Form.Field required>
       {createState.error || error
         ?
         <Message negative>{error?errMsg:createState.errMsg}</Message>
