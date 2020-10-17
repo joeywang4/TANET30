@@ -4,8 +4,8 @@ import { useAPI } from '../../hooks';
 import Papa from 'papaparse';
 import { Icon, Segment, Header, Loader, Dimmer } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
-import QRCode from 'qrcode';
-import JSZip from 'jszip';
+// import QRCode from 'qrcode';
+// import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { BACKEND, loginURL } from '../../config';
 
@@ -19,13 +19,13 @@ const ExportUserHandler = ({ content }) => {
   const { token } = useSelector(state => state.user);
   const [conn, connect] = useAPI('json');
 
-  const genQRCode = async (text) => {
-    return await QRCode.toDataURL(text, {
-      errorCorrectionLevel: 'H',
-      type: 'image/jpeg',
-      quality: 1
-    });
-  }
+  // const genQRCode = async (text) => {
+  //   return await QRCode.toDataURL(text, {
+  //     errorCorrectionLevel: 'H',
+  //     type: 'image/jpeg',
+  //     quality: 1
+  //   });
+  // }
 
   const generate = async () => {
     const usersWithID = [];
@@ -40,21 +40,25 @@ const ExportUserHandler = ({ content }) => {
     }
     setInvalidUsers([...invalidUsers, ...newInvalidUsers]);
     setUsers(usersWithID);
-    const qrcodes = await Promise.all(
-      usersWithID.map(
-        user => genQRCode(loginURL+`?email=${user.email}&password=${user.pw}#${user.id}`)
-      )
-    );
-    let zip = new JSZip();
-    let dir = zip.folder("qrcodes");
-    for(let i = 0;i < usersWithID.length;i++) {
-      let idx = qrcodes[i].indexOf('base64,') + 'base64,'.length;
-      dir.file(`${usersWithID[i].name}.jpg`, qrcodes[i].substring(idx), {base64: true});
-    }
-    zip.generateAsync({type:"blob"}).then(function(content) {
-      saveAs(content, "qrcodes.zip");
-      setStatus(DONE);
-    });
+    const text = usersWithID.map(user => `${user.name},${user.email},${loginURL}?email=${user.email}&password=${user.pw}#${user.id}`).join("\n");
+    const data = new Blob([text], {type: 'text/plain'});
+    saveAs(data, "export.csv");
+    setStatus(DONE);
+    // const qrcodes = await Promise.all(
+    //   usersWithID.map(
+    //     user => genQRCode(loginURL+`?email=${user.email}&password=${user.pw}#${user.id}`)
+    //   )
+    // );
+    // let zip = new JSZip();
+    // let dir = zip.folder("qrcodes");
+    // for(let i = 0;i < usersWithID.length;i++) {
+    //   let idx = qrcodes[i].indexOf('base64,') + 'base64,'.length;
+    //   dir.file(`${usersWithID[i].name}.jpg`, qrcodes[i].substring(idx), {base64: true});
+    // }
+    // zip.generateAsync({type:"blob"}).then(function(content) {
+    //   saveAs(content, "qrcodes.zip");
+    //   setStatus(DONE);
+    // });
   }
 
   if (status === INIT) {
@@ -84,7 +88,7 @@ const ExportUserHandler = ({ content }) => {
               if (same) continue;
             }
             // Check invalid row (except empty row)
-            if (user.length !== 5 && user.length !== 6) {
+            if (user.length < 4) {
               console.log(user);
               if (user.length === 1 && user[0] === "") continue;
               console.error("Invalid user:", user);
