@@ -15,7 +15,6 @@ const CreateEventForm = () => {
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
   const [reward, setReward] = useState(0);
-  const [period, setPeriod] = useState(0);
   const {token} = useSelector(state => state.user)
 
   const onSubmit = (e) => {
@@ -29,9 +28,7 @@ const CreateEventForm = () => {
       return;
     }
 
-    const date = beginDate;
-    let password = null;
-    const body = {name, period, date, begin, end, password, reward};
+    const body = {name, begin, end, reward};
     if(admin._id) body['admin'] = admin._id;
     create(
       BACKEND+"/event",
@@ -64,10 +61,6 @@ const CreateEventForm = () => {
           <Form.Input type="date" required={true} id="dateEnd" onChange={e => { setEndDate(e.target.value) }} />
           <Form.Input type="time" required={true} id="timeEnd" onChange={e => { setEndTime(e.target.value) }} />
         </Form.Group>
-      </Form.Field>
-      <Form.Field required>
-        <label>Period</label>
-        <Form.Input type="number" required={true} placeholder="1~8" id="period" onChange={e => { setPeriod(e.target.value); }} />        
       </Form.Field>
       <Form.Field required>
         <label>Reward</label>
