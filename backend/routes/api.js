@@ -39,43 +39,6 @@ router.get('/TX', (req, res) => {
   else res.status(400).send("Missing query field");
 })
 
-router.post('/TX', async (req, res) => {
-  let d = new Date();
-  if(!req.isLogin) {
-    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create transaction failed: Not login`);
-    res.status(401).send("Not logged in");
-    return;
-  }
-  const { to, amount } = req.body;
-  if(!to || !amount) {
-    res.status(400).send("Missing receiver or amount");
-    return;
-  }
-  const from = req.user.group==="root"?"Faucet":req.user.id;
-  const timestamp = d.getTime();
-  const TXs = await TX.find({$or: [{'from': from}, {'to': from}]}, (err, TXs) => {
-    if(err) return errHandler(err, res);
-    else return TXs;
-  });
-  
-  if(req.user.group!=="root" && getBalance(from, TXs) < amount) {
-    res.status(400).send("Not enough balance");
-    return;
-  }
-  const newTX = TX({ from, to, amount, timestamp });
-  const done = newTX.save()
-  .then(_ => true)
-  .catch(err => errHandler(err, res));
-
-  if(done) {
-    let d = new Date();
-    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create TX success: \$${amount} from ${from} to ${to}`);
-    res.status(200).send("Create transaction success");
-  }
-  else res.status(400).send("Create transaction failed");
-  return;
-})
-
 router.post('/purchase', async (req, res) => {
   let d = new Date();
   if(!req.isLogin) {
@@ -112,7 +75,7 @@ router.post('/purchase', async (req, res) => {
     res.status(400).send("Not enough balance");
     return;
   }
-  const newTX = TX({ from, to, item, amount: price, timestamp });
+  const newTX = TX({ from, to, info: `Buy ${item}`, item, amount: price, timestamp });
   const done = newTX.save()
   .then(_ => true)
   .catch(err => errHandler(err, res));
@@ -169,18 +132,12 @@ router.get('/prize', async (req, res) => {
     res.status(401).send("Not authorized");
     return;
   }
-  const prizesPath = './prizes'
-  const files = await fs.readdir(prizesPath);
-  prizes = []
-  for (const file of files) {
-    if(file.split(".")[1] === 'json') {
-      const data = await fs.readFile(path.resolve(__dirname, `../${prizesPath}/${file}`));
-      const prize = JSON.parse(data);
-      prizes.push(prize);
-    }
-  }
-
-  res.status(200).send(prizes)
+  const path = './prizes/PriceTable.json'
+  const priceTable = await fs.readFile(path)
+    .then( pt => JSON.parse(pt))
+    .catch(err => errHandler(err, res));
+  
+  res.status(200).send(priceTable)
 });
 
 const errHandler = (err, res) => {
