@@ -15,6 +15,7 @@ const CreateEventForm = () => {
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
   const [reward, setReward] = useState(0);
+  const [period, setPeriod] = useState(0);
   const {token} = useSelector(state => state.user)
 
   const onSubmit = (e) => {
@@ -72,7 +73,6 @@ const CreateEventForm = () => {
         <label>Reward</label>
         <Form.Input type="number" required={true} placeholder="e.g. 100" id="reward" onChange={e => { setReward(e.target.value); }} />        
       </Form.Field>
-      <Form.Field required>
       {createState.error || error
         ?
         <Message negative>{error?errMsg:createState.errMsg}</Message>

@@ -76,7 +76,7 @@ const PriceTableHandler = ({content}) => {
           for(let i = 0;i < results.data.length;i++) {
             const event = results.data[i];
             if(i === 0) {
-              if(Number(event[1].trim()) === NaN) continue;
+              if(isNaN(Number(event[1].trim()))) continue;
             }
             // Check invalid row (except empty row)
             if(event.length === 1 && event[0] === "") continue;

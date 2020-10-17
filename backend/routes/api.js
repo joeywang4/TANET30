@@ -185,7 +185,7 @@ router.get('/prize', async (req, res) => {
 
 const errHandler = (err, res) => {
   console.error(err);
-  res.status(500).send("Server error");
+  if(res) res.status(500).send("Server error");
 }
 
 module.exports = router;
