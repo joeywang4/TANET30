@@ -4,7 +4,9 @@ import { Loader, CardGroup, Header, Icon, Divider } from 'semantic-ui-react';
 import { ErrMsg, EventLink } from '../../components';
 import { BACKEND } from '../../config';
 import { useAPI } from '../../hooks';
+import { today } from '../../util';
 import { UserHead } from '../index';
+
 
 const messageStyle = {
   fontFamily: "Verdana",
@@ -41,22 +43,23 @@ const ParticipatedEvent = () => {
     return <ErrMsg />;
   }
   else if (connection.success && checkBar.success) {
-    const courseCounts = countCourses(connection.response);
-    const companyCounts = connection.response.length - courseCounts;
+    const todayevents = connection.response.filter(event => event.date === today());
+    const courseCounts = countCourses(todayevents);
+    const companyCounts = todayevents.length - courseCounts;
     const { CourseBar: courseBar, CompanyBar: companyBar } = JSON.parse(checkBar.response);
     
-    let display = <span>Unable to participate in the lottery!</span>
+    let display = <span>Unable to participate in the lottery today!</span>
     if( courseCounts >= courseBar && companyCounts >= companyBar ){
       display = <p>Qualified for the lottery!</p>
     }
     else if ( courseCounts >= courseBar && companyCounts < companyBar ){
-      display = <p>Require {companyBar - companyCounts} more company events to participate in the lottery.</p>
+      display = <p>Require {companyBar - companyCounts} more company events to participate in the lottery today.</p>
     }
     else if( courseCounts < courseBar && companyCounts >= companyBar ){
-      display = <p>Require {courseBar - courseCounts} more course events to participate in the lottery.</p>
+      display = <p>Require {courseBar - courseCounts} more course events to participate in the lottery today.</p>
     }
     else{
-      display = <p>Require {courseBar - courseCounts} more course events and {companyBar - companyCounts} more company events to participate in the lottery.</p>
+      display = <p>Require {courseBar - courseCounts} more course events and {companyBar - companyCounts} more company events to participate in the lottery today.</p>
     }
     
     if(connection.response.length === 0) {
