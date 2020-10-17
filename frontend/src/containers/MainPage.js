@@ -36,6 +36,10 @@ const MainPage = () => {
         }
     }
 
+    const replace = (word, idx, char) => {
+        return word.substring(0,idx) + char + word.substring(idx+1);
+      }
+
     if(list.isInit()) {
         getList(
             BACKEND + "/event/namelist",
@@ -61,7 +65,7 @@ const MainPage = () => {
             userslist.map((user, index) => (
                 <Table.Row>
                     <Table.Cell>{index}</Table.Cell>
-                    <Table.Cell>{user.name}</Table.Cell>
+                    <Table.Cell>{replace(user.name, 1, "Ｏ")}</Table.Cell>
                     <Table.Cell>{user.sector}</Table.Cell>
                 </Table.Row>
             ))
