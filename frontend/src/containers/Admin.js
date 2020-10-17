@@ -4,10 +4,12 @@ import {
   RegisterForm,
   FileUpload,
   CreateEventForm,
+  AddAuthorForm,
   PriceTableHandler,
   CreateTicketForm,
   NewUserHandler,
   ExportUserHandler,
+  AddAuthorHandler,
   CreatePaperHandler,
   NewEventHandler,
   NewTicketHandler,
@@ -86,6 +88,35 @@ const Admin = () => {
 
       <Divider horizontal>
         <Header as='h4'>
+          <Icon name='pencil' />
+          Add author
+        </Header>
+      </Divider>
+      <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
+        <Grid.Row columns={2}>
+          <Grid.Column style={{ width: "80%", maxWidth: "30em" }}>
+            <AddAuthorForm />
+          </Grid.Column>
+          <Grid.Column>
+            <FileUpload
+              name="Import authors from File"
+              header="Upload a .csv file"
+              help={
+                <React.Fragment>
+                  A CSV File with multiple columns: Event Name, 1st Author Email, 2nd Author Name, 3rd Author Name, ...(in order)<br/>
+                  e.g. <i>testEvent0821,author1@test.com,author2@test.com,author3@test.com</i><br />
+                </React.Fragment>
+              }
+              Handler={AddAuthorHandler}
+              icon="download"
+              style={{ margin: "1vh 0" }}
+            />
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+
+      <Divider horizontal>
+        <Header as='h4'>
           <Icon name='food' />
           Give Food Ticket
         </Header>
@@ -140,7 +171,7 @@ const Admin = () => {
       <Divider horizontal>
         <Header as='h4'>
           <Icon name='address card' />
-          Add price table and create papers
+          Add Author Infos
         </Header>
       </Divider>
       <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>

@@ -7,7 +7,7 @@ import { BACKEND } from '../../config';
 
 const [INIT, PARSING, CREATING, DONE, ERROR] = [0,1,2,3,4];
 
-const PriceTableHandler = ({content}) => {
+const AddAuthorHandler = ({content}) => {
   const [status, setStatus] = useState(INIT);
   const [count, setCount] = useState(0);
   const [errMsg, setErrMsg] = useState("");
@@ -16,11 +16,11 @@ const PriceTableHandler = ({content}) => {
 
   const create = async (event) => {
     const _event = {
-      itemName: event[0],
-      price: event[1]
+      eventName: event[0],
+      authorIds: [...event.slice(1)],
     }
     return await fetch(
-      BACKEND+"/event/addPriceTable",
+      BACKEND+"/event/addAuthor",
       { 
         method: "POST", 
         body: JSON.stringify(_event),
@@ -30,7 +30,7 @@ const PriceTableHandler = ({content}) => {
     .then(res => {
       if(res.status !== 200){
         res.text()
-        .then(errMsg => console.error(`Got ${res.status} for item:`, _event, `, Response: ${errMsg}`))
+        .then(errMsg => console.error(`Got ${res.status} for event:`, _event, `, Response: ${errMsg}`))
         .catch( err => console.error(err));
         return false;
       }
@@ -50,7 +50,7 @@ const PriceTableHandler = ({content}) => {
     Promise.all(events.map(event => create(event)))
     .then(result => {
       setStatus(DONE);
-      setCount(result.reduce((prevValue, success) => prevValue + (success?1:0), 0));
+      setCount(result.reduce((prevValue, success) => prevValue + (success?1:0)));
       let errEvents = result.reduce((errEvents, success, idx) => {
         if(!success) return [...errEvents, idx];
         else return errEvents;
@@ -76,7 +76,13 @@ const PriceTableHandler = ({content}) => {
           for(let i = 0;i < results.data.length;i++) {
             const event = results.data[i];
             if(i === 0) {
-              if(Number(event[1].trim()) === NaN) continue;
+              const check = ["event name", "author email", "author email"];
+              const lowerArr = event.map(field => field.toLowerCase());
+              let same = true;
+              for(let field = 0;field < 3;field++) {
+                same = same && lowerArr[field].trim() === check[field];
+              }
+              if(same) continue;
             }
             // Check invalid row (except empty row)
             if(event.length === 1 && event[0] === "") continue;
@@ -119,7 +125,7 @@ const PriceTableHandler = ({content}) => {
         <React.Fragment>
           <Header icon>
             <Icon name="check" />
-            Creatded {count} items in the price table!
+            Added authors to {count} events!
           </Header>
           {
             invalidEvents.length>0
@@ -137,8 +143,8 @@ const PriceTableHandler = ({content}) => {
   )
 }
 
-PriceTableHandler.propTypes = {
+AddAuthorHandler.propTypes = {
   content: PropTypes.string.isRequired
 }
 
-export default PriceTableHandler;
+export default AddAuthorHandler;

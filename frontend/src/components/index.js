@@ -6,10 +6,12 @@ import AutoLogin from './Auth/AutoLogin';
 import RegisterForm from './Auth/RegisterForm';
 import FileUpload from './FileHandler/FileUpload';
 import CreateEventForm from './Event/CreateEventForm';
+import AddAuthorForm from './Event/AddAuthorForm';
 import CreateTicketForm from './CreateTicketForm';
 import UpdateMeals from './UpdateMeals';
 import NewUserHandler from './FileHandler/NewUserHandler';
 import ExportUserHandler from './FileHandler/ExportUserHandler';
+import AddAuthorHandler from './FileHandler/AddAuthorHandler';
 import CreatePaperHandler from './FileHandler/CreatePaperHandler';
 import PriceTableHandler from './FileHandler/PriceTableHandler';
 import NewEventHandler from './FileHandler/NewEventHandler';
@@ -25,10 +27,12 @@ export {
   RegisterForm,
   FileUpload,
   CreateEventForm,
+  AddAuthorForm,
   CreateTicketForm,
   UpdateMeals,
   NewUserHandler,
   ExportUserHandler,
+  AddAuthorHandler,
   PriceTableHandler,
   CreatePaperHandler,
   NewEventHandler,

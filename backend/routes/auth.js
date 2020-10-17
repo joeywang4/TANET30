@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 const User = require('../models/user.js');
+const TX = require("../models/transaction");
 const { userGroupEnum } = require('../const');
 
 router.post('/login', async (req, res) => {
@@ -89,6 +90,12 @@ router.post('/register', async (req, res) => {
 
   const newUser = User({name: _name, pwdHash: _pwdHash, email: _email, group: _group, sharing: _sharing, sector: _sector});
   const done = await newUser.save()
+  .then(_ => true)
+  .catch(err => errHandler(err));
+  
+  // Give 1000 to the new user
+  const newTx = TX({ to: newUser._id, amount: 1000, timestamp: d.getTime() })
+  await newTx.save()
   .then(_ => true)
   .catch(err => errHandler(err));
 
