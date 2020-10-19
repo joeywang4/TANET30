@@ -11,6 +11,10 @@ const TXSchema = new Schema({
     ref: 'User',
     required: true
   },
+  info: {
+    type: String,
+    required: false
+  },
   item: {
     type: String, 
     required: false

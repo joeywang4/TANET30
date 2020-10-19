@@ -3,7 +3,6 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 const User = require('../models/user.js');
-const TX = require("../models/transaction");
 const { userGroupEnum } = require('../const');
 
 router.post('/login', async (req, res) => {

@@ -5,8 +5,6 @@ import { NavBar, Welcome, Login, AutoLogin } from '../components';
 import { 
   UserStatus,
   Receive,
-  Send,
-  Payment,
   Events,
   CreateEvent,
   Event,
@@ -76,12 +74,6 @@ function App({hasLoggedIn, userGroup}) {
           </Route>
           <Route exact path="/receive">
             {mustLogin(hasLoggedIn, <Receive />)}
-          </Route>
-          <Route exact path="/send">
-            {mustLogin(hasLoggedIn, <Send />)}
-          </Route>
-          <Route exact path="/payment">
-            {mustLogin(hasLoggedIn, <Payment />)}
           </Route>
           <Route exact path="/events">
             {mustLogin(hasLoggedIn, <Events />)}
