@@ -29,4 +29,4 @@ class Rank {
   }
 }
 
-module.exports = Rank;
+module.exports = Rank; 
