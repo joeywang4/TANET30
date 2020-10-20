@@ -1,8 +1,8 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Header, Button, Icon, Divider, Image, Segment, Container, Grid, Table } from 'semantic-ui-react';
+import { Header, Button, Icon, Divider, Image, Segment, Container, Grid, Table, Label } from 'semantic-ui-react';
 import { BACKEND } from '../config';
-import { useAPI } from '../hooks';
+import { useAPI, useWS } from '../hooks';
 import '../styles/MainPage.css';
 
 const themes = [
@@ -15,10 +15,12 @@ const themes = [
 ];
 
 const MainPage = () => {
-  const { token } = useSelector(state => state.user);
+  const { token, id: userId } = useSelector(state => state.user);
   const [checkState, check] = useAPI("json");
   const [paperRank, getPaperRank] = useAPI("json");
   const [richRank, getRichRank] = useAPI("json");
+  const newPaperRank = useWS("new-paper-rank");
+  const newRichRank = useWS("new-rich-rank");
   const [list, getList] = useAPI("json");
   let listTime = null;
   let namelist = <span>None</span>;
@@ -164,7 +166,7 @@ const MainPage = () => {
       <Container style={{ marginTop: '3em', marginBottom: '3em' }}>
         <Grid stackable>
           <Grid.Column width={10}>
-            {/* {paperRanks} */}
+            {paperRanks}
           </Grid.Column>
 
           <Grid.Column width={6}>
@@ -180,8 +182,27 @@ const MainPage = () => {
               <Grid.Row style={{ paddingLeft: "1em" }}>
                 <Table basic='very' className="rank-table">
                   <Table.Body>
-                    {/* {richRanks} */}
+                    {richRanks}
                   </Table.Body>
+                  {
+                    userId ?
+                    <Table.Footer>
+                      <Table.Row>
+                        <Table.HeaderCell>
+                          <Label ribbon>
+                            {userRank}
+                          </Label>
+                        </Table.HeaderCell>
+                        <Table.HeaderCell style={{fontWeight: "bold"}}>
+                          YOU
+                        </Table.HeaderCell>
+                        <Table.HeaderCell style={{fontWeight: "bold"}}>
+                          ${userAmount}
+                        </Table.HeaderCell>
+                      </Table.Row>
+                    </Table.Footer>
+                    : null
+                  }
                 </Table>
               </Grid.Row>
             </Segment>
