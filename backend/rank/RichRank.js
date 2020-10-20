@@ -20,9 +20,10 @@ class RichRank extends Rank {
     const newRank = [];
     for(let id in id_to_money) {
       if (!this.Users[id]) continue;
-      newRank.push({'name': this.Users[id], 'amount': id_to_money[id]});
+      newRank.push({'name': this.Users[id], 'amount': id_to_money[id], id});
     }
     this.rank = newRank.sort((a, b) => b.amount - a.amount);
+    if (Rank.io) Rank.io.emit("new-rich-rank", this.rank);
     this.running = false;
   }
 

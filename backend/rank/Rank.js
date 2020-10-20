@@ -1,4 +1,6 @@
 class Rank {
+  static io;
+
   get() {
     // Get ranking
     console.error("[!] Calling abstract method");
