@@ -1,8 +1,8 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Header, Button, Icon, Divider, Image, Segment, Container, Grid, Table } from 'semantic-ui-react';
+import { Header, Button, Icon, Divider, Image, Segment, Container, Grid, Table, Label } from 'semantic-ui-react';
 import { BACKEND } from '../config';
-import { useAPI } from '../hooks';
+import { useAPI, useWS } from '../hooks';
 import '../styles/MainPage.css';
 
 const themes = [
@@ -15,10 +15,12 @@ const themes = [
 ];
 
 const MainPage = () => {
-  const { token } = useSelector(state => state.user);
+  const { token, id: userId } = useSelector(state => state.user);
   const [checkState, check] = useAPI("json");
   const [paperRank, getPaperRank] = useAPI("json");
   const [richRank, getRichRank] = useAPI("json");
+  const newPaperRank = useWS("new-paper-rank");
+  const newRichRank = useWS("new-rich-rank");
   const checkAmount = () => {
     check(
       BACKEND + "/ticket/avail",
@@ -48,8 +50,8 @@ const MainPage = () => {
         <Table striped basic='very' className="rank-table">
           <Table.Body>
             {
-              paperRank.success ? 
-                paperRank.response[key].slice(0, rankLength).map((paper, idx) => (
+              paperRank.success || newPaperRank ? 
+                (newPaperRank?newPaperRank:paperRank.response)[key].slice(0, rankLength).map((paper, idx) => (
                   <Table.Row key={`${key}-${idx}`}>
                     <Table.Cell>{idx+1}</Table.Cell>
                     <Table.Cell className="rank-author">{paper.authors}</Table.Cell>
@@ -75,14 +77,24 @@ const MainPage = () => {
       </Table.Cell>
     </Table.Row>
   );
-  if (richRank.success) {
-    richRanks = richRank.response.slice(0, richLength).map((person, idx) => (
+  let [userRank, userAmount] = ["?", 0];
+  if (richRank.success || newRichRank) {
+    const data = newRichRank?newRichRank:richRank.response;
+    richRanks = data.slice(0, richLength).map((person, idx) => (
       <Table.Row key={person.name}>
         <Table.Cell>{idx+1}</Table.Cell>
         <Table.Cell>{person.name}</Table.Cell>
-        <Table.Cell>{person.amount}</Table.Cell>
+        <Table.Cell>${person.amount}</Table.Cell>
       </Table.Row>
-    ))
+    ));
+    if (userId) {
+      const recordIdx = data.findIndex(record => record.id === userId);
+      console.log(data);
+      if (recordIdx >= 0) {
+        userRank = recordIdx;
+        userAmount = data[recordIdx]?.amount;
+      }
+    }
   }
 
   return (
@@ -142,6 +154,25 @@ const MainPage = () => {
                   <Table.Body>
                     {richRanks}
                   </Table.Body>
+                  {
+                    userId ?
+                    <Table.Footer>
+                      <Table.Row>
+                        <Table.HeaderCell>
+                          <Label ribbon>
+                            {userRank}
+                          </Label>
+                        </Table.HeaderCell>
+                        <Table.HeaderCell style={{fontWeight: "bold"}}>
+                          YOU
+                        </Table.HeaderCell>
+                        <Table.HeaderCell style={{fontWeight: "bold"}}>
+                          ${userAmount}
+                        </Table.HeaderCell>
+                      </Table.Row>
+                    </Table.Footer>
+                    : null
+                  }
                 </Table>
               </Grid.Row>
             </Segment>

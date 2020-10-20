@@ -23,6 +23,7 @@ class PaperRank extends Rank {
     for(let group in group_to_papers) {
       this.rank[group] = group_to_papers[group].sort((paperA, paperB) => paperB.score - paperA.score).slice(0, 10);
     }
+    if (Rank.io) Rank.io.emit("new-paper-rank", this.rank);
     this.running = false;
   }
 

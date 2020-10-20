@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const Rank = require("../rank/Rank");
 const PaperRank = require("../rank/PaperRank");
 const RichRank = require("../rank/RichRank");
 
@@ -38,4 +39,8 @@ router.get("/paper", (req, res) => {
   res.status(200).send(result);
 })
 
-module.exports = router;
+const setSocketIO = (io) => {
+  Rank.io = io;
+}
+
+module.exports = {rankRoute: router, setSocketIO};

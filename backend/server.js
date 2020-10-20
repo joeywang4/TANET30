@@ -4,17 +4,10 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
 
-const { authRoute, verifyToken } = require('./routes/auth');
-
-const apiRoute = require('./routes/api');
-const eventRoute = require('./routes/event');
-const ticketRoute = require('./routes/ticket');
-const pushRoute = require('./routes/push');
-const rankRoute = require('./routes/rank');
-
 // Create server to serve index.html
 const app = express();
 const http = require('http').Server(app);
+const io = require('socket.io')(http);
 const port = process.env.PORT || 3001;
 
 // Connect to mongo
@@ -29,6 +22,14 @@ db.once('open', () => {
   console.log('MongoDB connected!');
 })
 
+const { authRoute, verifyToken } = require('./routes/auth');
+const { rankRoute, setSocketIO } = require('./routes/rank');
+const apiRoute = require('./routes/api');
+const eventRoute = require('./routes/event');
+const ticketRoute = require('./routes/ticket');
+const pushRoute = require('./routes/push');
+setSocketIO(io);
+
 // Routing
 app.use(cors());
 app.use(bodyParser.json());
@@ -39,6 +40,7 @@ app.use('/push', pushRoute);
 app.use('/ticket', ticketRoute);
 app.use('/rank', rankRoute);
 app.use('/', apiRoute);
+app.set('io', io);
 
 // Start server listening process.
 http.listen(port, () => {
