@@ -35,11 +35,11 @@ export default () => {
   const [error, setError] = useState(false);
   const [errMsg, setErrMsg] = useState("");
   const [freeze, setFreeze] = useState(0);
-  const { token } = useSelector(state => state.user)
+  const { token, id } = useSelector(state => state.user)
 
   if(getSeminarNameState.isInit()) {
     const [begin, end] = todayRange();
-    getSeminarName(BACKEND+`/event?group=seminarStaff&begin=${begin}&end=${end}&populate=1`, "GET", null, { 'authorization': token });
+    getSeminarName(BACKEND+`/event?admin=${id}&begin=${begin}&end=${end}&populate=1`, "GET", null, { 'authorization': token });
   }
   const seminars = getSeminarNameState.response || [];
   const seminarNames = seminars.map(seminar => ({ key: seminar.name, value: seminar.name, text: seminar.name }));
@@ -53,7 +53,7 @@ export default () => {
       initGetSeminar();
       getSeminar(BACKEND+`/event?name=${encodeURIComponent(seminarName || dropdownValue)}`, "GET", null, { 'authorization': token });
     }
-  }
+  } 
 
   const onSelect = (_, { value: seminarName }) => {
     const choosedSeminar = seminars.find(seminar => seminar.name === seminarName);

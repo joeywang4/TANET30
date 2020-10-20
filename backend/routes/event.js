@@ -350,7 +350,7 @@ const participate = async (res, now, event, userId) => {
   
   const joined = event.participant.find(record => String(record.user) === userId);
   if(joined) {
-    res.status(403).send("Already joined event");
+    res.status(403).send(`${user.name} had already joined the event!`);
     return;
   }
   let d = now.getTime();
@@ -367,13 +367,12 @@ const participate = async (res, now, event, userId) => {
     });
 
   }
-  if (!samePeriod) {
-    // Give reward to this user
-    const newTx = TX({ to: userId, info: `Attended ${event.name}`, amount: event.reward, timestamp: d })
-    await newTx.save()
-    .then(_ => true)
-    .catch(err => errHandler(err));
-  }
+  // Give reward to this user
+  const info = samePeriod ? `No reward for ${event.name} (period-overlapping)` : `Attended ${event.name}`
+  const newTx = TX({ to: userId, info, amount: (samePeriod? 0 : event.reward), timestamp: d })
+  await newTx.save()
+  .then(_ => true)
+  .catch(err => errHandler(err));
   // console.log(samePeriod);
   
   const newRecord = Record({ user: userId, usedTime: d, date: event.date, period: event.period });
