@@ -89,10 +89,9 @@ const MainPage = () => {
     ));
     if (userId) {
       const recordIdx = data.findIndex(record => record.id === userId);
-      console.log(data);
       if (recordIdx >= 0) {
-        userRank = recordIdx;
-        userAmount = data[recordIdx]?.amount;
+        userRank = recordIdx+1;
+        userAmount = data[recordIdx].amount;
       }
     }
   }
