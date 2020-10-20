@@ -55,3 +55,4 @@ class PaperRank extends Rank {
 }
 
 module.exports = PaperRank; 
+

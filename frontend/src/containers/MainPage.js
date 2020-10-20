@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Header, Button, Icon, Divider, Image, Segment, Container, Grid, List, Table } from 'semantic-ui-react';
+import { Header, Button, Icon, Divider, Image, Segment, Container, Grid, List, Table, Tab } from 'semantic-ui-react';
+import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
 
@@ -15,7 +16,10 @@ const MainPage = () => {
     //get current mealboxes amount
     const [amountMeat, setAmountMeat] = useState(null);
     const [amountVegan, setAmountVegan] = useState(null);
+    const [list, getList] = useAPI("json");
     const [checkState, check] = useAPI("text");
+    let listTime = null;
+    let namelist = <span>None</span>;
     const checkAmount = () => {
         if(checkState.isInit()){
         check(
@@ -30,6 +34,42 @@ const MainPage = () => {
         setAmountMeat(amounts.meat);
         setAmountVegan(amounts.vegan);
         }
+    }
+
+    const replace = (word, idx, char) => {
+        return word.substring(0,idx) + char + word.substring(idx+1);
+      }
+
+    if(list.isInit()) {
+        getList(
+            BACKEND + "/event/namelist",
+            "GET",
+            null,
+            { 'authorization': token, 'content-type': "application/json" }
+        );
+    }
+
+    if(list.error) {
+        namelist = <ErrMsg />;
+    }
+    else if (list.success) {
+        const result = list.response;
+        listTime = result.Date;
+        const userslist = result.Users;
+        console.log(userslist);
+        userslist.map((user, index) => {
+            console.log("name: "+user.name+", sector: "+user.sector+", index: "+index);
+        })
+
+        namelist = (
+            userslist.map((user, index) => (
+                <Table.Row>
+                    <Table.Cell>{index}</Table.Cell>
+                    <Table.Cell>{replace(user.name, 1, "Ｏ")}</Table.Cell>
+                    <Table.Cell>{user.sector}</Table.Cell>
+                </Table.Row>
+            ))
+        );
     }
 
 
@@ -142,6 +182,31 @@ const MainPage = () => {
                         </Segment>
                     </Grid.Column>
                 </Grid>
+            </Container>
+
+            <Container style={{marginBottom:"3em"}}>
+                <Segment>
+                    <Grid.Row style={{textAlign: 'center', paddingTop:"1em", fontFamily:"Verdana"}}>
+                        <Header as='h3'>
+                            <Icon name='ticket' />
+                            可參加抽獎名單
+                        </Header>
+                    </Grid.Row>
+                    <Divider horizontal style={{fontWeight: 'normal'}}>
+                        更新時間：{listTime}
+                    </Divider>
+                    <Table striped basic='very' style={{paddingLeft:"1em", paddingRight:"1.3em", paddingBottom:"1em"}}>
+                        <Table.Body style={{fontSize:"1.2em"}}>
+                            <Table.Row style={{color: "gray"}}>
+                                <Table.Cell>序號</Table.Cell>
+                                <Table.Cell>姓名</Table.Cell>
+                                <Table.Cell>所屬單位</Table.Cell>
+                            </Table.Row>
+                            {namelist}
+                        </Table.Body>
+                    </Table>
+                    
+                </Segment>
             </Container>
         </div>
     )

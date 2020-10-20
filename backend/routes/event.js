@@ -203,7 +203,7 @@ router.get('/page', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-  const userProjection = "_id name email group";
+  const userProjection = "_id name email group sector";
   let timeRange = null;
   if (!req.isLogin) {
     res.status(401).send("Operation not allowed");
@@ -653,6 +653,88 @@ router.post('/lottery', async (req, res) => {
   });
   res.status(200).send("Update thresholds success");
 })
+
+router.post('/lotteryList', async (req, res) => {
+  if (!req.isLogin) {
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== "root") {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  const {name, sector, index} = req.body;
+  if( name===null || sector===null ) {
+    res.status(400).send("Missing field");
+    return;
+  }
+  let entries;
+  try {
+    const data = await fs.readFile(path.resolve(__dirname, '../lotteryList.json'));
+    entries = JSON.parse(data);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(400).send("Read File Error");
+    return;
+  }
+  entries.Users[index] = { 'name':name, 'sector':sector };
+  fs.writeFile( path.resolve(__dirname, '../lotteryList.json'), JSON.stringify(entries, null, 2), (err) => {
+    if(err){
+      console.log(err);
+      res.status(400).send("Write File Error");
+      return;
+    }
+  });
+  res.status(200).send("Update lottery list success");
+})
+
+router.post('/clearList', async (req, res) => {
+  let d = new Date();
+  if (!req.isLogin) {
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== "root") {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  let entries;
+  try {
+    const data = await fs.readFile(path.resolve(__dirname, '../lotteryList.json'));
+    entries = JSON.parse(data);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(400).send("Read File Error");
+    return;
+  }
+  entries.Date = `${d.toLocaleDateString()}, ${d.toLocaleTimeString()}`;
+  entries.Users = [];
+  fs.writeFile( path.resolve(__dirname, '../lotteryList.json'), JSON.stringify(entries, null, 2), (err) => {
+    if(err){
+      console.log(err);
+      res.status(400).send("Write File Error");
+      return;
+    }
+  });
+  res.status(200).send("Reset lottery list success");
+})
+
+router.get("/namelist", async (req, res) => {
+  let entries;
+  try {
+    const data = await fs.readFile(path.resolve(__dirname, '../lotteryList.json'));
+    entries = JSON.parse(data);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(400).send("Read File Error");
+    return;
+  }
+  res.status(200).send(entries);
+})
+
 
 const errHandler = (err, res) => {
   console.error(err);
