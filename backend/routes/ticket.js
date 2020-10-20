@@ -132,7 +132,7 @@ router.post("/use", async (req, res) => {
   }
   let ticket = tickets.find(ticket => ticket.usedTime === 0);
   if(!ticket) {
-    res.status(403).send("Ticket is used!");
+    res.status(403).send(`${tickets[0].owner.name} Ticket is used!`);
     return;
   }
   ticket.usedTime = Date.now();
