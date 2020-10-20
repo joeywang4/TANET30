@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { NavBar, Welcome, Login, AutoLogin } from '../components';
+import { NavBar, Login, AutoLogin } from '../components';
 import { 
   UserStatus,
   Receive,
@@ -66,11 +66,11 @@ function App({hasLoggedIn, userGroup}) {
         <NavBar />
         <Switch>
           <Route exact path="/">
-            {hasLoggedIn?
-              homeComponent
+            {/*hasLoggedIn?
+              <MainPage />
               :
               <Welcome />
-            }
+            */}<MainPage />
           </Route>
           <Route exact path="/receive">
             {mustLogin(hasLoggedIn, <Receive />)}
@@ -93,8 +93,8 @@ function App({hasLoggedIn, userGroup}) {
           <Route exact path="/userStatus">
             {mustLogin(hasLoggedIn, <UserStatus />)}
           </Route>
-          <Route exact path="/mainPage">
-            {mustLogin(hasLoggedIn, <MainPage />)}
+          <Route exact path="/home">
+            {mustLogin(hasLoggedIn, homeComponent)}
           </Route>
           <Route exact path="/userHead">
             {mustLogin(hasLoggedIn, <UserHead />)}

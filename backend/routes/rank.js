@@ -35,7 +35,7 @@ router.get("/rich", (req, res) => {
 
 router.get("/paper", (req, res) => {
   const result = paperBot.get();
-  res.status(200).send("OK");
+  res.status(200).send(result);
 })
 
 module.exports = router;
