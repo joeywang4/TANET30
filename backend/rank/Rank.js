@@ -29,4 +29,5 @@ class Rank {
   }
 }
 
+
 module.exports = Rank; 
