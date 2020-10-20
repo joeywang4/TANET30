@@ -1,12 +1,10 @@
 import React from 'react';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { NavBar, Welcome, Login, AutoLogin } from '../components';
+import { NavBar, Login, AutoLogin } from '../components';
 import { 
   UserStatus,
   Receive,
-  Send,
-  Payment,
   Events,
   CreateEvent,
   Event,
@@ -68,20 +66,12 @@ function App({hasLoggedIn, userGroup}) {
         <NavBar />
         <Switch>
           <Route exact path="/">
-            {hasLoggedIn?
-              homeComponent
-              :
-              <Welcome />
-            }
+            {/*hasLoggedIn?
+              <MainPage />
+            */}<MainPage />
           </Route>
           <Route exact path="/receive">
             {mustLogin(hasLoggedIn, <Receive />)}
-          </Route>
-          <Route exact path="/send">
-            {mustLogin(hasLoggedIn, <Send />)}
-          </Route>
-          <Route exact path="/payment">
-            {mustLogin(hasLoggedIn, <Payment />)}
           </Route>
           <Route exact path="/events">
             {mustLogin(hasLoggedIn, <Events />)}
@@ -101,8 +91,8 @@ function App({hasLoggedIn, userGroup}) {
           <Route exact path="/userStatus">
             {mustLogin(hasLoggedIn, <UserStatus />)}
           </Route>
-          <Route exact path="/mainPage">
-            {mustLogin(true, <MainPage />)}
+          <Route exact path="/home">
+            {mustLogin(hasLoggedIn, homeComponent)}
           </Route>
           <Route exact path="/userHead">
             {mustLogin(hasLoggedIn, <UserHead />)}
