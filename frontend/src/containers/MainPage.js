@@ -19,6 +19,8 @@ const MainPage = () => {
   const [checkState, check] = useAPI("json");
   const [paperRank, getPaperRank] = useAPI("json");
   const [richRank, getRichRank] = useAPI("json");
+  const newPaperRank = useWS("new-paper-rank");
+  const newRichRank = useWS("new-rich-rank");
   const [list, getList] = useAPI("json");
   let listTime = null;
   let namelist = <span>None</span>;
