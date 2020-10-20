@@ -1,7 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Header, Button, Icon, Divider, Segment, Grid } from 'semantic-ui-react';
-import { Link } from 'react-router-dom';
+import { Header, Icon, Divider, Grid } from 'semantic-ui-react';
 import { History, UserHead } from './index';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';

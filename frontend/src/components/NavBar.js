@@ -48,7 +48,7 @@ function NavBar ({hasLoggedin, name, userGroup, logout}) {
       <Menu secondary style={welcomeStyle}>
         <Menu.Item 
           name='general'
-          as={Link} to="/mainPage"
+          as={Link} to="/"
           style={{color:'white'}}
         >
         大會資訊
@@ -74,7 +74,7 @@ function NavBar ({hasLoggedin, name, userGroup, logout}) {
     (
       <div style={welcomeStyle}>
         Hello,&nbsp; 
-        <Link style={welcomeLinkStyle} to={'/'}>{name}</Link>
+        <Link style={welcomeLinkStyle} to={'/home'}>{name}</Link>
         &nbsp;!&nbsp;
         <Button basic inverted style={{...linkStyle, fontSize: "1em"}} onClick={_ => logout()} >Logout</Button>
       </div>
@@ -82,7 +82,7 @@ function NavBar ({hasLoggedin, name, userGroup, logout}) {
   
   return(
     <div style={divStyle}>
-      <Image src="logo.png" as='a' href='/mainPage' size='medium' style={{flexGrow: 100, marginTop: "0.5em"}}/>
+      <Image src="logo.png" as='a' href='/' size='medium' style={{flexGrow: 100, marginTop: "0.5em"}}/>
       {hasLoggedin
         ?
           <div>

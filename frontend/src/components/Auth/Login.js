@@ -47,7 +47,7 @@ const LoginForm = ({hasLoggedIn, login}) => {
     setQRError(true);
   }
 
-  if((connection.isInit() && hasLoggedIn) || redirect) return <Redirect to="/" />;
+  if((connection.isInit() && hasLoggedIn) || redirect) return <Redirect to="/home" />;
 
   return (
     <Grid textAlign="center" style={{ width: "100%", marginTop: "2vh"}}>
