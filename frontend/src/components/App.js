@@ -68,6 +68,8 @@ function App({hasLoggedIn, userGroup}) {
           <Route exact path="/">
             {/*hasLoggedIn?
               <MainPage />
+              :
+              <Welcome />
             */}<MainPage />
           </Route>
           <Route exact path="/receive">
