@@ -86,7 +86,7 @@ export default () => {
   }
 
   const addToList = async (_name, _sector, _index) => {
-      const body = {name: _name, sector: _sector ? _sector : "unavailable", index: _index};
+      const body = {name: _name, sector: _sector, index: _index};
       return await fetch(
         BACKEND + "/event/lotteryList", 
         {
