@@ -28,7 +28,7 @@ const History = () => {
       display = (
         <CardGroup stackable style={{marginTop: "1em"}} >
           {history
-            .map(({ _id, from , to  , amount , timestamp}) => (
+            .map(({ _id, from, to, info, amount, timestamp}) => (
               <Card key={_id} color={id===to._id?"green":"red"}>
                 <Card.Content>
                   <Card.Header >
@@ -37,7 +37,7 @@ const History = () => {
                   </Card.Header>
                   <Card.Meta>
                     <span >
-                      {id===to._id?"from "+(from?from.name:'Faucet'):"to "+(to.group==='cashier'?'Cashier':to.name)}
+                      {id===to._id?(from?`from ${from.name}`:info):(to.group==='cashier'?info:`to ${to.name}`)}
                       <br/>
                       {usedDate(timestamp)}
                     </span>

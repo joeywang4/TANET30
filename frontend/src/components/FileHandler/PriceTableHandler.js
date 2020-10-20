@@ -20,7 +20,7 @@ const PriceTableHandler = ({content}) => {
       price: event[1]
     }
     return await fetch(
-      BACKEND+"/event/addPriceTable",
+      BACKEND+"/event/addPrize",
       { 
         method: "POST", 
         body: JSON.stringify(_event),
@@ -49,13 +49,30 @@ const PriceTableHandler = ({content}) => {
     if(count !== 0) setCount(0);
     Promise.all(events.map(event => create(event)))
     .then(result => {
-      setStatus(DONE);
-      setCount(result.reduce((prevValue, success) => prevValue + (success?1:0), 0));
-      let errEvents = result.reduce((errEvents, success, idx) => {
-        if(!success) return [...errEvents, idx];
-        else return errEvents;
-      }, []).map(eventIdx => events[eventIdx]);
-      setInvalidEvents([...invalidEvents, ...newInvalidEvents, ...errEvents]);
+      fetch(
+        BACKEND+"/event/createPriceTable",
+        { 
+          method: "POST", 
+          headers: {'authorization': token, 'content-type': "application/json"}
+        }
+      ).then( res => {
+        if(res.status !== 200){
+          res.text()
+          .then(errMsg => console.error(errMsg))
+          .catch( err => console.error(err));
+          return;
+        }
+        else {
+          setStatus(DONE);
+          setCount(result.reduce((prevValue, success) => prevValue + (success?1:0), 0));
+          let errEvents = result.reduce((errEvents, success, idx) => {
+            if(!success) return [...errEvents, idx];
+            else return errEvents;
+          }, []).map(eventIdx => events[eventIdx]);
+          setInvalidEvents([...invalidEvents, ...newInvalidEvents, ...errEvents]);
+        }
+      })
+      .catch( err => console.error(err));
     })
   }
 
@@ -76,7 +93,7 @@ const PriceTableHandler = ({content}) => {
           for(let i = 0;i < results.data.length;i++) {
             const event = results.data[i];
             if(i === 0) {
-              if(Number(event[1].trim()) === NaN) continue;
+              if(isNaN(Number(event[1].trim()))) continue;
             }
             // Check invalid row (except empty row)
             if(event.length === 1 && event[0] === "") continue;

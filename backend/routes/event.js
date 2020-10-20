@@ -269,6 +269,60 @@ router.get('/', async (req, res) => {
   }
 })
 
+router.post('/addPrize', async (req, res) => {
+  if (!req.isLogin) {
+    console.log(`Add author failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== "root") {
+    res.status(401).send("You are not authorized");
+    return;
+  }
+  
+  const { itemName: item, price: price } = req.body;
+  if(!item || !price) {
+    res.status(400).send('missing feild');
+    return;
+  }
+  prize = { item, price };
+  itemFileName = item.split(' ').join('');
+  fs.writeFile(`./prizes/${itemFileName}.json`, JSON.stringify(prize))
+  .then( _ => res.status(200).send('success') )
+  .catch( err => errHandler(err, res) );
+});
+
+router.post('/createPriceTable', async (req, res) => {
+  if (!req.isLogin) {
+    console.log(`Add author failed: Not login`);
+    res.status(401).send("Not logged in");
+    return;
+  }
+  if (req.user.group !== "root") {
+    res.status(401).send("You are not authorized");
+    return;
+  }
+
+  const path = './prizes'
+  const dir = await fs.opendir(path);
+  let priceTable = [];
+  for await (const dirent of dir) {
+    console.log(dirent);
+    if(dirent.name.slice(-5) === '.json') {
+      const prize = await fs.readFile(`${path}/${dirent.name}`)
+        .then( jsonStr => JSON.parse(jsonStr))
+        .catch( err => console.log('parsing error!', err));
+      priceTable.push(prize);
+    }
+  } 
+  priceTable.sort((a, b) =>  Number(a.price) - Number(b.price))
+  console.log(priceTable);
+  fs.writeFile(`${path}/PriceTable.json`, JSON.stringify(priceTable))
+  .then( () => res.status(200).send('create prize table completed'))
+  .catch( err => errHandler(err, res));
+  
+})
+
 const participate = async (res, now, event, userId) => {
   const beginDate = new Date(event.begin);
   if (
@@ -301,22 +355,26 @@ const participate = async (res, now, event, userId) => {
   }
   let d = now.getTime();
   
-  const samePeriod = await Record.findOne({ user: userId, date: event.date, period: event.period }, (err, rec) => {
-    if (rec) return rec;
-    else if (err) {
-      errHandler(err, res);
-      return true;
-    }
-    return false;
-  });
-  // console.log(samePeriod);
+  let samePeriod = false;
+  if(event.period > 0) {
+    samePeriod = await Record.findOne({ user: userId, date: event.date, period: event.period }, (err, rec) => {
+      if (rec) return true;
+      else if (err) {
+        errHandler(err, res);
+        return false;
+      }
+      return false;
+    });
+
+  }
   if (!samePeriod) {
     // Give reward to this user
-    const newTx = TX({  to: userId, amount: event.reward, timestamp: d })
+    const newTx = TX({ to: userId, info: `Attended ${event.name}`, amount: event.reward, timestamp: d })
     await newTx.save()
     .then(_ => true)
     .catch(err => errHandler(err));
   }
+  // console.log(samePeriod);
   
   const newRecord = Record({ user: userId, usedTime: d, date: event.date, period: event.period });
   await newRecord.save()
@@ -327,126 +385,6 @@ const participate = async (res, now, event, userId) => {
 
   res.status(200).send({ id: user._id, name: user.name, sharing: user.sharing, reward: !samePeriod });
 }
-
-router.post('/join', async (req, res) => {
-  let d = new Date();
-  if (!req.isLogin) {
-    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Join event failed: Not login`);
-    res.status(401).send("Not logged in");
-    return;
-  }
-  res.status(401).send("Join event with password is currently not allowed");
-  return;
-})
-
-router.post('/addPriceTable', async (req, res) => {
-  if (!req.isLogin) {
-    console.log(`Add author failed: Not login`);
-    res.status(401).send("Not logged in");
-    return;
-  }
-  if (req.user.group !== "root") {
-    res.status(401).send("You are not authorized");
-    return;
-  }
-
-  const { itemName: item, price: price } = req.body;
-  if(!item || !price) {
-    res.status(400).send('missing feild');
-    return;
-  }
-  prize = { item, price };
-  itemFileName = item.split(' ').join('');
-  fs.writeFile(`./prizes/${itemFileName}.json`, JSON.stringify(prize))
-    .then( _ => res.status(200).send('success') )
-    .catch( err => errHandler(err, res) );
-});
-
-router.post('/addAuthor', async (req, res) => {
-  if (!req.isLogin) {
-    console.log(`Add author failed: Not login`);
-    res.status(401).send("Not logged in");
-    return;
-  }
-
-  const { eventId, eventName, authorIds } = req.body;
-  if ((!eventId && !eventName) || !authorIds) {
-    res.status(400).send("Missing field!");
-    return;
-  }
-
-  if (req.user.group !== "root") {
-    res.status(401).send("You are not authorized");
-    return;
-  }
-
-  let event = null;
-  if (eventId) {
-    event = await Event.findById(eventId)
-    .then(event => event ? event : false)
-    .catch(err => {
-      errHandler(err);
-      return false;
-    });
-  }
-  else {
-    event = await Event.findOne({name: eventName})
-    .then(event => event ? event : false)
-    .catch(err => {
-      errHandler(err);
-      return false;
-    });
-  }
-  if (!event) {
-    res.status(400).send("Event does not exist")
-    return;
-  }
-  
-  const checkAuthor = async (author) => {
-    if (author.indexOf("@") !== -1) {
-      author = await User.findOne({ email: author })
-        .then(user => {
-          if (user) return user._id;
-          else return null;
-        })
-        .catch(_ => false);
-    }
-    else {
-      author = await User.findById(author)
-        .then(user => {
-          if (user) return user;
-          else return null;
-        })
-        .catch(_ => false);
-    }
-    return author;
-  }
-
-  if(Array.isArray(authorIds)) {
-    const checkedAuthorIds = await Promise.all(authorIds.map( authorEmail => checkAuthor(authorEmail)))
-    const errorIndex = checkedAuthorIds.findIndex(element => element === null);
-    if(errorIndex !== -1) {
-      res.status(400).send(`Please check author email, index: ${errorIndex}`);
-      return;
-    }
-    await Event.updateOne({ _id: event._id }, { participant: checkedAuthorIds });
-    res.status(200).send({ eventName: event.name, authorIds: checkedAuthorIds });
-    return;
-  }
-  const authorId = authorIds;
-  const author = await checkAuthor(authorId);
-  if(!author) {
-    res.status(400).send("Author does not exist");
-    return;
-  }
-  const joined = event.author.find(_user => String(_user._id) === authorId);
-  if (joined) {
-    res.status(400).send("Already been author");
-    return;
-  }
-  await Event.updateOne({ _id: event._id }, { $push: { author: author } });
-  res.status(200).send({ eventName: event.name, authorName: author.name });
-})
 
 router.post('/addParticipant', async (req, res) => {
   let d = new Date();
@@ -516,6 +454,35 @@ router.post('/like', async (req, res) => {
     return;
   }
 
+  const userProjection = "_id name email group"
+
+  const event = await Event.findById(eventId)
+    .populate({
+      path: 'participant',
+      populate: { path: 'user', select: userProjection }
+    })
+    .then(event => event ? event : false)
+    .catch(err => {
+      errHandler(err);
+      return false;
+    });
+  if(!event) {
+    res.status(400).send("Event not found!");
+    return;
+  }
+
+
+  const p = await Paper.findById(paperId)
+    .then(p => p?p:false)
+    .catch(err => {
+      errHandler(err);
+      return false;
+    })
+  if(!p) {
+    res.status(400).send('Paper not found!');
+    return;
+  }
+
   const filter = {
     user: userId,
     event: eventId,
@@ -527,7 +494,7 @@ router.post('/like', async (req, res) => {
     .then(doc => doc.upserted)
     .catch(err => errHandler(err));
   if(upserted !== undefined) {
-    const newTx = TX({  to: userId, amount: 2, timestamp: d.getTime() })
+    const newTx = TX({  to: userId, info: `Rated paper: ${p.title}`, amount: 2, timestamp: d.getTime() })
     await newTx.save()
       .then(_ => true)
       .catch(err => errHandler(err));
@@ -569,7 +536,7 @@ router.post('/addPaper', async (req, res) => {
     authors: paperAuthors, 
     timestamp: d.getTime()
   }
-  const paperUpdated = await Paper.findOneAndUpdate({ ID: paperId }, update, {
+  const paperUpdated = await Paper.findOneAndUpdate({ ID: paperId, title:paperTitle }, update, {
     new: true,
     upsert: true,
     rawResult: true
@@ -689,7 +656,7 @@ router.post('/lottery', async (req, res) => {
 
 const errHandler = (err, res) => {
   console.error(err);
-  res.status(500).send("Server error");
+  if(res) res.status(500).send("Server error");
 }
 
 module.exports = router;
