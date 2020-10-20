@@ -13,7 +13,7 @@ import { todayRange, parseQRCode, usedDate } from '../util';
 const functions = ["Scan QR-Code", "Participants"];
 
 export default () => {
-  let sounded = 0;
+  let flag = 0;
   console.log("[*] Viewing Company Page");
   const [activeItem, setActiveItem] = useState(functions[0]);
   const [getEventState, getEvent] = useAPI("json");
@@ -22,32 +22,38 @@ export default () => {
   const [warningAudioTag, playWarning] = useAudio(warning);
   const [noInfoAudioTag, playNoInfo] = useAudio(ok_without_info)
   const onSuccess = () => {
-    // sounded = 0;
+    flag = 0;
     playOK();
+    // if(signinState.success){
+    //   infoAudio(signinState.response);
+    // }
+    // else{
+    //   console.log("signinState not success");
+    // }
+    
     setTimeout(() => {
       setFreeze(0);
     }, 5000);
   }
   const infoAudio = (info) => {
-    if (!sounded) {
-      if (info.sharing === "yes") {
-        playOKInfo();
-      }
-      else {
-        playNoInfo();
-      }
-      setTimeout(() => {
-        setFreeze(0);
-      }, 5000);
-      // sounded = 1;
+    flag = 1;
+    console.log("info: ");
+    console.log(info);
+    if (info.sharing === "yes") {
+      playOKInfo();
     }
+    else {
+      playNoInfo();
+    }
+    setTimeout(() => {
+      setFreeze(0);
+    }, 5000);
   }
   const onAPIError = (errMsg) => {
     playWarning();
     setTimeout(() => {
       setFreeze(0);
     }, 5000);
-    // alert(errMsg); 
   }
   const [signinState, signin, initSignin] = useAPI("json", onSuccess, onAPIError);
   const [error, setError] = useState(false);
@@ -69,9 +75,9 @@ export default () => {
     init();
   }
 
-  // if (signinState.success) {
-  //   infoAudio(signinState.response);
-  // }
+  if (signinState.success && flag==0) {
+    infoAudio(signinState.response);
+  }
 
   const onScan = (data) => {
     if (data === null || data === freeze) return;
@@ -87,12 +93,12 @@ export default () => {
       JSON.stringify({ eventId: event._id, userId: id }),
       { 'authorization': token, 'content-type': "application/json" }
     )
-    console.log("signinstate: ");
-    console.log(signinState);
-    if(signinState.success){
-      infoAudio(signinState.response);
-    }
-    // sounded = 0;
+    // console.log("signinstate: ");
+    // console.log(signinState);
+    // if(signinState.success){
+    //   console.log("in onScan");
+    //   infoAudio(signinState.response);
+    // }
   }
 
 
