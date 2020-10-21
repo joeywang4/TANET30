@@ -15,7 +15,7 @@ const themes = [
 ];
 
 const MainPage = () => {
-  const { token, id: userId } = useSelector(state => state.user);
+  const { token, id: userId, group: userGroup } = useSelector(state => state.user);
   const [checkState, check] = useAPI("json");
   const [paperRank, getPaperRank] = useAPI("json");
   const [richRank, getRichRank] = useAPI("json");
@@ -117,7 +117,7 @@ const MainPage = () => {
         <Table.Cell>${person.amount}</Table.Cell>
       </Table.Row>
     ));
-    if (userId) {
+    if (userId && userGroup === 'user') {
       const recordIdx = data.findIndex(record => record.id === userId);
       if (recordIdx >= 0) {
         userRank = recordIdx+1;
@@ -184,7 +184,7 @@ const MainPage = () => {
                     {richRanks}
                   </Table.Body>
                   {
-                    userId ?
+                    userId && userGroup === 'user' ?
                     <Table.Footer>
                       <Table.Row>
                         <Table.HeaderCell>
