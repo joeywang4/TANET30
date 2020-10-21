@@ -6,12 +6,13 @@ import {
   CreateEventForm,
   PriceTableHandler,
   CreateTicketForm,
+  ChangeUserNameForm,
   NewUserHandler,
   ExportUserHandler,
   CreatePaperHandler,
   NewEventHandler,
   NewTicketHandler,
-  UpdateMeals
+  UpdateMeals,
 } from '../components';
 import { Lottery } from './';
 
@@ -139,8 +140,8 @@ const Admin = () => {
 
       <Divider horizontal>
         <Header as='h4'>
-          <Icon name='address card' />
-          Add price table and create papers
+          <Icon name='newspaper' />
+          Add Price Table / Create Papers
         </Header>
       </Divider>
       <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
@@ -176,6 +177,23 @@ const Admin = () => {
               icon="download"
               style={{ margin: "1vh 0" }}
             />
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+      
+      <Divider horizontal>
+        <Header as='h4'>
+          <Icon name='address card' />
+          Modify User
+        </Header>
+      </Divider>
+      <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
+        <Grid.Row columns={2}>
+          <Grid.Column style={{ width: "80%", maxWidth: "30em" }}>
+            <ChangeUserNameForm />
+          </Grid.Column>
+          <Grid.Column>
+            {null}
           </Grid.Column>
         </Grid.Row>
       </Grid>
