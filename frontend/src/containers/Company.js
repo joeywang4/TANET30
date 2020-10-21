@@ -5,19 +5,46 @@ import { useSelector } from 'react-redux';
 import { BACKEND } from '../config';
 import ok from './Event/ok.mp3';
 import warning from './Event/warning.mp3';
+import ok_info from './Event/ok_info.mp3';
+import ok_without_info from './Event/ok_without_info.mp3';
 import { useAPI, useAudio } from '../hooks';
 import { todayRange, parseQRCode, usedDate } from '../util';
 
 const functions = ["Scan QR-Code", "Participants"];
 
 export default () => {
+  let flag = 0;
   console.log("[*] Viewing Company Page");
   const [activeItem, setActiveItem] = useState(functions[0]);
   const [getEventState, getEvent] = useAPI("json");
   const [okAudioTag, playOK] = useAudio(ok);
+  const [okInfoAudioTag, playOKInfo] = useAudio(ok_info);
   const [warningAudioTag, playWarning] = useAudio(warning);
+  const [noInfoAudioTag, playNoInfo] = useAudio(ok_without_info)
   const onSuccess = () => {
+    flag = 0;
     playOK();
+    // if(signinState.success){
+    //   infoAudio(signinState.response);
+    // }
+    // else{
+    //   console.log("signinState not success");
+    // }
+    
+    setTimeout(() => {
+      setFreeze(0);
+    }, 5000);
+  }
+  const infoAudio = (info) => {
+    flag = 1;
+    console.log("info: ");
+    console.log(info);
+    if (info.sharing === "yes") {
+      playOKInfo();
+    }
+    else {
+      playNoInfo();
+    }
     setTimeout(() => {
       setFreeze(0);
     }, 5000);
@@ -27,7 +54,6 @@ export default () => {
     setTimeout(() => {
       setFreeze(0);
     }, 5000);
-    // alert(errMsg); 
   }
   const [signinState, signin, initSignin] = useAPI("json", onSuccess, onAPIError);
   const [error, setError] = useState(false);
@@ -49,6 +75,10 @@ export default () => {
     init();
   }
 
+  if (signinState.success && flag==0) {
+    infoAudio(signinState.response);
+  }
+
   const onScan = (data) => {
     if (data === null || data === freeze) return;
     if (error === true) {
@@ -63,7 +93,14 @@ export default () => {
       JSON.stringify({ eventId: event._id, userId: id }),
       { 'authorization': token, 'content-type': "application/json" }
     )
+    // console.log("signinstate: ");
+    // console.log(signinState);
+    // if(signinState.success){
+    //   console.log("in onScan");
+    //   infoAudio(signinState.response);
+    // }
   }
+
 
   const onError = () => {
     setError(true);
@@ -95,10 +132,13 @@ export default () => {
                 ?
                 <Message.Content>
                   {signinState.response.name} is sharing data with you.
+                  {/* {infoAudio(signinState.response)} */}
                 </Message.Content>
+                
                 :
                 <Message.Content>
                   {signinState.response.name} does NOT share data with you.
+                  {/* {infoAudio(signinState.response)} */}
                 </Message.Content>
               }
             </Message>
@@ -165,7 +205,9 @@ export default () => {
         </Header>
       :null}
       {okAudioTag}
+      {okInfoAudioTag}
       {warningAudioTag}
+      {noInfoAudioTag}
     </div>
   )
 }

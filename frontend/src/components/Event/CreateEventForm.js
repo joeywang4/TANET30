@@ -28,7 +28,6 @@ const CreateEventForm = () => {
       setErrMsg("End time should be later than begin time!");
       return;
     }
-
     const date = beginDate;
     let password = null;
     const body = {name, period, date, begin, end, password, reward};

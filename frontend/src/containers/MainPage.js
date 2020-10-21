@@ -19,6 +19,9 @@ const MainPage = () => {
   const [checkState, check] = useAPI("json");
   const [paperRank, getPaperRank] = useAPI("json");
   const [richRank, getRichRank] = useAPI("json");
+  const [list, getList] = useAPI("json");
+  let listTime = null;
+  let namelist = <span>None</span>;
   const newPaperRank = useWS("new-paper-rank");
   const newRichRank = useWS("new-rich-rank");
   const checkAmount = () => {
@@ -35,6 +38,33 @@ const MainPage = () => {
   if (checkState.isInit()) checkAmount();
   if (paperRank.isInit())  getPaperRank(BACKEND + "/rank/paper", "GET");
   if (richRank.isInit())   getRichRank(BACKEND + "/rank/rich", "GET");
+  if(list.isInit()) {
+    getList(
+        BACKEND + "/event/namelist",
+        "GET",
+        null,
+        { 'authorization': token, 'content-type': "application/json" }
+    );
+  }
+  if (list.success) {
+    const result = list.response;
+    listTime = result.Date;
+    const userslist = result.Users;
+    console.log(userslist);
+    userslist.map((user, index) => {
+        console.log("name: "+user.name+", sector: "+user.sector+", index: "+index);
+    })
+
+    namelist = (
+        userslist.map((user, index) => (
+            <Table.Row>
+                <Table.Cell>{index}</Table.Cell>
+                <Table.Cell>{user.name}</Table.Cell>
+                <Table.Cell>{user.sector}</Table.Cell>
+            </Table.Row>
+        ))
+    );
+  }
 
   const [rankLength, richLength] = [5, 10];
   const paperRanks = themes.map(([key, title]) => (
@@ -178,6 +208,31 @@ const MainPage = () => {
           </Grid.Column>
         </Grid>
       </Container>
+
+      <Container style={{marginBottom:"3em"}}>
+        <Segment>
+          <Grid.Row style={{textAlign: 'center', paddingTop:"1em", fontFamily:"Verdana"}}>
+            <Header as='h3'>
+              <Icon name='ticket' />
+              可參加抽獎名單
+            </Header>
+          </Grid.Row>
+          <Divider horizontal style={{fontWeight: 'normal'}}>
+            更新時間：{listTime}
+          </Divider>
+          <Table striped basic='very' style={{paddingLeft:"1em", paddingRight:"1.3em", paddingBottom:"1em"}}>
+            <Table.Body style={{fontSize:"1.2em"}}>
+              <Table.Row style={{color: "gray"}}>
+                <Table.Cell>序號</Table.Cell>
+                <Table.Cell>姓名</Table.Cell>
+                <Table.Cell>所屬單位</Table.Cell>
+              </Table.Row>
+              {namelist}
+            </Table.Body>
+          </Table>
+        </Segment>
+      </Container>
+
     </div>
   )
 }
