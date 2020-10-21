@@ -132,7 +132,7 @@ router.post("/use", async (req, res) => {
   }
   let ticket = tickets.find(ticket => ticket.usedTime === 0);
   if(!ticket) {
-    res.status(403).send("Ticket is used!");
+    res.status(403).send(`${tickets[0].owner.name} Ticket is used!`);
     return;
   }
   ticket.usedTime = Date.now();
@@ -171,10 +171,10 @@ router.post("/delete", async (req, res) => {
 
 
 router.get("/avail", async (req, res) => {
-  if(!(req.isLogin)) {
-    res.status(401).send("Not authorized");
-    return;
-  }
+  // if(!(req.isLogin)) {
+  //   res.status(401).send("Not authorized");
+  //   return;
+  // }
   let entries = null;
   try {
     const data = await fs.readFile(path.resolve(__dirname, '../config.json'));

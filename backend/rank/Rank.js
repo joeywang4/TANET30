@@ -1,4 +1,6 @@
 class Rank {
+  static io;
+
   get() {
     // Get ranking
     console.error("[!] Calling abstract method");
@@ -29,4 +31,5 @@ class Rank {
   }
 }
 
-module.exports = Rank;
+
+module.exports = Rank; 

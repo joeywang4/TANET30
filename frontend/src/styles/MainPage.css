@@ -1,0 +1,26 @@
+.message {
+    font-size: 1.1em !important;
+    font-weight: bold;
+    text-align: center;
+}
+
+.number { 
+    font-weight: normal;
+}
+
+.rank-title { 
+    text-align: center;
+    padding-top: 1em;
+    font-family: Verdana;
+}
+
+.rank-table {
+    padding-left: 1em;
+    padding-right: 1.3em;
+    padding-bottom: 1em;
+    font-size: 1.2em !important;
+}
+
+.rank-author {
+    font-weight: bold;
+}

@@ -13,7 +13,7 @@ const AutoLogin = ({email, password, login}) => {
 
   if(connection.success) {
     login(connection.token, connection.name, connection.email, connection.id, connection.group);
-    return <Redirect to="/" />;
+    return <Redirect to="/home" />;
   }
   if(connection.isInit()) {
     loginAPI(email, password);
