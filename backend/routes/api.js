@@ -124,7 +124,8 @@ router.get('/user', (req, res) => {
 
 router.get('/prize', async (req, res) => {
   if(!req.isLogin) {
-    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create transaction failed: Not login`);
+    let d = new Date();
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Get prize failed: Not login`);
     res.status(401).send("Not logged in");
     return;
   }
@@ -134,10 +135,44 @@ router.get('/prize', async (req, res) => {
   }
   const path = './prizes/PriceTable.json'
   const priceTable = await fs.readFile(path)
-    .then( pt => JSON.parse(pt))
-    .catch(err => errHandler(err, res));
+  .then( pt => JSON.parse(pt))
+  .catch(err => errHandler(err, res));
   
   res.status(200).send(priceTable)
+});
+
+router.post('/changeUser', async (req, res) => {
+
+  if(!req.isLogin) {
+    let d = new Date();
+    console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Change user failed: Not login`);
+    res.status(401).send("Not logged in");
+  }
+  if(req.user.group !== 'root') {
+    res.status(401).send("Not authorized");
+    return;
+  }
+  const { email, name, unit } = req.body;
+
+  const filter = { email };
+  let update = name ? { name } : {};
+  update = unit ? {...update, sector:unit} : update;
+  if(await User.countDocuments(filter) !== 1) {
+    res.status(400).send('bad request(please check user email!)');
+    return;
+  }
+
+  const user = await User.findOneAndUpdate(filter, update, {
+    new: true,
+    upsert: false
+  })
+  .then( doc => doc)
+  .catch( err => {
+    errHandler(err, res);
+    return false;
+  })
+  // console.log(user);
+  res.status(200).send(`${user.name} (unit: ${user.sector}) update success`);
 });
 
 const errHandler = (err, res) => {

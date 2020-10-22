@@ -30,7 +30,7 @@ function NavBar({ hasLoggedin, name, userGroup, logout }) {
         <Dropdown.Menu>
           <Dropdown.Item as={Link} to="/participatedEvents">Events</Dropdown.Item>
           <Dropdown.Item as={Link} to="/tickets">Food Tickets</Dropdown.Item>
-          <Dropdown.Item as={Link} to="/userStatus">Transactions</Dropdown.Item>
+          <Dropdown.Item as={Link} to="/home">Transactions</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
       <Menu.Item
