@@ -80,14 +80,18 @@ const MainPage = () => {
         <Table striped basic='very' className="rank-table">
           <Table.Body>
             {
+              
               paperRank.success || newPaperRank ? 
-                (newPaperRank?newPaperRank:paperRank.response)[key].slice(0, rankLength).map((paper, idx) => (
-                  <Table.Row key={`${key}-${idx}`}>
-                    <Table.Cell>{idx+1}</Table.Cell>
-                    <Table.Cell className="rank-author">{paper.authors}</Table.Cell>
-                    <Table.Cell>{paper.title}</Table.Cell>
-                  </Table.Row>
-                ))
+                (newPaperRank?newPaperRank:paperRank.response)[key] ? 
+                  (newPaperRank?newPaperRank:paperRank.response)[key].slice(0, rankLength).map((paper, idx) => (
+                    <Table.Row key={`${key}-${idx}`}>
+                      <Table.Cell>{idx+1}</Table.Cell>
+                      <Table.Cell className="rank-author">{paper.authors}</Table.Cell>
+                      <Table.Cell>{paper.title}</Table.Cell>
+                    </Table.Row>
+                  ))
+                  :
+                  null
               :
                 Array.apply(undefined, Array(rankLength)).map((_, idx) => (
                   <Table.Row key={`${key}-${idx}`}>
