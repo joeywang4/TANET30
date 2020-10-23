@@ -15,7 +15,7 @@ const themes = [
 ];
 
 const MainPage = () => {
-  const { token, id: userId } = useSelector(state => state.user);
+  const { token, id: userId, group: userGroup } = useSelector(state => state.user);
   const [checkState, check] = useAPI("json");
   const [paperRank, getPaperRank] = useAPI("json");
   const [richRank, getRichRank] = useAPI("json");
@@ -80,14 +80,18 @@ const MainPage = () => {
         <Table striped basic='very' className="rank-table">
           <Table.Body>
             {
+              
               paperRank.success || newPaperRank ? 
-                (newPaperRank?newPaperRank:paperRank.response)[key].slice(0, rankLength).map((paper, idx) => (
-                  <Table.Row key={`${key}-${idx}`}>
-                    <Table.Cell>{idx+1}</Table.Cell>
-                    <Table.Cell className="rank-author">{paper.authors}</Table.Cell>
-                    <Table.Cell>{paper.title}</Table.Cell>
-                  </Table.Row>
-                ))
+                (newPaperRank?newPaperRank:paperRank.response)[key] ? 
+                  (newPaperRank?newPaperRank:paperRank.response)[key].slice(0, rankLength).map((paper, idx) => (
+                    <Table.Row key={`${key}-${idx}`}>
+                      <Table.Cell>{idx+1}</Table.Cell>
+                      <Table.Cell className="rank-author">{paper.authors}</Table.Cell>
+                      <Table.Cell>{paper.title}</Table.Cell>
+                    </Table.Row>
+                  ))
+                  :
+                  null
               :
                 Array.apply(undefined, Array(rankLength)).map((_, idx) => (
                   <Table.Row key={`${key}-${idx}`}>
@@ -117,7 +121,7 @@ const MainPage = () => {
         <Table.Cell>${person.amount}</Table.Cell>
       </Table.Row>
     ));
-    if (userId) {
+    if (userId && userGroup === 'user') {
       const recordIdx = data.findIndex(record => record.id === userId);
       if (recordIdx >= 0) {
         userRank = recordIdx+1;
@@ -184,7 +188,7 @@ const MainPage = () => {
                     {richRanks}
                   </Table.Body>
                   {
-                    userId ?
+                    userId && userGroup === 'user' ?
                     <Table.Footer>
                       <Table.Row>
                         <Table.HeaderCell>

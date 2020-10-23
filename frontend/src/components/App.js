@@ -91,9 +91,6 @@ function App({hasLoggedIn, userGroup}) {
           <Route exact path="/participatedEvents">
             {mustLogin(hasLoggedIn, <ParticipatedEvent />)}
           </Route>
-          <Route exact path="/userStatus">
-            {mustLogin(hasLoggedIn, <UserStatus />)}
-          </Route>
           <Route exact path="/home">
             {mustLogin(hasLoggedIn, homeComponent)}
           </Route>

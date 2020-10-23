@@ -7,6 +7,7 @@ import RegisterForm from './Auth/RegisterForm';
 import FileUpload from './FileHandler/FileUpload';
 import CreateEventForm from './Event/CreateEventForm';
 import CreateTicketForm from './CreateTicketForm';
+import ChangeUserNameForm from './ChangeUserNameForm';
 import UpdateMeals from './UpdateMeals';
 import NewUserHandler from './FileHandler/NewUserHandler';
 import ExportUserHandler from './FileHandler/ExportUserHandler';
@@ -26,6 +27,7 @@ export {
   FileUpload,
   CreateEventForm,
   CreateTicketForm,
+  ChangeUserNameForm,
   UpdateMeals,
   NewUserHandler,
   ExportUserHandler,
