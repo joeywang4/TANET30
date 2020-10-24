@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { NavBar, Login, AutoLogin, Welcome } from '../components';
+import { NavBar, Login, AutoLogin, Welcome, ViewAllMeals } from '../components';
 import { 
   UserStatus,
   Receive,
@@ -96,6 +96,9 @@ function App({hasLoggedIn, userGroup}) {
           </Route>
           <Route exact path="/userHead">
             {mustLogin(hasLoggedIn, <UserHead />)}
+          </Route>
+          <Route exact path="/viewAllMeals">
+            {mustLogin(hasLoggedIn, <ViewAllMeals />)}
           </Route>
           <Route exact path="/event">
             {({ location }) => {
