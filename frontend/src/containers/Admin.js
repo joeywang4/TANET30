@@ -202,7 +202,7 @@ const Admin = () => {
 
       <Divider horizontal>
         <Header as='h4'>
-          <Icon name='address card' />
+          <Icon name='ticket' />
           View All Ticket Amounts
         </Header>
       </Divider>
