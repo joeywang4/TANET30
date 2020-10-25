@@ -171,10 +171,7 @@ router.post("/delete", async (req, res) => {
 
 
 router.get("/avail", async (req, res) => {
-  // if(!(req.isLogin)) {
-  //   res.status(401).send("Not authorized");
-  //   return;
-  // }
+  
   let entries = null;
   try {
     const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
@@ -189,8 +186,13 @@ router.get("/avail", async (req, res) => {
     res.status(404).send("File Missing MealBoxes");
     return;
   }
-  if (!entries.MealBoxes.Meat || !entries.MealBoxes.Vegan || !entries.MealBoxes.Type || !entries.MealBoxes.Date) {
+  if (Object.keys(entries.MealBoxes).length !== 4) {
     res.status(404).send("File Missing MealBoxes Data");
+    return;
+  }
+
+  if (entries.MealBoxes.Date !== today()) {
+    res.status(200).send({"meat": "待更新", "vegan": "待更新"});
     return;
   }
   const total_m = entries.MealBoxes.Meat;
@@ -271,7 +273,7 @@ router.post("/amount", async (req, res) => {
     res.status(404).send("File Missing MealBoxes");
     return;
   }
-  if (!entries.MealBoxes.Meat || !entries.MealBoxes.Vegan || !entries.MealBoxes.Type || !entries.MealBoxes.Date) {
+  if (Object.keys(entries.MealBoxes).length !== 4) {
     res.status(404).send("File Missing MealBoxes Data");
     return;
   }
