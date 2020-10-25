@@ -17,6 +17,9 @@ class PaperRank extends Rank {
       if(!(paper.group in group_to_papers)) {
         group_to_papers[paper.group] = [];
       }
+      // Filter out papers with no score
+      if (paper.score <= 0) continue;
+      // Push paper into group 
       group_to_papers[paper.group].push(paper);
     }
     // Sort papers

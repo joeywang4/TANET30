@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Header, Icon, Divider, Image, Segment, Container, Grid, Table, Label } from 'semantic-ui-react';
+import { Header, Icon, Divider, Segment, Container, Grid, Table, Label } from 'semantic-ui-react';
 import { BACKEND } from '../config';
 import { useAPI, useWS } from '../hooks';
 import '../styles/MainPage.css';
@@ -168,15 +168,22 @@ const MainPage = () => {
     })
 
   return (
-    <div>
-      <Image src="banner.png" />
-      <Container style={{ marginTop: '3em', marginBottom: '3em' }}>
+    <div style={{width: "100%"}}>
+      <Container style={{ marginTop: '1em', width: '95%' }}>
         <Grid stackable>
-          <Grid.Column width={10}>
-            {paperRanks}
+          <Grid.Column width={5}>
+            {paperRanks.slice(0, 3)}
           </Grid.Column>
 
-          <Grid.Column width={6}>
+          <Grid.Column width={5}>
+            {paperRanks.slice(3)}
+          </Grid.Column>
+
+          <Grid.Column width={3}>
+            {eventRanks}
+          </Grid.Column>
+
+          <Grid.Column width={3}>
             <Segment>
               <Grid.Row className="rank-title">
                 <Header as='h3'>
@@ -186,15 +193,15 @@ const MainPage = () => {
               </Grid.Row>
               <Divider style={{ margin: "1em 0 0 0" }} />
               <Grid.Row style={{ padding: "0 1em" }}>
-                <Table basic='very' unstackable>
-                  <Table.Body style={{fontSize: "1.2em"}}>
+                <Table basic='very'>
+                  <Table.Body>
                     <Table.Row>
                       <Table.Cell width={11}>葷食</Table.Cell>
-                      <Table.Cell width={5} textAlign="right">{checkState.error ? "Error" : meatAmount}</Table.Cell>
+                      <Table.Cell width={5} textAlign="right">{checkState.error?"Error":meatAmount}</Table.Cell>
                     </Table.Row>
                     <Table.Row>
                       <Table.Cell width={11}>素食</Table.Cell>
-                      <Table.Cell width={5} textAlign="right">{checkState.error ? "Error" : veganAmount}</Table.Cell>
+                      <Table.Cell width={5} textAlign="right">{checkState.error?"Error":veganAmount}</Table.Cell>
                     </Table.Row>
                   </Table.Body>
                 </Table>
@@ -207,10 +214,9 @@ const MainPage = () => {
                   大富翁
                 </Header>
               </Grid.Row>
-              <Divider>
-              </Divider>
+              <Divider />
               <Grid.Row style={{ paddingLeft: "1em" }}>
-                <Table basic='very' className="rank-table" unstackable>
+                <Table basic='very' className="rank-table">
                   <Table.Body>
                     {richRanks}
                   </Table.Body>
@@ -236,33 +242,29 @@ const MainPage = () => {
                 </Table>
               </Grid.Row>
             </Segment>
-            {eventRanks}
-          </Grid.Column>
-        </Grid>
-      </Container>
-
-      <Container style={{ marginBottom: "3em" }}>
-        <Segment>
-          <Grid.Row style={{ textAlign: 'center', paddingTop: "1em", fontFamily: "Verdana" }}>
-            <Header as='h3'>
-              <Icon name='ticket' />
+            <Segment>
+              <Grid.Row style={{ textAlign: 'center', paddingTop: "1em", fontFamily: "Verdana" }}>
+                <Header as='h3'>
+                  <Icon name='ticket' />
               可參加抽獎名單
             </Header>
-          </Grid.Row>
-          <Divider horizontal style={{ fontWeight: 'normal' }}>
-            更新時間：{listTime}
-          </Divider>
-          <Table striped basic='very' style={{ paddingLeft: "1em", paddingRight: "1.3em", paddingBottom: "1em" }}>
-            <Table.Body style={{ fontSize: "1.2em" }}>
-              <Table.Row style={{ color: "gray" }}>
-                <Table.Cell>序號</Table.Cell>
-                <Table.Cell>姓名</Table.Cell>
-                <Table.Cell>所屬單位</Table.Cell>
-              </Table.Row>
-              {namelist}
-            </Table.Body>
-          </Table>
-        </Segment>
+              </Grid.Row>
+              <Divider horizontal style={{ fontWeight: 'normal' }}>
+                更新時間：{listTime}
+              </Divider>
+              <Table striped basic='very' style={{ paddingLeft: "1em", paddingRight: "1.3em", paddingBottom: "1em" }}>
+                <Table.Body style={{ fontSize: "1.2em" }}>
+                  <Table.Row style={{ color: "gray" }}>
+                    <Table.Cell>序號</Table.Cell>
+                    <Table.Cell>姓名</Table.Cell>
+                    <Table.Cell>所屬單位</Table.Cell>
+                  </Table.Row>
+                  {namelist}
+                </Table.Body>
+              </Table>
+            </Segment>
+          </Grid.Column>
+        </Grid>
       </Container>
 
     </div>

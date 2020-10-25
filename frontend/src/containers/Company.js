@@ -66,7 +66,7 @@ export default () => {
     init();
   }
 
-  if (signinState.success && flag==0) {
+  if (signinState.success && flag === 0) {
     infoAudio(signinState.response);
   }
 

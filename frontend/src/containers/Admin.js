@@ -14,7 +14,7 @@ import {
   NewEventHandler,
   NewTicketHandler,
   UpdateMeals, 
-  ViewAllMeals
+  // ViewAllMeals
 } from '../components';
 import { Lottery } from './';
 
