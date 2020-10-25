@@ -9,6 +9,7 @@ import CreateEventForm from './Event/CreateEventForm';
 import CreateTicketForm from './CreateTicketForm';
 import ChangeUserNameForm from './ChangeUserNameForm';
 import UpdateMeals from './UpdateMeals';
+import ViewAllMeals from './ViewAllMeals';
 import NewUserHandler from './FileHandler/NewUserHandler';
 import ExportUserHandler from './FileHandler/ExportUserHandler';
 import CreatePaperHandler from './FileHandler/CreatePaperHandler';
@@ -29,6 +30,7 @@ export {
   CreateTicketForm,
   ChangeUserNameForm,
   UpdateMeals,
+  ViewAllMeals,
   NewUserHandler,
   ExportUserHandler,
   PriceTableHandler,

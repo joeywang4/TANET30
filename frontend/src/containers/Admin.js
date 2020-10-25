@@ -1,5 +1,6 @@
 import React from 'react';
-import { Header, Icon, Divider, Grid } from 'semantic-ui-react';
+import { Header, Icon, Divider, Grid, Button } from 'semantic-ui-react';
+import { Link } from 'react-router-dom';
 import {
   RegisterForm,
   FileUpload,
@@ -12,7 +13,8 @@ import {
   CreatePaperHandler,
   NewEventHandler,
   NewTicketHandler,
-  UpdateMeals,
+  UpdateMeals, 
+  ViewAllMeals
 } from '../components';
 import { Lottery } from './';
 
@@ -194,6 +196,20 @@ const Admin = () => {
           </Grid.Column>
           <Grid.Column>
             {null}
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+
+      <Divider horizontal>
+        <Header as='h4'>
+          <Icon name='ticket' />
+          View All Ticket Amounts
+        </Header>
+      </Divider>
+      <Grid textAlign="center" verticalAlign="middle" style={{ width: "100%", marginTop: "2vh" }}>
+        <Grid.Row>
+          <Grid.Column>
+            <Button as={Link} to="/viewAllMeals">Click to View</Button>
           </Grid.Column>
         </Grid.Row>
       </Grid>

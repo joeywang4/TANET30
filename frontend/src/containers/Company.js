@@ -13,7 +13,6 @@ import { todayRange, parseQRCode, usedDate } from '../util';
 const functions = ["Scan QR-Code", "Participants"];
 
 export default () => {
-  let flag = 0;
   console.log("[*] Viewing Company Page");
   const [activeItem, setActiveItem] = useState(functions[0]);
   const [getEventState, getEvent] = useAPI("json");
@@ -21,24 +20,16 @@ export default () => {
   const [okInfoAudioTag, playOKInfo] = useAudio(ok_info);
   const [warningAudioTag, playWarning] = useAudio(warning);
   const [noInfoAudioTag, playNoInfo] = useAudio(ok_without_info)
+  const [flag, setFlag] = useState(0);
   const onSuccess = () => {
-    flag = 0;
+    setFlag(0);
     playOK();
-    // if(signinState.success){
-    //   infoAudio(signinState.response);
-    // }
-    // else{
-    //   console.log("signinState not success");
-    // }
-    
     setTimeout(() => {
       setFreeze(0);
     }, 5000);
   }
   const infoAudio = (info) => {
-    flag = 1;
-    console.log("info: ");
-    console.log(info);
+    setFlag(1);
     if (info.sharing === "yes") {
       playOKInfo();
     }
@@ -93,12 +84,6 @@ export default () => {
       JSON.stringify({ eventId: event._id, userId: id }),
       { 'authorization': token, 'content-type': "application/json" }
     )
-    // console.log("signinstate: ");
-    // console.log(signinState);
-    // if(signinState.success){
-    //   console.log("in onScan");
-    //   infoAudio(signinState.response);
-    // }
   }
 
 
@@ -132,13 +117,11 @@ export default () => {
                 ?
                 <Message.Content>
                   {signinState.response.name} is sharing data with you.
-                  {/* {infoAudio(signinState.response)} */}
                 </Message.Content>
                 
                 :
                 <Message.Content>
                   {signinState.response.name} does NOT share data with you.
-                  {/* {infoAudio(signinState.response)} */}
                 </Message.Content>
               }
             </Message>

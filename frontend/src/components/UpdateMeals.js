@@ -32,7 +32,7 @@ const UpdateMeals = () => {
 
   return (
     <Grid textAlign='center'>
-      <Grid.Column style={{ maxWidth:"80%" }}>
+      <Grid.Column>
         <Form onSubmit={onSubmit} loading={createState.loading}>
           <Form.Field required>
             <label style={{fontSize:"1.1em"}}>Meal Type</label>

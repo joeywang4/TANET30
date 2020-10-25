@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Loader, Grid, Form, Button, Message } from 'semantic-ui-react';
+// import { on } from '../../../backend/models/user';
 import { ErrMsg } from '../components';
 import { BACKEND } from '../config';
 import { useAPI } from '../hooks';
@@ -13,6 +14,7 @@ export default () => {
   const [courseThreshold, setCourseThreshold] = useState(-1);
   const [companyThreshold, setCompanyThreshold] = useState(-1);
   const [list, setList] = useState(null);
+  const [confirm, setConfirm] = useState(null);
   const [editState, edit] = useAPI("text");
   const [error, setError] = useState(null);
   const [_, resetList] = useAPI("text");
@@ -51,7 +53,6 @@ export default () => {
     let id_to_count = {}; // id -> [courseCount, companyCount]
     let id_to_period = {} // id -> [period 1 ... period 8]
     for(let event of connection.response) {
-      console.log("event date: ", event.date);
       if (event.date === today()) {
         const isCourse = event.admin.group === "seminarStaff";
         for(let participant of event.participant) {
@@ -82,7 +83,6 @@ export default () => {
       }
     }
     setList(userList);
-    UpdateList(userList);
   }
 
   const addToList = async (_name, _sector, _index) => {
@@ -108,6 +108,17 @@ export default () => {
         console.error(err);
         return false;
       })
+  }
+
+  const onSet = () => {
+    if(list != null){
+      UpdateList(list);
+      setConfirm(true);
+    }
+    else{
+      setError("Filter first!");
+      setConfirm(false);
+    }
   }
 
   async function UpdateList (list) {
@@ -167,6 +178,7 @@ export default () => {
               />
             </Form.Field>
             <Button onClick={_ => onFilter()}>Filter</Button>
+            <Button onClick={_ => onSet()}>Set</Button>
           </Form>
           {
             editState.error || error
@@ -179,6 +191,13 @@ export default () => {
             editState.success
             ?
             <Message positive>Update Thresholds Success!</Message>
+            :
+            null
+          }
+          {
+            confirm
+            ?
+            <Message positive>Lottery List Posted to Main Page!</Message>
             :
             null
           }
