@@ -22,7 +22,8 @@ import Cashier from './Cashier';
 import UserAddTicket from './UserAddTicket'
 import History from './History';
 import MainPage from './MainPage';
-import UserHead from './UserHead'
+import UserHead from './UserHead';
+import TVPage from './TVPage';
 
 export {
   Upload, 
@@ -49,5 +50,6 @@ export {
   History,
   RenameButton,
   MainPage,
-  UserHead
+  UserHead,
+  TVPage
 };

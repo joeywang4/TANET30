@@ -11,9 +11,9 @@ const ViewAllMeals = () => {
 
 
   const ticketType = (type) => {
-    if(type == 'lunch') return 0;
-    else if(type == 'dinner') return 1;
-    else if(type == 'lunch(vegan)') return 2;
+    if(type === 'lunch') return 0;
+    else if(type === 'dinner') return 1;
+    else if(type === 'lunch(vegan)') return 2;
     return 3;
   }
 

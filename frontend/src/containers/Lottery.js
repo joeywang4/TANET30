@@ -17,7 +17,7 @@ export default () => {
   const [confirm, setConfirm] = useState(null);
   const [editState, edit] = useAPI("text");
   const [error, setError] = useState(null);
-  const [_, resetList] = useAPI("text");
+  const [, resetList] = useAPI("text");
 
   let display = null;
 
@@ -64,7 +64,7 @@ export default () => {
           let period = event.period;
           let count = id_to_count[participant.user._id];
           if (isCourse) {
-            if(id_to_period[participant.user._id][period] != 1){
+            if(id_to_period[participant.user._id][period] !== 1){
               id_to_period[participant.user._id][period] = 1;
               count[0] = count[0] += 1;
             }

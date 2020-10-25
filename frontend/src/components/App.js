@@ -21,7 +21,7 @@ import {
   Tickets,
   ParticipatedEvent,
   MainPage, 
-  UserHead
+  TVPage
 } from '../containers';
 
 const mapStateToProps = (state) => ({
@@ -94,8 +94,8 @@ function App({hasLoggedIn, userGroup}) {
           <Route exact path="/home">
             {mustLogin(hasLoggedIn, homeComponent)}
           </Route>
-          <Route exact path="/userHead">
-            {mustLogin(hasLoggedIn, <UserHead />)}
+          <Route exact path="/tv">
+            {mustLogin(hasLoggedIn, <TVPage />)}
           </Route>
           <Route exact path="/viewAllMeals">
             {mustLogin(hasLoggedIn, <ViewAllMeals />)}
