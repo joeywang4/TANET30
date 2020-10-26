@@ -24,7 +24,7 @@ const MainPage = () => {
   const [gameRank, getGameRank] = useAPI("json");
   const [list, getList] = useAPI("json");
   let listTime = null;
-  let namelist = <span>None</span>;
+  let namelist = null;
   const newPaperRank = useWS("new-paper-rank");
   const newRichRank = useWS("new-rich-rank");
   const newSeminarRank = useWS("new-seminar-rank");
@@ -37,6 +37,9 @@ const MainPage = () => {
       null,
       { 'authorization': token }
     )
+  }
+  const replace = (word, idx, char) => {
+    return word.substring(0,idx) + char + word.substring(idx+1);
   }
   const meatAmount = checkState.success ? checkState.response.meat : "";
   const veganAmount = checkState.success ? checkState.response.vegan : "";
@@ -60,15 +63,23 @@ const MainPage = () => {
     listTime = result.Date;
     const userslist = result.Users;
 
-    namelist = (
-      userslist.map((user, index) => (
+    if(!userslist) {
+      namelist = (
         <Table.Row>
-          <Table.Cell>{index}</Table.Cell>
-          <Table.Cell>{user.name}</Table.Cell>
-          <Table.Cell>{user.sector}</Table.Cell>
         </Table.Row>
-      ))
-    );
+      )
+    }
+    else {
+      namelist = (
+        userslist.map((user, index, key) => (
+          <Table.Row key={key}>
+            <Table.Cell>{index}</Table.Cell>
+            <Table.Cell>{replace(user.name, 1, "Ｏ")}</Table.Cell>
+            <Table.Cell>{user.sector}</Table.Cell>
+          </Table.Row>
+        ))
+      );
+    }
   }
 
   const [rankLength, richLength] = [5, 10];
