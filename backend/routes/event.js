@@ -307,8 +307,8 @@ router.post('/createPriceTable', async (req, res) => {
   const dir = await fs.opendir(path);
   let priceTable = [];
   for await (const dirent of dir) {
-    console.log(dirent);
-    if(dirent.name.slice(-5) === '.json') {
+    // console.log(dirent);
+    if(dirent.name.slice(-5) === '.json' && dirent.name !== 'PriceTable.json') {
       const prize = await fs.readFile(`${path}/${dirent.name}`)
         .then( jsonStr => JSON.parse(jsonStr))
         .catch( err => console.log('parsing error!', err));
@@ -316,7 +316,7 @@ router.post('/createPriceTable', async (req, res) => {
     }
   } 
   priceTable.sort((a, b) =>  Number(a.price) - Number(b.price))
-  console.log(priceTable);
+  // console.log(priceTable);
   fs.writeFile(`${path}/PriceTable.json`, JSON.stringify(priceTable))
   .then( () => res.status(200).send('create prize table completed'))
   .catch( err => errHandler(err, res));
