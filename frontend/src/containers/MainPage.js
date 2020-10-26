@@ -30,6 +30,7 @@ const MainPage = () => {
   const newSeminarRank = useWS("new-seminar-rank");
   const newCompanyRank = useWS("new-company-rank");
   const newGameRank = useWS("new-game-rank");
+  const newMealAmount = useWS("new-meal-count");
   const checkAmount = () => {
     check(
       BACKEND + "/ticket/avail",
@@ -41,8 +42,8 @@ const MainPage = () => {
   const replace = (word, idx, char) => {
     return word.substring(0,idx) + char + word.substring(idx+1);
   }
-  const meatAmount = checkState.success ? checkState.response.meat : "";
-  const veganAmount = checkState.success ? checkState.response.vegan : "";
+  const meatAmount = newMealAmount?newMealAmount.meat:(checkState.success ? checkState.response.meat : "");
+  const veganAmount = newMealAmount?newMealAmount.vegan:(checkState.success ? checkState.response.vegan : "");
 
   if (checkState.isInit()) checkAmount();
   if (paperRank.isInit()) getPaperRank(BACKEND + "/rank/paper", "GET");
