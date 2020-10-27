@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Header, Icon, Divider, Segment, Container, Grid, Table, Label } from 'semantic-ui-react';
+import { Header, Icon, Divider, Segment, Container, Grid, Table, Label, Transition } from 'semantic-ui-react';
 import { BACKEND } from '../config';
 import { useAPI, useWS } from '../hooks';
 import '../styles/MainPage.css';
@@ -24,12 +24,21 @@ const MainPage = () => {
   const [gameRank, getGameRank] = useAPI("json");
   const [list, getList] = useAPI("json");
   let listTime = null;
-  let namelist = <span>None</span>;
+  let namelist = null;
   const newPaperRank = useWS("new-paper-rank");
   const newRichRank = useWS("new-rich-rank");
   const newSeminarRank = useWS("new-seminar-rank");
   const newCompanyRank = useWS("new-company-rank");
   const newGameRank = useWS("new-game-rank");
+  const [paperIdx, setPaperIdx] = useState(0);
+  useEffect(() => {
+    const handle = setInterval(() => {
+      const newIdx = (paperIdx+1)%3;
+      setPaperIdx(-1);
+      setTimeout(() => setPaperIdx(newIdx), 550);
+    }, 11050)
+    return () => clearInterval(handle);
+  })
   const checkAmount = () => {
     check(
       BACKEND + "/ticket/avail",
@@ -72,41 +81,43 @@ const MainPage = () => {
   }
 
   const [rankLength, richLength] = [5, 10];
-  const paperRanks = themes.map(([key, title]) => (
-    <Segment key={key}>
-      <Grid.Row className="rank-title">
-        <Header as='h3'>
-          <Icon name='trophy' color="yellow" />
-          {title}
-        </Header>
-      </Grid.Row>
-      <Divider />
-      <Grid.Row>
-        <Table striped basic='very' className="rank-table">
-          <Table.Body>
-            {
-              paperRank.success || newPaperRank ?
-                (newPaperRank ? newPaperRank : paperRank.response)[key] ?
-                  (newPaperRank ? newPaperRank : paperRank.response)[key].slice(0, rankLength).map((paper, idx) => (
+  const paperRanks = themes.map(([key, title], idx) => (
+    <Transition visible={(idx%3) === paperIdx} animation='scale' duration={500} transitionOnMount={true} key={key}>
+      <Segment style={{marginTop: "0"}}>
+        <Grid.Row className="rank-title">
+          <Header as='h3'>
+            <Icon name='trophy' color="yellow" />
+            {title}
+          </Header>
+        </Grid.Row>
+        <Divider />
+        <Grid.Row>
+          <Table striped basic='very' className="rank-table">
+            <Table.Body>
+              {
+                paperRank.success || newPaperRank ?
+                  (newPaperRank ? newPaperRank : paperRank.response)[key] ?
+                    (newPaperRank ? newPaperRank : paperRank.response)[key].slice(0, rankLength).map((paper, idx) => (
+                      <Table.Row key={`${key}-${idx}`}>
+                        <Table.Cell>{idx + 1}</Table.Cell>
+                        <Table.Cell className="rank-author">{paper.authors}</Table.Cell>
+                        <Table.Cell>{paper.title}</Table.Cell>
+                      </Table.Row>
+                    ))
+                    :
+                    null
+                  :
+                  Array.apply(undefined, Array(rankLength)).map((_, idx) => (
                     <Table.Row key={`${key}-${idx}`}>
-                      <Table.Cell>{idx + 1}</Table.Cell>
-                      <Table.Cell className="rank-author">{paper.authors}</Table.Cell>
-                      <Table.Cell>{paper.title}</Table.Cell>
+                      <Table.Cell>{paperRank.error ? "Error..." : "Loading..."}</Table.Cell>
                     </Table.Row>
                   ))
-                  :
-                  null
-                :
-                Array.apply(undefined, Array(rankLength)).map((_, idx) => (
-                  <Table.Row key={`${key}-${idx}`}>
-                    <Table.Cell>{paperRank.error ? "Error..." : "Loading..."}</Table.Cell>
-                  </Table.Row>
-                ))
-            }
-          </Table.Body>
-        </Table>
-      </Grid.Row>
-    </Segment>
+              }
+            </Table.Body>
+          </Table>
+        </Grid.Row>
+      </Segment>
+    </Transition>
   ))
   const defaultRank = (someRank) => (
     <Table.Row>
@@ -171,12 +182,8 @@ const MainPage = () => {
     <div style={{width: "100%"}}>
       <Container style={{ marginTop: '1em', width: '95%' }}>
         <Grid stackable>
-          <Grid.Column width={5}>
-            {paperRanks.slice(0, 3)}
-          </Grid.Column>
-
-          <Grid.Column width={5}>
-            {paperRanks.slice(3)}
+          <Grid.Column width={10}>
+            {paperRanks}
           </Grid.Column>
 
           <Grid.Column width={3}>
