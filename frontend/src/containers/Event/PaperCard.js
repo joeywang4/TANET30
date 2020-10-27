@@ -1,33 +1,27 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useWS, useAPI } from '../../hooks';
 import { Link } from 'react-router-dom';
 import { Card, Button, Icon } from 'semantic-ui-react';
 import { BACKEND } from '../../config';
 
 const PaperCard = ({ paperId, eventId, title, authors, likes, likeState, content }) => {
   const { token } = useSelector(state => state.user);
-  const [ totalLikes, setTotalLikes ] = useState(likes);
   const [ userLikeState, setUserLikeState ] = useState(likeState);
   const [ hoverLikeState, setHoverLikeState ] = useState(likeState);
-  const [ useHoverState, setUseHoverState ] = useState(false)
+  const [ useHoverState, setUseHoverState ] = useState(false);
+  const [, updateLike] = useAPI();
+  const newLikes = useWS(`new-paper-likes-${paperId}`);
 
   const onClickLike = (newLikeState) => {
     if(newLikeState-userLikeState === 0) newLikeState = 0;
     console.log(newLikeState ? `clicked ${newLikeState}`: `cancel ${userLikeState}`);
-    fetch(BACKEND+"/event/like", {
-      method: "POST",
-      body: JSON.stringify({ eventId, paperId, likeState: newLikeState }),
-      headers: { authorization: token, 'content-type': "application/json" }
-    })
-    .then(res => {
-      if(res.status === 200) {
-        console.log('success');
-      }
-      else {
-        console.log('failed');
-      }
-    })
-    setTotalLikes(likes += newLikeState-likeState);
+    updateLike(
+      BACKEND+"/event/like", 
+      "POST", 
+      JSON.stringify({ eventId, paperId, likeState: newLikeState }), 
+      {'authorization': token, 'content-type': "application/json"}
+    );
     setUserLikeState(newLikeState);
     setHoverLikeState(newLikeState);
   }
@@ -40,7 +34,7 @@ const PaperCard = ({ paperId, eventId, title, authors, likes, likeState, content
     setUseHoverState(false);
     setHoverLikeState(0);
   }
-  // const hasOutline = content.outline ? true : false;
+  const totalLikes = newLikes?newLikes:likes;
 
   return (
     <Card fluid={content ? true : false}> 
@@ -53,7 +47,7 @@ const PaperCard = ({ paperId, eventId, title, authors, likes, likeState, content
       <Card.Content>
         <Card.Description>
           {content ? <span className='content'>{content.split('\n').map((val, idx) => 
-            <p id={idx}>
+            <p id={idx} key={idx}>
               {val}
             </p>
           )}</span> : 
@@ -68,7 +62,7 @@ const PaperCard = ({ paperId, eventId, title, authors, likes, likeState, content
         <br />
         {/* <Button circular active icon='thumbs up' size='mini' color='blue' /> */}
         <Icon name='like' color='red'/>
-        <span>{` ${totalLikes}`}</span>
+        <span>{totalLikes}</span>
       </Card.Content>
       <Card.Content extra>
         <div onMouseLeave={()=>unHover()} >
