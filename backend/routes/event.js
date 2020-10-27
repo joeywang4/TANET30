@@ -101,6 +101,7 @@ const getContent = async (id) => {
 
 router.get('/paperPage', async (req, res) => {
   if (!req.isLogin) {
+    let d = new Date();
     console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create event failed: Not login`);
     res.status(401).send("Not logged in");
     return;
@@ -142,6 +143,7 @@ router.get('/paperPage', async (req, res) => {
 
 router.get('/page', async (req, res) => {
   if (!req.isLogin) {
+    let d = new Date();
     console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create event failed: Not login`);
     res.status(401).send("Not logged in");
     return;
