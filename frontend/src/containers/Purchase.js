@@ -78,7 +78,7 @@ const Purchase = () => {
       alignItems: "center"
     }}>
       <QrReader
-        delay={300}
+        delay={100}
         onError={handleError}
         onScan={handleScan}
         style={{maxWidth: "500px", width: "100%"}}
