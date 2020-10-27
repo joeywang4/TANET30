@@ -136,8 +136,10 @@ export default () => {
         <CardGroup stackable>
           {availTickets.map(({owner}) => (
             <Card key={owner._id} link>
-              <Card.Header as='h3'>{owner.name}</Card.Header>
-              <Card.Meta>{owner.email}</Card.Meta>
+              <Card.Content>
+                <Card.Header as='h3'>{owner.name}</Card.Header>
+                <Card.Meta>{owner.email}</Card.Meta>
+              </Card.Content>
             </Card>
           ))}
         </CardGroup>
@@ -148,12 +150,14 @@ export default () => {
         <CardGroup stackable>
           {usedTickets.map(({owner, usedTime}) => (
             <Card key={owner._id} link>
-              <Card.Header as='h3'>{owner.name}</Card.Header>
-              <Card.Meta>
-                {usedDate(usedTime)}
-                <br />
-                {owner.email}
-              </Card.Meta>
+              <Card.Content>
+                <Card.Header as='h3'>{owner.name}</Card.Header>
+                <Card.Meta>
+                  {usedDate(usedTime)}
+                  <br />
+                  {owner.email}
+                </Card.Meta>
+              </Card.Content>
             </Card>
           ))}
         </CardGroup>
