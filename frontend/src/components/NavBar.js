@@ -59,6 +59,10 @@ function NavBar({ hasLoggedin, name, userGroup, logout }) {
         <Icon name='user' />
         {name}
       </Menu.Item>
+      <Menu.Item as={Link} onClick={hide} to="/">
+        <Icon name='home' color="olive" />
+        Info
+      </Menu.Item>
       <Menu.Item as={Link} onClick={hide} to="/participatedEvents">
         <Icon name='list' color="teal" />
         Events
