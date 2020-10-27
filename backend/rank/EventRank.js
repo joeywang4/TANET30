@@ -51,9 +51,10 @@ class EventRank extends Rank {
       return;
     }
     this.events = events.map(event => ({ ...(event._doc), name: this.shortName(event.name), participant: event.participant.length }))
+    .filter(event => !(event.admin.email.startsWith("daily")))
     .filter(event => event.participant !== 0)
     .filter(event => event.date === this.today());
-   this.sort();
+    this.sort();
   }
 
   constructor() {
