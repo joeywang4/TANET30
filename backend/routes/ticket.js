@@ -12,7 +12,7 @@ const today = () => {
   const [{ value: mm },,{ value: dd },,{ value: yy }] = dtf.formatToParts(d);
   return `${yy}-${mm}-${dd}`;
 }
-const [EXPIRED, INVALID_LUNCH, INVALID_DINNER, OK] = [1, 2, 3, 4];
+const [EXPIRED, INVALID_DATE, INVALID_LUNCH, INVALID_DINNER, OK] = [1, 2, 3, 4, 5];
 
 function checkTime( postUser, ticketTime, ticketType ){
   const d = new Date();
@@ -30,6 +30,13 @@ function checkTime( postUser, ticketTime, ticketType ){
     (ticketYear === nowYear && ticketMonth === nowMonth && ticketDay < nowDay)
   ) {
     return EXPIRED;
+  }
+  if (
+    ticketYear > nowYear ||
+    (ticketYear === nowYear && ticketMonth > nowMonth) ||
+    (ticketYear === nowYear && ticketMonth === nowMonth && (ticketDay !== 28 && ticketDay !== 29 && ticketDay !== 30))
+  ) {
+    return INVALID_DATE;
   }
   //condition for adding meal today
   if (
@@ -82,6 +89,7 @@ router.post("/give", async (req, res) => {
     case OK: break;
     default:
     case EXPIRED: res.status(400).send("Expired date!"); return;
+    case INVALID_DATE: res.status(400).send("Invalid date!"); return;
     case INVALID_LUNCH: res.status(400).send("Too late to request a lunch ticket"); return;
     case INVALID_DINNER: res.status(400).send("Too late to request a dinner ticket"); return;
   }
