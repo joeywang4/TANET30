@@ -27,9 +27,7 @@ const PaperPage = ({ id, info }) => {
   else if (connection.success) {
     return ( content&&info&&info.hasInfo ? 
       <Card.Group style={{marginTop: "2em", width: "80%"}}>
-        <PaperCard paperId={id.substring(24)} eventId={id.substring(0,24)} title={info.title} authors={info.authors} likes={info.likes} likeState={info.likeState} content={content}>
-          {id}
-        </PaperCard>
+        <PaperCard paperId={id.substring(24)} eventId={id.substring(0,24)} title={info.title} authors={info.authors} likes={info.likes} likeState={info.likeState} content={content} />
         <Card fluid> 
           <Card.Content>
             <DiscussionEmbed

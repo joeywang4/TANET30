@@ -2,8 +2,19 @@ const express = require("express");
 const router = express.Router();
 const Ticket = require("../models/ticket");
 const User = require("../models/user");
-const fs = require('fs').promises;
+const fs = require('fs');
 const path = require("path");
+
+// Load meal boxes data from config.json
+let MealBoxes = undefined;
+try {
+  const data = fs.readFileSync(path.resolve(__dirname, '../config.json'));
+  MealBoxes = JSON.parse(data).MealBoxes;
+}
+catch(err) {
+  console.log(err);
+  console.log("[!] Load MealBoxes from config.json failed");
+}
 
 const re = /(\d{4})-([0-1]\d{1})-([0-3]\d{1})/;
 const today = () => {
@@ -51,6 +62,29 @@ function checkTime( postUser, ticketTime, ticketType ){
     }
   }
   return OK;
+}
+
+const leftMeal = async () => {
+  const total_m = MealBoxes.Meat;
+  const total_v = MealBoxes.Vegan;
+  const type = MealBoxes.Type;
+  const date = MealBoxes.Date;
+  const type_v = type === "lunch" ? "lunch(vegan)" : "dinner(vegan)";
+
+  let tickets = await Ticket.find({type, date})
+  .then(ticket => ticket)
+  .catch(err => {errHandler(err); return [];});
+  let vtickets = await Ticket.find({type: type_v, date})
+  .then(ticket => ticket)
+  .catch(err => {errHandler(err); return [];});
+
+  let usedTicketCount = tickets.reduce((count, ticket) => count + (ticket.usedTime === 0?0:1), 0);
+  let usedVticketCount = vtickets.reduce((count, ticket) => count + (ticket.usedTime === 0?0:1), 0);
+  return {"meat": total_m - usedTicketCount, "vegan": total_v - usedVticketCount};
+}
+const broadcastLeftMeal = async io => {
+  const leftData = await leftMeal();
+  io.emit("new-meal-count", leftData);
 }
 
 router.post("/give", async (req, res) => {
@@ -146,6 +180,7 @@ router.post("/use", async (req, res) => {
   ticket.usedTime = Date.now();
   await ticket.save();
   res.status(200).send(ticket.owner);
+  broadcastLeftMeal(req.app.get('io'));
   return;
 })
 
@@ -179,57 +214,21 @@ router.post("/delete", async (req, res) => {
 
 
 router.get("/avail", async (req, res) => {
-  
-  let entries = null;
-  try {
-    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
-    entries = JSON.parse(data);
-  }
-  catch(err) {
-    console.log(err);
-    res.status(400).send("Read File Error");
-    return;
-  }
-  if (!entries.MealBoxes) {
+  if (MealBoxes === undefined) {
     res.status(404).send("File Missing MealBoxes");
     return;
   }
-  if (Object.keys(entries.MealBoxes).length !== 4) {
+  if (Object.keys(MealBoxes).length !== 4) {
     res.status(404).send("File Missing MealBoxes Data");
     return;
   }
 
-  if (entries.MealBoxes.Date !== today()) {
+  if (MealBoxes.Date !== today()) {
     res.status(200).send({"meat": "待更新", "vegan": "待更新"});
     return;
   }
-  const total_m = entries.MealBoxes.Meat;
-  const total_v = entries.MealBoxes.Vegan;
-  const type = entries.MealBoxes.Type;
-  const date = entries.MealBoxes.Date;
-  const type_v = type === "lunch" ? "lunch(vegan)" : "dinner(vegan)";
-  let tickets = await Ticket.find({type, date})
-  .then(ticket => ticket)
-  .catch(err => errHandler(err));
-  let vtickets = await Ticket.find({type: type_v, date})
-  .then(ticket => ticket)
-  .catch(err => errHandler(err));
-  let ticket = tickets.filter(ticket => ticket.usedTime !== 0)
-  let vticket = vtickets.filter(ticket => ticket.usedTime !== 0);
-  let left_m, left_v;
-  if(!ticket || ticket.length===0){
-    left_m = total_m;
-  }
-  else {
-    left_m = total_m - ticket.length;
-  }
-  if (!vticket || vticket.length === 0) {
-    left_v = total_v;
-  }
-  else {
-    left_v = total_v - vticket.length;
-  }
-  res.status(200).send({"meat": left_m, "vegan": left_v});
+  const leftData = await leftMeal();
+  res.status(200).send(leftData);
   return;
 })
 
@@ -269,7 +268,7 @@ router.post("/amount", async (req, res) => {
   }
   let entries = null;
   try {
-    const data = await fs.readFile(path.resolve(__dirname, '../config.json'));
+    const data = await fs.promises.readFile(path.resolve(__dirname, '../config.json'));
     entries = JSON.parse(data);
   }
   catch(err) {
@@ -292,10 +291,12 @@ router.post("/amount", async (req, res) => {
   }
   entries.MealBoxes.Date = date;
   entries.MealBoxes.Type = type;
-  entries.MealBoxes.Meat = String(meat);
-  entries.MealBoxes.Vegan = String(vegan);
-  fs.writeFile(path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2));
+  entries.MealBoxes.Meat = meat;
+  entries.MealBoxes.Vegan = vegan;
+  MealBoxes = entries.MealBoxes;
+  await fs.promises.writeFile(path.resolve(__dirname, '../config.json'), JSON.stringify(entries, null, 2));
   res.status(200).send("Update mealboxes amount success");
+  broadcastLeftMeal(req.app.get('io'));
   return;
 })
 

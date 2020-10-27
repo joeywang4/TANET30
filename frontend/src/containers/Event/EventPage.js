@@ -31,9 +31,7 @@ const EventPage = ({ eventId, url, id, title }) => {
       <Card.Group style={{marginTop: "2em", width: "80%"}}>
         {papers.map(
           (paper, idx) => (
-            <PaperCard key={idx} paperId={paper.paperId} eventId={eventId} title={paper.paperTitle} authors={paper.paperAuthors} likes={paper.totalLikes} likeState={paper.likeState} content={paper.content}>
-              {paper.paperId}
-            </PaperCard>
+            <PaperCard key={idx} paperId={paper.paperId} eventId={eventId} title={paper.paperTitle} authors={paper.paperAuthors} likes={paper.totalLikes} likeState={paper.likeState} content={paper.content} />
           )
         )}
         <Card fluid> 

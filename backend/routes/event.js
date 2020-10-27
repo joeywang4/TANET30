@@ -10,6 +10,14 @@ const mongoose = require("mongoose");
 const fs = require("fs").promises;
 const path = require("path");
 
+const updateLikes = async (io, paperId) => {
+  const likes = await Like.find({ paper: paperId })
+  .then(likes => likes)
+  .catch(() => []);
+  const likeCount = likes.reduce((sum, like) => sum+like.state, 0);
+  io.emit(`new-paper-likes-${paperId}`, likeCount);
+}
+
 router.post('/', async (req, res) => {
   let d = new Date();
   if (!req.isLogin) {
@@ -181,13 +189,13 @@ router.get('/page', async (req, res) => {
     return { paperId, paperTitle, paperAuthors, likeState, totalLikes };
   };
 
-  const likeResponseAry = await Promise.all(papers.map(paper => {
+  const likeResponseAry = await Promise.all(papers.map(async paper => {
     const { _id: paperId, authors: paperAuthors, title: paperTitle } = paper;
-    return Like.find({ event: event._id, paper: paperId })
-      .then( async likes => (
+    return await Like.find({ event: event._id, paper: paperId })
+      .then(likes => (
         {
           ...likeResponse(paperId, paperTitle, paperAuthors, userId, likes),
-          content: false//await getContent(`${event._id}${paperId}`)
+          content: false
         }
       ))
       .catch(err => errHandler(err, res))
@@ -195,7 +203,6 @@ router.get('/page', async (req, res) => {
 
   if (likeResponseAry.length === papers.length) {
     res.status(200).send(likeResponseAry);
-    return;
   }
   else {
     res.status(500).send("Query like state failed");
@@ -470,7 +477,6 @@ router.post('/like', async (req, res) => {
     return;
   }
 
-
   const p = await Paper.findById(paperId)
     .then(p => p?p:false)
     .catch(err => {
@@ -493,12 +499,13 @@ router.post('/like', async (req, res) => {
     .then(doc => doc.upserted)
     .catch(err => errHandler(err));
   if(upserted !== undefined) {
-    const newTx = TX({  to: userId, info: `Rated paper: ${p.title}`, amount: 2, timestamp: d.getTime() })
+    const newTx = TX({ to: userId, info: `Rated paper: ${p.title}`, amount: 2, timestamp: d.getTime() })
     await newTx.save()
       .then(_ => true)
       .catch(err => errHandler(err));
   }
   res.status(200).send({ id: userId, event: eventId, paper: paperId, likeState });
+  updateLikes(req.app.get('io'), paperId);
 })
 
 router.post('/addPaper', async (req, res) => {

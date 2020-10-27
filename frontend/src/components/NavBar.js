@@ -117,7 +117,7 @@ function NavBar({ hasLoggedin, name, userGroup, logout }) {
 
   return (
     <div className="navbar">
-      <Image src="logo.png" as='a' href='/' size='medium' className="logo" />
+      <Image src="/logo.png" as='a' href='/' size='medium' className="logo" />
       {hasLoggedin
         ?
         mainBar
