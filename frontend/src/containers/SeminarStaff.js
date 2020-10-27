@@ -138,12 +138,14 @@ export default () => {
         <CardGroup stackable>
           {seminar.participant.map((participant) => (
             <Card key={participant.user._id} link>
-              <Card.Header as='h3'>{participant.user.name}</Card.Header>
-              <Card.Meta>
-                {participant.user.email}
-                <br/>
-                {usedDate(participant.usedTime)}
-              </Card.Meta>
+              <Card.Content>
+                <Card.Header as='h3'>{participant.user.name}</Card.Header>
+                <Card.Meta>
+                  {participant.user.email}
+                  <br/>
+                  {usedDate(participant.usedTime)}
+                </Card.Meta>
+              </Card.Content>
             </Card>
           ))}
         </CardGroup>
