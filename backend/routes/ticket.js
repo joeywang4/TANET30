@@ -236,6 +236,7 @@ router.get("/avail", async (req, res) => {
 router.get("/", async (req, res) => {
   if(!(req.isLogin)) {
     res.status(401).send("Not authorized");
+    return;
   }
   let query = {...req.query};
   let populate = req.query.populate;

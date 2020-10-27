@@ -33,10 +33,10 @@ class RichRank extends Rank {
 
     // Update data
     const TXs = await TX.find().then(TXs => TXs).catch(() => {
-      this.logError("Get transactions error");
+      this.logError("RichRank: Get transactions error");
     })
     const Users = await User.find({'group': 'user'}, 'name').then(users => users).catch(() => {
-      this.logError("Get users error");
+      this.logError("RichRank: Get users error");
     })
     if (!TXs || !Users) {
       this.running = false;

@@ -44,7 +44,7 @@ class EventRank extends Rank {
     .populate('admin', "_id name email group sector")
     .then(events => events)
     .catch(() => {
-      this.logError("Get events error");
+      this.logError("EventRank: Get events error");
     })
     if (!events) {
       this.running = false;

@@ -578,8 +578,7 @@ router.post('/addPaper', async (req, res) => {
   //create content file(in name and in id)
   const path = `./papers/filesInId/${event._id}`;
   const createPaperFile = async () => {
-    await fs.writeFile(`${path}/${paperUpdated.id}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
-    // await fs.writeFile(`./papers/filesInName/${eventName}/${paperTitle.split(' ').join()}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
+    await fs.writeFile(`${path}/${paperUpdated.id}.txt`, `${paperContent}`);
     res.status(200).send(`Write ${paperTitle}'s content file in ${eventName} success`);
   }
   fs.mkdir(path, { recursive: true })

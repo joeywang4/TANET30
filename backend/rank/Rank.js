@@ -21,7 +21,7 @@ class Rank {
   }
 
   logError = (args) => {
-    console.error(args);
+    console.error("[!]", args);
   }
 
   constructor() {
