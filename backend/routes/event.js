@@ -365,7 +365,7 @@ const participate = async (res, now, event, userId) => {
   let d = now.getTime();
   
   let samePeriod = false;
-  if(event.period > 0) {
+  if(event.period > 0 && event.admin.group === "seminarStaff") {
     samePeriod = await Record.findOne({ user: userId, date: event.date, period: event.period }, (err, rec) => {
       if (rec) return true;
       else if (err) {
