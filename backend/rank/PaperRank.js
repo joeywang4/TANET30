@@ -36,10 +36,10 @@ class PaperRank extends Rank {
 
     // Update data
     const papers = await Paper.find().then(papers => papers).catch(() => {
-      this.logError("Get papers error");
+      this.logError("PaperRank: Get papers error");
     })
     const likes = await Like.find().then(likes => likes).catch(() => {
-      this.logError("Get likes error");
+      this.logError("PaperRank: Get likes error");
     })
     if (!papers || !likes) {
       this.running = false;

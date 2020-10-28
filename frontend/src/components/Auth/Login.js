@@ -57,7 +57,7 @@ const LoginForm = ({hasLoggedIn, login}) => {
           <Header.Content>Login With QR-Code</Header.Content>
         </Header>
         <QrReader
-          delay={300}
+          delay={100}
           onError={onError}
           onScan={onLoad}
           style={{maxWidth: "500px", width: "100%", margin: "auto"}}

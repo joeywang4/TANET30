@@ -12,6 +12,7 @@ import UpdateMeals from './UpdateMeals';
 import ViewAllMeals from './ViewAllMeals';
 import NewUserHandler from './FileHandler/NewUserHandler';
 import ExportUserHandler from './FileHandler/ExportUserHandler';
+import ExportUserURLHandler from './FileHandler/ExportUserURLHandler';
 import CreatePaperHandler from './FileHandler/CreatePaperHandler';
 import PriceTableHandler from './FileHandler/PriceTableHandler';
 import NewEventHandler from './FileHandler/NewEventHandler';
@@ -33,6 +34,7 @@ export {
   ViewAllMeals,
   NewUserHandler,
   ExportUserHandler,
+  ExportUserURLHandler,
   PriceTableHandler,
   CreatePaperHandler,
   NewEventHandler,

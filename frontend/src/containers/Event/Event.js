@@ -62,7 +62,7 @@ const Event = ({ eventId, style }) => {
     case 'Checkin user':
       display = (
         <QrReader
-          delay={300}
+          delay={100}
           onError={onError}
           onScan={onScan}
           style={{ maxWidth: "500px", width: "100%", margin: "auto" }}

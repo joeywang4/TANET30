@@ -101,6 +101,7 @@ const getContent = async (id) => {
 
 router.get('/paperPage', async (req, res) => {
   if (!req.isLogin) {
+    let d = new Date();
     console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create event failed: Not login`);
     res.status(401).send("Not logged in");
     return;
@@ -142,6 +143,7 @@ router.get('/paperPage', async (req, res) => {
 
 router.get('/page', async (req, res) => {
   if (!req.isLogin) {
+    let d = new Date();
     console.log(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] Create event failed: Not login`);
     res.status(401).send("Not logged in");
     return;
@@ -363,7 +365,7 @@ const participate = async (res, now, event, userId) => {
   let d = now.getTime();
   
   let samePeriod = false;
-  if(event.period > 0) {
+  if(event.period > 0 && event.admin.group === "seminarStaff") {
     samePeriod = await Record.findOne({ user: userId, date: event.date, period: event.period }, (err, rec) => {
       if (rec) return true;
       else if (err) {
@@ -578,8 +580,7 @@ router.post('/addPaper', async (req, res) => {
   //create content file(in name and in id)
   const path = `./papers/filesInId/${event._id}`;
   const createPaperFile = async () => {
-    await fs.writeFile(`${path}/${paperUpdated.id}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
-    // await fs.writeFile(`./papers/filesInName/${eventName}/${paperTitle.split(' ').join()}.txt`, `${paperContent}`);  //if paperTitle is unique, paperId can change to paperTitle
+    await fs.writeFile(`${path}/${paperUpdated.id}.txt`, `${paperContent}`);
     res.status(200).send(`Write ${paperTitle}'s content file in ${eventName} success`);
   }
   fs.mkdir(path, { recursive: true })

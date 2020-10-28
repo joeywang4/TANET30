@@ -10,7 +10,8 @@ class EventRank extends Rank {
   isCompany = user => user.group === "company" && !user.email.startsWith("game");
   isGame = user => user.group === "company" && user.email.startsWith("game");
   shortName = name => {
-    const dayIdx = name.indexOf("_Day");
+    let dayIdx = name.indexOf("_Day");
+    if ( dayIdx === -1) dayIdx = name.indexOf("_day");
     return dayIdx === -1?name:name.substring(0, dayIdx);
   }
   today = () => {
@@ -44,16 +45,17 @@ class EventRank extends Rank {
     .populate('admin', "_id name email group sector")
     .then(events => events)
     .catch(() => {
-      this.logError("Get events error");
+      this.logError("EventRank: Get events error");
     })
     if (!events) {
       this.running = false;
       return;
     }
     this.events = events.map(event => ({ ...(event._doc), name: this.shortName(event.name), participant: event.participant.length }))
+    .filter(event => !(event.admin.email.startsWith("daily")))
     .filter(event => event.participant !== 0)
     .filter(event => event.date === this.today());
-   this.sort();
+    this.sort();
   }
 
   constructor() {

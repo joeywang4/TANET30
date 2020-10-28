@@ -21,7 +21,8 @@ class Rank {
   }
 
   logError = (args) => {
-    console.error(args);
+    let d = new Date();
+    console.error(`[${d.toLocaleDateString()}, ${d.toLocaleTimeString()}] [!]`, args);
   }
 
   constructor() {
