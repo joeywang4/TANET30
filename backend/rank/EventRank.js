@@ -10,7 +10,8 @@ class EventRank extends Rank {
   isCompany = user => user.group === "company" && !user.email.startsWith("game");
   isGame = user => user.group === "company" && user.email.startsWith("game");
   shortName = name => {
-    const dayIdx = name.indexOf("_Day");
+    let dayIdx = name.indexOf("_Day");
+    if ( dayIdx === -1) dayIdx = name.indexOf("_day");
     return dayIdx === -1?name:name.substring(0, dayIdx);
   }
   today = () => {
