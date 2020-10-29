@@ -30,13 +30,14 @@ const MainPage = () => {
   const newSeminarRank = useWS("new-seminar-rank");
   const newCompanyRank = useWS("new-company-rank");
   const newGameRank = useWS("new-game-rank");
-  const [paperIdx, setPaperIdx] = useState(0);
+  const [showIdx, setShowIdx] = useState(0);
+  const duration = 500;
   useEffect(() => {
     const handle = setInterval(() => {
-      const newIdx = (paperIdx+1)%3;
-      setPaperIdx(-1);
-      setTimeout(() => setPaperIdx(newIdx), 550);
-    }, 11050)
+      const newIdx = showIdx+1;
+      setShowIdx(-1);
+      setTimeout(() => setShowIdx(newIdx), duration+1);
+    }, 10000+2*duration)
     return () => clearInterval(handle);
   })
   const checkAmount = () => {
@@ -72,7 +73,6 @@ const MainPage = () => {
     namelist = (
       userslist.map((user, index) => (
         <Table.Row>
-          <Table.Cell>{index}</Table.Cell>
           <Table.Cell>{user.name}</Table.Cell>
           <Table.Cell>{user.sector}</Table.Cell>
         </Table.Row>
@@ -80,9 +80,9 @@ const MainPage = () => {
     );
   }
 
-  const [rankLength, richLength] = [5, 10];
+  const [rankLength, eventRankLength, richLength] = [5, 10, 15];
   const paperRanks = themes.map(([key, title], idx) => (
-    <Transition visible={(idx%3) === paperIdx} animation='scale' duration={500} transitionOnMount={true} key={key}>
+    <Transition visible={(Math.floor(idx/3) === (showIdx&1)) && showIdx >= 0} animation='scale' duration={duration} transitionOnMount={true} key={key}>
       <Segment style={{marginTop: "0"}}>
         <Grid.Row className="rank-title">
           <Header as='h3'>
@@ -146,11 +146,11 @@ const MainPage = () => {
     }
   }
   let eventRanks = [[seminarRank, newSeminarRank, "議程"], [companyRank, newCompanyRank, "攤位"], [gameRank, newGameRank, "遊戲"]]
-    .map(([someRank, newRank, title]) => {
+    .map(([someRank, newRank, title], idx) => {
       let rows = defaultRank(someRank);
       if (someRank.success || newRank) {
         const data = newRank ? newRank : someRank.response;
-        rows = data.slice(0, rankLength).map((event, idx) => (
+        rows = data.slice(0, eventRankLength).map((event, idx) => (
           <Table.Row key={`${title}-${idx}`}>
             <Table.Cell width={12}>{event.name}</Table.Cell>
             <Table.Cell width={4} textAlign="right">{event.participant}人</Table.Cell>
@@ -158,23 +158,25 @@ const MainPage = () => {
         ));
       }
       return (
-        <Segment key={title}>
-          <Grid.Row className="rank-title">
-            <Header as='h3'>
-              <Icon name='fire' color='red' />
-                最熱門{title}
-            </Header>
-          </Grid.Row>
-          <Divider>
-          </Divider>
-          <Grid.Row style={{ paddingLeft: "1em" }}>
-            <Table basic='very' className="rank-table">
-              <Table.Body>
-                {rows}
-              </Table.Body>
-            </Table>
-          </Grid.Row>
-        </Segment>
+        <Transition visible={(idx === (showIdx%3)) && showIdx >= 0} animation='scale' duration={duration} transitionOnMount={true} key={title}>
+          <Segment style={{marginTop: "0"}}>
+            <Grid.Row className="rank-title">
+              <Header as='h3'>
+                <Icon name='fire' color='red' />
+                  最熱門{title}
+              </Header>
+            </Grid.Row>
+            <Divider>
+            </Divider>
+            <Grid.Row style={{ paddingLeft: "1em" }}>
+              <Table basic='very' className="rank-table">
+                <Table.Body>
+                  {rows}
+                </Table.Body>
+              </Table>
+            </Grid.Row>
+          </Segment>
+        </Transition>
       )
     })
 
@@ -184,10 +186,6 @@ const MainPage = () => {
         <Grid stackable>
           <Grid.Column width={10}>
             {paperRanks}
-          </Grid.Column>
-
-          <Grid.Column width={3}>
-            {eventRanks}
           </Grid.Column>
 
           <Grid.Column width={3}>
@@ -214,62 +212,69 @@ const MainPage = () => {
                 </Table>
               </Grid.Row>
             </Segment>
-            <Segment>
-              <Grid.Row className="rank-title">
-                <Header as='h3'>
-                  <Icon name='chess queen' color="yellow" />
-                  大富翁
-                </Header>
-              </Grid.Row>
-              <Divider />
-              <Grid.Row style={{ paddingLeft: "1em" }}>
-                <Table basic='very' className="rank-table">
-                  <Table.Body>
-                    {richRanks}
+            {eventRanks}
+          </Grid.Column>
+
+          <Grid.Column width={3}>
+            <Transition visible={(showIdx&1) === 0 && showIdx >= 0} animation='scale' duration={duration} transitionOnMount={true}>
+              <Segment style={{marginTop: "0"}}>
+                <Grid.Row className="rank-title">
+                  <Header as='h3'>
+                    <Icon name='chess queen' color="yellow" />
+                    大富翁
+                  </Header>
+                </Grid.Row>
+                <Divider />
+                <Grid.Row style={{ paddingLeft: "1em" }}>
+                  <Table basic='very' className="rank-table">
+                    <Table.Body>
+                      {richRanks}
+                    </Table.Body>
+                    {
+                      userId && userGroup === 'user' ?
+                        <Table.Footer>
+                          <Table.Row>
+                            <Table.HeaderCell>
+                              <Label ribbon>
+                                {userRank}
+                              </Label>
+                            </Table.HeaderCell>
+                            <Table.HeaderCell style={{ fontWeight: "bold" }}>
+                              YOU
+                          </Table.HeaderCell>
+                            <Table.HeaderCell style={{ fontWeight: "bold" }}>
+                              ${userAmount}
+                            </Table.HeaderCell>
+                          </Table.Row>
+                        </Table.Footer>
+                        : null
+                    }
+                  </Table>
+                </Grid.Row>
+              </Segment>
+            </Transition>
+            <Transition visible={(showIdx&1) === 1 && showIdx >= 0} animation='scale' duration={duration} transitionOnMount={true}>
+              <Segment style={{marginTop: "0"}}>
+                <Grid.Row style={{ textAlign: 'center', paddingTop: "1em", fontFamily: "Verdana" }}>
+                  <Header as='h3'>
+                    <Icon name='ticket' />
+                可參加抽獎名單
+              </Header>
+                </Grid.Row>
+                <Divider horizontal style={{ fontWeight: 'normal' }}>
+                  更新時間：{listTime}
+                </Divider>
+                <Table striped basic='very' style={{ paddingLeft: "1em", paddingRight: "1.3em", paddingBottom: "1em" }}>
+                  <Table.Body style={{ fontSize: "1.2em" }}>
+                    <Table.Row style={{ color: "gray" }}>
+                      <Table.Cell>姓名</Table.Cell>
+                      <Table.Cell>所屬單位</Table.Cell>
+                    </Table.Row>
+                    {namelist}
                   </Table.Body>
-                  {
-                    userId && userGroup === 'user' ?
-                      <Table.Footer>
-                        <Table.Row>
-                          <Table.HeaderCell>
-                            <Label ribbon>
-                              {userRank}
-                            </Label>
-                          </Table.HeaderCell>
-                          <Table.HeaderCell style={{ fontWeight: "bold" }}>
-                            YOU
-                        </Table.HeaderCell>
-                          <Table.HeaderCell style={{ fontWeight: "bold" }}>
-                            ${userAmount}
-                          </Table.HeaderCell>
-                        </Table.Row>
-                      </Table.Footer>
-                      : null
-                  }
                 </Table>
-              </Grid.Row>
-            </Segment>
-            <Segment>
-              <Grid.Row style={{ textAlign: 'center', paddingTop: "1em", fontFamily: "Verdana" }}>
-                <Header as='h3'>
-                  <Icon name='ticket' />
-              可參加抽獎名單
-            </Header>
-              </Grid.Row>
-              <Divider horizontal style={{ fontWeight: 'normal' }}>
-                更新時間：{listTime}
-              </Divider>
-              <Table striped basic='very' style={{ paddingLeft: "1em", paddingRight: "1.3em", paddingBottom: "1em" }}>
-                <Table.Body style={{ fontSize: "1.2em" }}>
-                  <Table.Row style={{ color: "gray" }}>
-                    <Table.Cell>序號</Table.Cell>
-                    <Table.Cell>姓名</Table.Cell>
-                    <Table.Cell>所屬單位</Table.Cell>
-                  </Table.Row>
-                  {namelist}
-                </Table.Body>
-              </Table>
-            </Segment>
+              </Segment>
+            </Transition>
           </Grid.Column>
         </Grid>
       </Container>

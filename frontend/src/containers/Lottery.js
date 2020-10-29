@@ -42,13 +42,6 @@ export default () => {
   }
 
   const onFilter = () => {
-    updateThresholds(courseThreshold, companyThreshold);
-    resetList(
-      BACKEND + "/event/clearList",
-      "POST",
-      null,
-      { 'authorization': token, 'content-type': "application/json" }
-    )
     let id_to_user = {};
     let id_to_count = {}; // id -> [courseCount, companyCount]
     let id_to_period = {} // id -> [period 1 ... period 8]
@@ -111,6 +104,13 @@ export default () => {
   }
 
   const onSet = () => {
+    updateThresholds(courseThreshold, companyThreshold);
+    resetList(
+      BACKEND + "/event/clearList",
+      "POST",
+      null,
+      { 'authorization': token, 'content-type': "application/json" }
+    )
     if(list != null){
       UpdateList(list);
       setConfirm(true);

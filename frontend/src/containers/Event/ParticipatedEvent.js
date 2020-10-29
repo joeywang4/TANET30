@@ -17,7 +17,7 @@ const ParticipatedEvent = () => {
   const { token } = useSelector(state => state.user);
   const [connection, connect] = useAPI("json");
   const [checkBar, check] = useAPI("text");
-  const [ date, setDate ] = useState("ALL");
+  const [ date, setDate ] = useState(0);
 
   if (connection.isInit()) {
     connect(
@@ -80,6 +80,7 @@ const ParticipatedEvent = () => {
         </div>
       )
     }
+    const sortedEvents = connection.response.sort((eventA, eventB) => eventB['participant'][0]['usedTime'] - eventA['participant'][0]['usedTime']);
     return (
       <div style={{marginTop: "2em", width: "80%"}}>
         <UserHead />
@@ -114,7 +115,7 @@ const ParticipatedEvent = () => {
         <div>
           <CardGroup stackable style={{marginTop: "1em"}}>
             {
-              connection.response.map(({name, _id, reward, participant}) => {
+              sortedEvents.map(({name, _id, reward, participant}) => {
                 if( usedDate(participant[0].usedTime).slice(5, 10) === String(`10-${date+27}`) || date === 0){
                   return <EventLink key={_id} name={name} id={_id} time={participant[0].usedTime} reward={reward} />
                 }
