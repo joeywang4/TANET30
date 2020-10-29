@@ -23,8 +23,11 @@ const MainPage = () => {
   const [companyRank, getCompanyRank] = useAPI("json");
   const [gameRank, getGameRank] = useAPI("json");
   const [list, getList] = useAPI("json");
+  const [checkBar, bar] = useAPI("text");
   let listTime = null;
   let namelist = null;
+  let courseBar = null;
+  let companyBar = null;
   const newPaperRank = useWS("new-paper-rank");
   const newRichRank = useWS("new-rich-rank");
   const newSeminarRank = useWS("new-seminar-rank");
@@ -44,6 +47,7 @@ const MainPage = () => {
   }
   const meatAmount = newMealAmount?newMealAmount.meat:(checkState.success ? checkState.response.meat : "");
   const veganAmount = newMealAmount?newMealAmount.vegan:(checkState.success ? checkState.response.vegan : "");
+  
 
   if (checkState.isInit()) checkAmount();
   if (paperRank.isInit()) getPaperRank(BACKEND + "/rank/paper", "GET");
@@ -51,6 +55,14 @@ const MainPage = () => {
   if (seminarRank.isInit()) getSeminarRank(BACKEND + "/rank/seminar", "GET");
   if (companyRank.isInit()) getCompanyRank(BACKEND + "/rank/company", "GET");
   if (gameRank.isInit()) getGameRank(BACKEND + "/rank/game", "GET");
+  if (checkBar.isInit()) {
+    bar(
+      BACKEND + "/event/thresholds",
+      "GET",
+      null,
+      { 'authorization': token, 'content-type': "application/json" }
+    )
+  }
   if (list.isInit()) {
     getList(
       BACKEND + "/event/namelist",
@@ -59,10 +71,13 @@ const MainPage = () => {
       { 'authorization': token, 'content-type': "application/json" }
     );
   }
-  if (list.success) {
+  if (list.success && checkBar.success) {
     const result = list.response;
     listTime = result.Date;
     const userslist = result.Users;
+    const bars = JSON.parse(checkBar.response);
+    courseBar = bars.CourseBar;
+    companyBar = bars.CompanyBar;
 
     if(!userslist) {
       namelist = (
@@ -263,6 +278,9 @@ const MainPage = () => {
           </Grid.Row>
           <Divider horizontal style={{ fontWeight: 'normal' }}>
             更新時間：{listTime}
+            <br />
+            <br />
+            抽獎資格： 議程(不同時段)數：{courseBar}， 廠商攤位：{companyBar} 
           </Divider>
           <Table striped basic='very' style={{ paddingLeft: "1em", paddingRight: "1.3em", paddingBottom: "1em" }}>
             <Table.Body style={{ fontSize: "1.2em" }}>

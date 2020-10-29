@@ -37,15 +37,29 @@ const ParticipatedEvent = () => {
   }
 
   //return the number of course events
-  const countCourses = events => events.filter(event => event.admin.group === "seminarStaff").length;
+  // const countCourses = events => events.filter(event => event.admin.group === "seminarStaff").length;
+  const countSemCourses = (events) => {
+    let ret = 0;
+    const semevents = events.filter(event => event.admin.group === "seminarStaff");
+    let period = [0,0,0,0,0,0,0,0];
+    for (let event of semevents) {
+      if (!period[event.period]) {
+        ret += 1;
+        period[event.period] = 1;
+      }
+    }
+    return ret;
+  }
+
+  const countComCourses = events => events.filter(event => event.admin.group === "company").length;
 
   if (connection.error || checkBar.error) {
     return <ErrMsg />;
   }
   else if (connection.success && checkBar.success) {
     const todayevents = connection.response.filter(event => event.date === today());
-    const courseCounts = countCourses(todayevents);
-    const companyCounts = todayevents.length - courseCounts;
+    const courseCounts = countSemCourses(todayevents);
+    const companyCounts = countComCourses(todayevents);
     const { CourseBar: courseBar, CompanyBar: companyBar } = JSON.parse(checkBar.response);
     
     let display = <span>Unable to participate in the lottery today!</span>
