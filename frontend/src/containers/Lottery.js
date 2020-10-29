@@ -14,6 +14,7 @@ export default () => {
   const [courseThreshold, setCourseThreshold] = useState(-1);
   const [companyThreshold, setCompanyThreshold] = useState(-1);
   const [list, setList] = useState(null);
+  const [fullList, setFullList] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [editState, edit] = useAPI("text");
   const [error, setError] = useState(null);
@@ -70,12 +71,19 @@ export default () => {
       }
     }
     let userList = [];
+    let allList = [];
     for(const [id, count] of Object.entries(id_to_count)) {
+      allList.push({
+        "name": id_to_user[id].name,
+        "course": count[0],
+        "company": count[1]
+      });
       if(count[0] >= courseThreshold && count[1] >= companyThreshold) {
         userList.push(id_to_user[id]);
       }
     }
     setList(userList);
+    setFullList(allList);
   }
 
   const addToList = async (_name, _sector, _index) => {
@@ -145,10 +153,14 @@ export default () => {
       const text = "流水號,姓名,服務單位\n" + list.map((user, index) => `${index+1},${replace(user.name, 1, "Ｏ")},${user.sector}`).join("\n");
       const data = new Blob([text], {type: 'text/plain'});
       const url = window.URL.createObjectURL(data);
+      const fulltext = "號碼,姓名,議程,廠商\n" + fullList.map((value, index) => `${index+1},${value.name},${value.course},${value.company}`).join("\n");
+      const fulldata = new Blob([fulltext], {type: 'text/plain'});
+      const fullurl = window.URL.createObjectURL(fulldata);
       display = (
         <div>
           <span>There are {list.length} users qualified.</span><br />
-          <Button color="blue" as="a" href={url} download="list.csv" style={{marginTop: "2vh"}}>Download List</Button>
+          <Button color="blue" as="a" href={url} download="list.csv" style={{marginTop: "2vh"}}>Download Qualified List</Button>
+          <Button color="blue" as="a" href={fullurl} download="list2.csv" style={{marginTop: "2vh"}}>Download All List</Button>
         </div>
       )
     }
