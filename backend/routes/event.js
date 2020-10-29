@@ -312,7 +312,7 @@ router.post('/createPriceTable', async (req, res) => {
     return;
   }
 
-  const path = './prizes'
+  const path = './prizes';
   const dir = await fs.opendir(path);
   let priceTable = [];
   for await (const dirent of dir) {
@@ -324,7 +324,7 @@ router.post('/createPriceTable', async (req, res) => {
       priceTable.push(prize);
     }
   } 
-  priceTable.sort((a, b) =>  Number(a.price) - Number(b.price))
+  priceTable.sort((a, b) =>  Number(a.price) - Number(b.price));
   // console.log(priceTable);
   fs.writeFile(`${path}/PriceTable.json`, JSON.stringify(priceTable))
   .then( () => res.status(200).send('create prize table completed'))

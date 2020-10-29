@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Loader, CardGroup, Header, Icon, Divider } from 'semantic-ui-react';
+import { Loader, CardGroup, Header, Icon, Divider, Menu } from 'semantic-ui-react';
 import { ErrMsg, EventLink } from '../../components';
 import { BACKEND } from '../../config';
 import { useAPI } from '../../hooks';
-import { today } from '../../util';
+import { today, usedDate } from '../../util';
 import { UserHead } from '../index';
 
 
@@ -17,6 +17,7 @@ const ParticipatedEvent = () => {
   const { token } = useSelector(state => state.user);
   const [connection, connect] = useAPI("json");
   const [checkBar, check] = useAPI("text");
+  const [ date, setDate ] = useState(0);
 
   if (connection.isInit()) {
     connect(
@@ -89,11 +90,37 @@ const ParticipatedEvent = () => {
             Participated Events
           </Header>
         </Divider>
+        <Menu stackable widths={4}>
+          <Menu.Item
+            name="ALL"
+            active={date === 0}
+            onClick={_ => { setDate(0); }}
+          />
+          <Menu.Item
+            name="DAY1"
+            active={date === 1}
+            onClick={_ => { setDate(1); }}
+          />
+          <Menu.Item
+            name="DAY2"
+            active={date === 2}
+            onClick={_ => { setDate(2); }}
+          />
+          <Menu.Item
+            name="DAY3"
+            active={date === 3}
+            onClick={_ => { setDate(3); }}
+          />
+        </Menu>
         <div>
           <CardGroup stackable style={{marginTop: "1em"}}>
-            {sortedEvents.map(({name, _id, reward, participant}) => (
-              <EventLink key={_id} name={name} id={_id} time={participant[0].usedTime} reward={reward} />
-            ))}
+            {
+              sortedEvents.map(({name, _id, reward, participant}) => {
+                if( usedDate(participant[0].usedTime).slice(5, 10) === String(`10-${date+27}`) || date === 0){
+                  return <EventLink key={_id} name={name} id={_id} time={participant[0].usedTime} reward={reward} />
+                }
+              })
+            }
           </CardGroup>
           <div style={{...messageStyle, marginTop: "1.5em"}}>
             {display}
