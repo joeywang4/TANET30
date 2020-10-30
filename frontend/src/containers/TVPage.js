@@ -30,6 +30,7 @@ const MainPage = () => {
   const newSeminarRank = useWS("new-seminar-rank");
   const newCompanyRank = useWS("new-company-rank");
   const newGameRank = useWS("new-game-rank");
+  const newMealAmount = useWS("new-meal-count");
   const [showIdx, setShowIdx] = useState(0);
   const duration = 500;
   useEffect(() => {
@@ -48,8 +49,9 @@ const MainPage = () => {
       { 'authorization': token }
     )
   }
-  const meatAmount = checkState.success ? checkState.response.meat : "";
-  const veganAmount = checkState.success ? checkState.response.vegan : "";
+  const meatAmount = newMealAmount?newMealAmount.meat:(checkState.success ? checkState.response.meat : "");
+  const veganAmount = newMealAmount?newMealAmount.vegan:(checkState.success ? checkState.response.vegan : "");
+  
 
   if (checkState.isInit()) checkAmount();
   if (paperRank.isInit()) getPaperRank(BACKEND + "/rank/paper", "GET");
@@ -82,7 +84,7 @@ const MainPage = () => {
 
   const [rankLength, eventRankLength, richLength] = [5, 10, 15];
   const paperRanks = themes.map(([key, title], idx) => (
-    <Transition visible={(Math.floor(idx/3) === (showIdx&1)) && showIdx >= 0} animation='scale' duration={duration} transitionOnMount={true} key={key}>
+    <Transition visible={(Math.floor(idx/2) === (showIdx % 3)) && showIdx >= 0} animation='scale' duration={duration} transitionOnMount={true} key={key}>
       <Segment style={{marginTop: "0"}}>
         <Grid.Row className="rank-title">
           <Header as='h3'>
